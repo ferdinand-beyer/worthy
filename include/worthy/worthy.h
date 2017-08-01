@@ -2,5 +2,6 @@
 #define WORTHY_WORTHY_H_
 
 #include "worthy/string.h"
+#include "worthy/value.h"
 
-#endif
+#endif // WORTHY_WORHTY_H_

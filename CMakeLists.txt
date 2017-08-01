@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 project(worthy)
 
 set(Worthy_Library_SRCS
+    include/worthy/type.h
+    include/worthy/value.h
     include/worthy/worthy.h
     src/string.cpp
+    src/value.cpp
     )
 
 set(Worthy_Tests_SRCS
@@ -14,6 +15,12 @@ set(Worthy_Tests_SRCS
     test/main.cpp
     test/sample.cpp
     )
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
+endif()
 
 include_directories(include)
 
