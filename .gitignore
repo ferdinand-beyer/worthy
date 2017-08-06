@@ -1,7 +1,2 @@
-CMakeCache.txt
-CMakeFiles
-CTestTestfile.cmake
-Makefile
-Testing/Temporary
-bin
-cmake_install.cmake
+/debug
+/release
