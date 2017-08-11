@@ -1,7 +1,7 @@
 #ifndef WORTHY_HEAP_ROOT_H_
 #define WORTHY_HEAP_ROOT_H_
 
-#include "src/memory.h"
+#include "internal/memory.h"
 
 #include <atomic>
 

@@ -1,8 +1,8 @@
 #ifndef WORTHY_INTERNAL_RUNTIME_H_
 #define WORTHY_INTERNAL_RUNTIME_H_
 
-#include "src/hashmap.h"
-#include "src/heap/heap.h"
+#include "internal/hashmap.h"
+#include "internal/heap.h"
 
 namespace worthy {
 namespace internal {

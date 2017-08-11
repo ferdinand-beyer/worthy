@@ -8,24 +8,27 @@ set(Worthy_Library_SRCS
     include/worthy/type.h
     include/worthy/value.h
     include/worthy/worthy.h
-    src/hashmap.cpp
-    src/hashmap.h
-    src/heap/heap.cpp
-    src/heap/heap.h
-    src/heap/page.cpp
-    src/heap/page.h
-    src/heap/root-page.h
-    src/heap/root-space.cpp
-    src/heap/root-space.h
-    src/heap/root.cpp
-    src/heap/root.h
-    src/heap/space.cpp
-    src/heap/space.h
-    src/internal-runtime.h
-    src/map.cpp
-    src/memory.cpp
-    src/memory.h
+    src/internal/block.h
+    src/internal/free-block.cpp
+    src/internal/free-block.h
+    src/internal/hashmap.cpp
+    src/internal/hashmap.h
+    src/internal/heap.cpp
+    src/internal/heap.h
+    src/internal/internal-runtime.h
+    src/internal/memory.cpp
+    src/internal/memory.h
+    src/internal/page.cpp
+    src/internal/page.h
+    src/internal/root-page.h
+    src/internal/root-space.cpp
+    src/internal/root-space.h
+    src/internal/root.cpp
+    src/internal/root.h
+    src/internal/space.cpp
+    src/internal/space.h
     src/runtime.cpp
+    src/map.cpp
     src/string.cpp
     src/value.cpp
     )
@@ -37,14 +40,13 @@ set(Worthy_Tests_SRCS
     test/sample.cpp
     )
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src)
 
 add_library(catch INTERFACE)
 target_include_directories(catch INTERFACE third-party/catch)

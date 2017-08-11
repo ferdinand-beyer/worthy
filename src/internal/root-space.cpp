@@ -1,5 +1,5 @@
-#include "src/heap/root.h"
-#include "src/heap/root-space.h"
+#include "internal/root.h"
+#include "internal/root-space.h"
 
 namespace worthy {
 namespace internal {

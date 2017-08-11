@@ -70,3 +70,35 @@ Strategy:
 
 - Symbols: 
 
+-------------------------------------------------------------------------------
+
+Heap block:
+- Size (useful to traverse blocks in GC)
+- GC flags (mark-sweep, lock)
+
+Root object (public references):
+- Fixed-size
+- Memory address
+- Reference count
+- Free list (no fragmentation)
+
+Node space:
+- For map/sets, vectors and linked lists
+- Limited number of sizes
+- Free list per size
+
+Internal value:
+- Tagged union
+- Space for pointer or primitive
+
+TBD: Fixed-type collections?
+- Save space
+
+-------------------------------------------------------------------------------
+
+Typical sizes:
+
+- Cache line: 64 bytes
+- OS page: 4096 bytes
+
+

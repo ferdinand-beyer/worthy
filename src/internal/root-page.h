@@ -1,7 +1,7 @@
 #ifndef WORTHY_HEAP_ROOT_PAGE_H_
 #define WORTHY_HEAP_ROOT_PAGE_H_
 
-#include "src/heap/page.h"
+#include "internal/page.h"
 
 namespace worthy {
 namespace internal {

@@ -1,8 +1,8 @@
 #include "worthy/map.h"
 #include "worthy/runtime.h"
 
-#include "hashmap.h"
-#include "internal-runtime.h"
+#include "internal/hashmap.h"
+#include "internal/internal-runtime.h"
 
 namespace worthy {
 namespace internal {

@@ -1,8 +1,8 @@
 #ifndef WORTHY_HEAP_ROOT_SPACE_H_
 #define WORTHY_HEAP_ROOT_SPACE_H_
 
-#include "src/heap/space.h"
-#include "src/memory.h"
+#include "internal/space.h"
+#include "internal/memory.h"
 
 namespace worthy {
 namespace internal {
