@@ -88,3 +88,26 @@ TEST_CASE("released references are reused", "[reference]") {
     }
 }
 
+TEST_CASE("allocates new pages when out of memory", "[reference]") {
+    int obj = 0;
+    void* const sentinel = &obj;
+
+    ReferenceSpace space(nullptr, 16);
+
+    void* ptr = sentinel;
+
+    for (int i = 0; i < 256; ++i) {
+        Reference* ref = space.newReference(ptr);
+        REQUIRE(ref != nullptr);
+        ptr = ref;
+    }
+
+    for (int i = 0; i < 256; ++i) {
+        Reference* ref = reinterpret_cast<Reference*>(ptr);
+        ptr = ref->ptr();
+        ref->release();
+    }
+
+    REQUIRE(ptr == sentinel);
+}
+

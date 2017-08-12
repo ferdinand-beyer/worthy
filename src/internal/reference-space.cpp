@@ -20,10 +20,6 @@ public:
 
     Page(ReferenceSpace* space, std::size_t capacity);
 
-    inline ReferenceSpace* space() {
-        return space_;
-    }
-
     inline Reference* data() {
         // (this + 1) will point directly after the page.
         return reinterpret_cast<Reference*>(this + 1);
@@ -31,14 +27,13 @@ public:
 
     Reference* allocate(void* ptr);
 
-private:
     // Number of Reference objects this page can hold.
     const std::size_t capacity_;
 
     ReferenceSpace* const space_;
 
-    //Page* next_page_;
-    //Page* previous_page_;
+    Page* next_;
+    Page* prev_;
 
     std::atomic<std::uint32_t> allocated_;
 };
@@ -46,8 +41,8 @@ private:
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     capacity_{capacity},
     space_{space},
-    //next_page_{nullptr},
-    //previous_page_{nullptr},
+    next_{nullptr},
+    prev_{nullptr},
     allocated_{0}
 {
     WORTHY_DCHECK(capacity > 0);
@@ -72,35 +67,46 @@ Reference* ReferenceSpace::Page::allocate(void* ptr) {
 }
 
 ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
-    return Page::of(ref)->space();
+    return Page::of(ref)->space_;
 }
 
-ReferenceSpace::ReferenceSpace(Heap* heap, std::size_t pageCapacity) :
+ReferenceSpace::ReferenceSpace(Heap* heap, std::size_t page_capacity) :
     Space(heap),
-    page_capacity_{pageCapacity},
-    root_{nullptr},
+    page_capacity_{page_capacity},
+    top_page_{nullptr},
     free_list_{nullptr}
 {
     WORTHY_CHECK(page_capacity_ > 0);
 }
 
 ReferenceSpace::~ReferenceSpace() {
-    // TODO: Free all pages
-    std::free(root_);
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    Page* page = top_page_.load(std::memory_order_acquire);
+
+    while (page) {
+        Page* next = page->next_;
+        std::free(page);
+        page = next;
+    }
+
+    top_page_.store(nullptr, std::memory_order_release);
 }
 
 Reference* ReferenceSpace::newReference(void* ptr) {
-    Page* page;
-    if (root_) {
-        page = root_;
-    } else {
-        page = allocatePage();
-    }
+    Page* page = top_page_.load(std::memory_order_acquire);
+    Reference* ref = page ? page->allocate(ptr) : nullptr;
 
-    Reference* ref = page->allocate(ptr);
-
-    if (!ref) {
+    while (!ref) {
         ref = allocateFromFreeList(ptr);
+
+        if (!ref) {
+            page = allocatePageSync(page);
+            if (!page) {
+                return nullptr;
+            }
+            ref = page->allocate(ptr);
+        }
     }
 
     return ref;
@@ -132,14 +138,36 @@ void ReferenceSpace::addToFreeList(Reference* ref) {
     }
 }
 
+ReferenceSpace::Page* ReferenceSpace::allocatePageSync(Page* top_page) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // Load the top page again as another thread could have allocated a
+    // new page in the meantime.
+    Page* page = top_page_.load(std::memory_order_acquire);
+
+    if (page == top_page) {
+        page = allocatePage();
+        if (!page) {
+            // Out of memory.
+            return nullptr;
+        }
+
+        if (top_page) {
+            page->prev_ = top_page;
+            top_page->next_ = page;
+        }
+
+        top_page_.store(page, std::memory_order_release);
+    }
+
+    return page;
+}
+
 ReferenceSpace::Page* ReferenceSpace::allocatePage() {
     // We use memory directly after the Page structure for an array of
     // Reference objects.  Assert that this will be propertly aligned.
     static_assert((sizeof(Page) % alignof(Reference)) == 0,
                   "Reference requires proper alignment");
-
-    // TODO: Support more than one page!
-    WORTHY_CHECK(!root_);
 
     const std::size_t size = sizeof(Page) + page_capacity_ * sizeof(Reference);
 
@@ -148,10 +176,7 @@ ReferenceSpace::Page* ReferenceSpace::allocatePage() {
         return nullptr;
     }
 
-    Page* page = new (memory) Page(this, page_capacity_);
-    root_ = page;
-
-    return page;
+    return new (memory) Page(this, page_capacity_);
 }
 
 } } // namespace worty::internal

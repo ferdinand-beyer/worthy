@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <cstddef>
+#include <mutex>
 
 namespace worthy {
 namespace internal {
@@ -16,7 +17,7 @@ class ReferenceSpace : public Space {
 public:
     static ReferenceSpace* ownerOf(Reference* ref);
 
-    explicit ReferenceSpace(Heap* heap, std::size_t pageCapacity = 512);
+    explicit ReferenceSpace(Heap* heap, std::size_t page_capacity = 512);
     ~ReferenceSpace();
 
     Reference* newReference(void* ptr);
@@ -25,13 +26,16 @@ private:
     class Page;
 
     Reference* allocateFromFreeList(void* ptr);
+
     void addToFreeList(Reference* ref);
 
+    Page* allocatePageSync(Page* top_page);
     Page* allocatePage();
 
     const std::size_t page_capacity_;
-    Page* root_;
+    std::atomic<Page*> top_page_;
     std::atomic<Reference*> free_list_;
+    std::mutex mutex_;
 
     WORTHY_DISABLE_COPY(ReferenceSpace);
 
