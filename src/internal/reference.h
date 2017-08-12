@@ -38,7 +38,7 @@ inline void* Reference::ptr() const {
 }
 
 inline std::uint32_t Reference::useCount() const {
-    return count_;
+    return count_.load(std::memory_order_relaxed);
 }
 
 inline std::uint32_t Reference::pageIndex() const {

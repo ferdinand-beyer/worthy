@@ -40,8 +40,7 @@ private:
     //Page* next_page_;
     //Page* previous_page_;
 
-    // Next free index.
-    std::atomic<std::uint32_t> next_;
+    std::atomic<std::uint32_t> allocated_;
 };
 
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
@@ -49,21 +48,21 @@ ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     space_{space},
     //next_page_{nullptr},
     //previous_page_{nullptr},
-    next_{0}
+    allocated_{0}
 {
     WORTHY_DCHECK(capacity > 0);
 }
 
 Reference* ReferenceSpace::Page::allocate(void* ptr) {
-    std::uint32_t index = next_.load(std::memory_order_relaxed);
+    std::uint32_t index = allocated_.load(std::memory_order_relaxed);
 
     do {
         if (index == capacity_) {
             return nullptr;
         }
-    } while (!next_.compare_exchange_weak(index, index + 1,
-                                          std::memory_order_release,
-                                          std::memory_order_relaxed));
+    } while (!allocated_.compare_exchange_weak(index, index + 1,
+                                               std::memory_order_release,
+                                               std::memory_order_relaxed));
 
     WORTHY_DCHECK(index < capacity_);
 

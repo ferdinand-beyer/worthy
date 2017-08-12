@@ -15,12 +15,12 @@ Reference::Reference(std::uint32_t index, void* ptr) :
 
 void Reference::use() {
     WORTHY_DCHECK(count_ > 0);
-    ++count_;
+    count_.fetch_add(1, std::memory_order_relaxed);
 }
 
 void Reference::release() {
     WORTHY_DCHECK(count_ > 0);
-    if (--count_ == 0) {
+    if (count_.fetch_sub(1, std::memory_order_relaxed) == 1) {
         // Tell the space that this Reference can now be reused.
         ReferenceSpace::ownerOf(this)->addToFreeList(this);
     }
