@@ -20,7 +20,9 @@ void Reference::use() {
 
 void Reference::release() {
     WORTHY_DCHECK(count_ > 0);
-    if (count_.fetch_sub(1, std::memory_order_relaxed) == 1) {
+    if (count_.fetch_sub(1, std::memory_order_release) == 1) {
+        std::atomic_thread_fence(std::memory_order_acquire);
+
         // Tell the space that this Reference can now be reused.
         ReferenceSpace::ownerOf(this)->addToFreeList(this);
     }
