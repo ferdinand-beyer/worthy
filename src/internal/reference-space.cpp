@@ -10,7 +10,15 @@
 namespace worthy {
 namespace internal {
 
-struct ReferenceSpace::Page {
+class ReferenceSpace::Page {
+public:
+    Page(ReferenceSpace* space, std::size_t capacity);
+
+    Reference* data();
+    Reference* allocate(void* ptr);
+
+private:
+    // Number of Reference objects this page can hold.
     const std::size_t capacity_;
 
     ReferenceSpace* space_;
@@ -18,14 +26,10 @@ struct ReferenceSpace::Page {
     Page* next_page_;
     Page* previous_page_;
 
+    // Next free index.
     std::atomic<std::uint32_t> next_;
-
-    Page(ReferenceSpace* space, std::size_t capacity);
-
-    Reference* data();
-
-    Reference* allocate(void* ptr);
 };
+
 
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     capacity_{capacity},
@@ -38,12 +42,14 @@ ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
 }
 
 inline Reference* ReferenceSpace::Page::data() {
+    // (this + 1) will point directly after the page.
     return reinterpret_cast<Reference*>(this + 1);
 }
 
 Reference* ReferenceSpace::Page::allocate(void* ptr) {
     std::uint32_t index;
-    
+
+    // Atomically get the next free index.
     do {
         index = next_.load(std::memory_order_relaxed);
 
@@ -82,15 +88,23 @@ Reference* ReferenceSpace::newReference(void* ptr) {
 
     Reference* ref = page->allocate(ptr);
 
+    // TODO: If ref is a nullptr, need to look into the free list
+    // or allocate a new page.
+    WORTHY_CHECK(ref);
+
     return ref;
 }
 
 ReferenceSpace::Page* ReferenceSpace::allocatePage(std::size_t capacity) {
-    // TODO: Support more than one page!
-    WORTHY_DCHECK(!root_);
+    // We use memory directly after the Page structure for an array of
+    // Reference objects.  Assert that this will be propertly aligned.
+    static_assert((sizeof(Page) % alignof(Reference)) == 0,
+                  "Reference requires proper alignment");
 
-    const std::size_t size = sizeof(ReferenceSpace::Page) +
-                             sizeof(Reference) * capacity;
+    // TODO: Support more than one page!
+    WORTHY_CHECK(!root_);
+
+    const std::size_t size = sizeof(Page) + capacity * sizeof(Reference);
 
     void* memory = std::malloc(size);
     if (!memory) {
