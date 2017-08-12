@@ -1,16 +1,16 @@
 #include "internal/heap.h"
-#include "internal/root-space.h"
+
+#include "internal/reference-space.h"
 
 namespace worthy {
 namespace internal {
 
 Heap::Heap() {
-    root_space_.reset(new RootSpace());
+    reference_space_.reset(new ReferenceSpace(this));
 }
 
 Heap::~Heap() {
 }
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worthy::internal
 

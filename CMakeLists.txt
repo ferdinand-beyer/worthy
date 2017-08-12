@@ -9,6 +9,8 @@ set(Worthy_Library_SRCS
     include/worthy/value.h
     include/worthy/worthy.h
     src/internal/block.h
+    src/internal/check.cpp
+    src/internal/check.h
     src/internal/free-block.cpp
     src/internal/free-block.h
     src/internal/hashmap.cpp
@@ -20,10 +22,10 @@ set(Worthy_Library_SRCS
     src/internal/memory.h
     src/internal/page.cpp
     src/internal/page.h
-    src/internal/root-space.cpp
-    src/internal/root-space.h
-    src/internal/root.cpp
-    src/internal/root.h
+    src/internal/reference-space.cpp
+    src/internal/reference-space.h
+    src/internal/reference.cpp
+    src/internal/reference.h
     src/internal/space.cpp
     src/internal/space.h
     src/runtime.cpp
@@ -34,7 +36,7 @@ set(Worthy_Library_SRCS
 
 set(Worthy_UnitTests_SRCS
     ${Worthy_Library_SRCS}
-    test/unit/root-space-test.cpp
+    test/unit/reference-space-test.cpp
     test/main.cpp
     )
 
@@ -50,6 +52,7 @@ target_include_directories(catch INTERFACE third-party/catch)
 add_executable(unit-tests ${Worthy_UnitTests_SRCS})
 target_include_directories(unit-tests PRIVATE test)
 target_link_libraries(unit-tests catch)
+target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
 
 enable_testing()
 add_test(NAME unit-tests COMMAND unit-tests)

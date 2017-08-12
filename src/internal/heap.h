@@ -1,26 +1,26 @@
-#ifndef WORTHY_HEAP_H_
-#define WORTHY_HEAP_H_
+#ifndef WORTHY_INTERNAL_HEAP_H_
+#define WORTHY_INTERNAL_HEAP_H_
+
+#include "internal/macros.h"
 
 #include <memory>
 
 namespace worthy {
 namespace internal {
 
-class RootSpace;
-
-const int PAGE_SIZE_BITS = 19;
+class ReferenceSpace;
 
 class Heap {
 public:
     Heap();
-    Heap(const Heap&) = delete;
     ~Heap();
 
 private:
-    std::unique_ptr<RootSpace> root_space_;
+    WORTHY_DISABLE_COPY(Heap);
+
+    std::unique_ptr<ReferenceSpace> reference_space_;
 };
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worthy::internal
 
-#endif // WORTHY_HEAP_H_
+#endif // WORTHY_INTERNAL_HEAP_H_

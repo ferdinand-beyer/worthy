@@ -9,5 +9,4 @@ Space::Space(Heap* heap) : heap_{heap} {
 Space::~Space() {
 }
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worthy::internal

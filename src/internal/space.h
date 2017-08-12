@@ -1,10 +1,10 @@
 #ifndef WORTHY_INTERNAL_SPACE_H_
 #define WORTHY_INTERNAL_SPACE_H_
 
+#include "internal/macros.h"
+
 #include <cstddef>
 #include <utility>
-
-#include "internal/memory.h"
 
 namespace worthy {
 namespace internal {
@@ -15,11 +15,11 @@ class Space {
 public:
     explicit Space(Heap* heap);
 
-    Space(const Space&) = delete;
-
     virtual ~Space();
 
 private:
+    WORTHY_DISABLE_COPY(Space);
+
     Heap* heap_;
 };
 
