@@ -13,15 +13,17 @@ class Reference;
 
 class ReferenceSpace : public Space {
 public:
+    static ReferenceSpace* ownerOf(Reference* ref);
+
     explicit ReferenceSpace(Heap* heap);
     ~ReferenceSpace();
 
-    bool owns(const Reference* ref) const;
+    bool owns(Reference* ref) const;
 
     Reference* newReference(void* ptr);
 
 private:
-    struct Page;
+    class Page;
 
     static const std::size_t PageCapacity = 512;
 
@@ -31,6 +33,10 @@ private:
 
     WORTHY_DISABLE_COPY(ReferenceSpace);
 };
+
+inline bool ReferenceSpace::owns(Reference* ref) const {
+    return ownerOf(ref) == this;
+}
 
 } } // namespace worty::internal
 

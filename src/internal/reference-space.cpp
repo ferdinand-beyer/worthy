@@ -12,15 +12,15 @@ namespace internal {
 
 class ReferenceSpace::Page {
 public:
-    inline static const Page* of(const Reference* ref) {
+    inline static Page* of(Reference* ref) {
         // By subtracting the index from the ref pointer, we get the start of
         // the data array, which is sizeof(Page) away from the page start.
-        return reinterpret_cast<const Page*>(ref - ref->pageIndex()) - 1;
+        return reinterpret_cast<Page*>(ref - ref->pageIndex()) - 1;
     }
 
     Page(ReferenceSpace* space, std::size_t capacity);
 
-    inline const ReferenceSpace* space() const {
+    inline ReferenceSpace* space() {
         return space_;
     }
 
@@ -75,6 +75,10 @@ Reference* ReferenceSpace::Page::allocate(void* ptr) {
     return new (memory) Reference(index, ptr);
 }
 
+ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
+    return Page::of(ref)->space();
+}
+
 ReferenceSpace::ReferenceSpace(Heap* heap) :
     Space(heap),
     root_{nullptr}
@@ -101,10 +105,6 @@ Reference* ReferenceSpace::newReference(void* ptr) {
     WORTHY_CHECK(ref);
 
     return ref;
-}
-
-bool ReferenceSpace::owns(const Reference* ref) const {
-    return (Page::of(ref)->space() == this);
 }
 
 ReferenceSpace::Page* ReferenceSpace::allocatePage(std::size_t capacity) {
