@@ -1,7 +1,5 @@
-#ifndef WORTHY_HEAP_PAGE_H_
-#define WORTHY_HEAP_PAGE_H_
-
-#include "internal/memory.h"
+#ifndef WORTHY_INTERNAL_PAGE_H_
+#define WORTHY_INTERNAL_PAGE_H_
 
 #include <atomic>
 
@@ -14,15 +12,16 @@ class Page {
 public:
     Page(Space* owner, std::size_t size);
 
-    Address allocate(std::size_t size);
+    void* allocate(std::size_t size);
 
 private:
     std::size_t size_;
     Space* space_;
-    Address free_list_;
+
+    void* data_;
 };
 
 } // namespace internal
 } // namespace worthy
 
-#endif // WORTHY_HEAP_PAGE_H_
+#endif // WORTHY_INTERNAL_PAGE_H_

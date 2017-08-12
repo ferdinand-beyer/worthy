@@ -5,7 +5,7 @@ namespace worthy {
 namespace internal {
 
 Heap::Heap() {
-    root_space_.reset(new RootSpace(this));
+    root_space_.reset(new RootSpace());
 }
 
 Heap::~Heap() {

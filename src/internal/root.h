@@ -1,30 +1,42 @@
-#ifndef WORTHY_HEAP_ROOT_H_
-#define WORTHY_HEAP_ROOT_H_
+#ifndef WORTHY_INTERNAL_ROOT_H_
+#define WORTHY_INTERNAL_ROOT_H_
 
-#include "internal/memory.h"
+#include "internal/macros.h"
 
 #include <atomic>
 
 namespace worthy {
 namespace internal {
 
+class Page;
+
 class Root {
 public:
-    Root();
+    Root(Page* page, void* ptr);
 
-    inline Address address() const {
-        return address_;
-    }
+    void* ptr() const;
+
+    std::uint32_t refCount() const;
 
     void incRef();
     void decRef();
 
 private:
-    std::atomic_size_t count_;
-    Address address_;
+    NO_COPY(Root);
+
+    Page* page_;
+    void* ptr_;
+    std::atomic<std::uint32_t> count_;
 };
 
-} // namespace internal
-} // namespace worthy
+inline void* Root::ptr() const {
+    return ptr_;
+}
 
-#endif // WORTHY_HEAP_ROOT_H_
+inline std::uint32_t Root::refCount() const {
+    return count_;
+}
+
+} } // namespace worty::internal
+
+#endif // WORTHY_INTERNAL_ROOT_H_

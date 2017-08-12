@@ -33,27 +33,25 @@ set(Worthy_Library_SRCS
     src/value.cpp
     )
 
-set(Worthy_Tests_SRCS
+set(Worthy_UnitTests_SRCS
     ${Worthy_Library_SRCS}
-    test/hashmap-test.cpp
+    test/unit/root-space-test.cpp
     test/main.cpp
-    test/sample.cpp
     )
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
 endif()
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src)
+include_directories(include src)
 
 add_library(catch INTERFACE)
 target_include_directories(catch INTERFACE third-party/catch)
 
-add_executable(worthy-tests ${Worthy_Tests_SRCS})
-target_link_libraries(worthy-tests catch)
+add_executable(unit-tests ${Worthy_UnitTests_SRCS})
+target_include_directories(unit-tests PRIVATE test)
+target_link_libraries(unit-tests catch)
 
 enable_testing()
-add_test(NAME worthy-tests COMMAND worthy-tests)
+add_test(NAME unit-tests COMMAND unit-tests)
 

@@ -1,20 +1,36 @@
-#ifndef WORTHY_HEAP_ROOT_SPACE_H_
-#define WORTHY_HEAP_ROOT_SPACE_H_
+#ifndef WORTHY_INTERNAL_ROOT_SPACE_H_
+#define WORTHY_INTERNAL_ROOT_SPACE_H_
 
-#include "internal/space.h"
-#include "internal/memory.h"
+#include "internal/macros.h"
+
+#include <cstddef>
 
 namespace worthy {
 namespace internal {
 
-class RootSpace : public Space {
-public:
-    explicit RootSpace(Heap* heap);
+class Page;
+class Root;
 
-    Address newRoot(Address addr);
+class RootSpace {
+public:
+    static const std::size_t PageSizeBits = 16;
+    static const std::size_t PageSize = 1 << PageSizeBits;
+    static const std::size_t PageAlignment = 32;
+
+    RootSpace();
+    ~RootSpace();
+
+    Root* newRoot(void* ptr);
+
+private:
+    NO_COPY(RootSpace);
+
+    Page* allocatePage();
+
+    Page* first_page_;
+    Root* free_list_head_;
 };
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worty::internal
 
-#endif // WORTHY_HEAP_ROOT_SPACE_H_
+#endif // WORTHY_INTERNAL_ROOT_SPACE_H_

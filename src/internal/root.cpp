@@ -3,7 +3,10 @@
 namespace worthy {
 namespace internal {
 
-Root::Root() : count_{0}, address_{nullptr} {
+Root::Root(Page* page, void* ptr) :
+    page_{page},
+    ptr_{ptr},
+    count_{1} {
 }
 
 void Root::incRef() {
@@ -14,5 +17,4 @@ void Root::decRef() {
     --count_;
 }
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worthy::internal
