@@ -37,8 +37,8 @@ private:
 
     ReferenceSpace* const space_;
 
-    Page* next_page_;
-    Page* previous_page_;
+    //Page* next_page_;
+    //Page* previous_page_;
 
     // Next free index.
     std::atomic<std::uint32_t> next_;
@@ -47,20 +47,17 @@ private:
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     capacity_{capacity},
     space_{space},
-    next_page_{nullptr},
-    previous_page_{nullptr},
+    //next_page_{nullptr},
+    //previous_page_{nullptr},
     next_{0}
 {
     WORTHY_DCHECK(capacity > 0);
 }
 
 Reference* ReferenceSpace::Page::allocate(void* ptr) {
-    std::uint32_t index;
+    std::uint32_t index = next_.load(std::memory_order_relaxed);
 
-    // Atomically get the next free index.
     do {
-        index = next_.load(std::memory_order_relaxed);
-
         if (index == capacity_) {
             return nullptr;
         }
@@ -79,10 +76,13 @@ ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
     return Page::of(ref)->space();
 }
 
-ReferenceSpace::ReferenceSpace(Heap* heap) :
+ReferenceSpace::ReferenceSpace(Heap* heap, std::size_t pageCapacity) :
     Space(heap),
-    root_{nullptr}
+    page_capacity_{pageCapacity},
+    root_{nullptr},
+    free_list_{nullptr}
 {
+    WORTHY_CHECK(page_capacity_ > 0);
 }
 
 ReferenceSpace::~ReferenceSpace() {
@@ -100,14 +100,40 @@ Reference* ReferenceSpace::newReference(void* ptr) {
 
     Reference* ref = page->allocate(ptr);
 
-    // TODO: If ref is a nullptr, need to look into the free list
-    // or allocate a new page.
-    WORTHY_CHECK(ref);
+    if (!ref) {
+        ref = allocateFromFreeList(ptr);
+    }
 
     return ref;
 }
 
-ReferenceSpace::Page* ReferenceSpace::allocatePage(std::size_t capacity) {
+Reference* ReferenceSpace::allocateFromFreeList(void* ptr) {
+    Reference* ref = free_list_.load(std::memory_order_relaxed);
+
+    while (ref && !free_list_.compare_exchange_weak(
+                ref, reinterpret_cast<Reference*>(ref->ptr()),
+                std::memory_order_release,
+                std::memory_order_relaxed)) {
+    }
+
+    if (ref) {
+        ref->reset(ptr);
+    }
+
+    return ref;
+}
+
+void ReferenceSpace::addToFreeList(Reference* ref) {
+    ref->ptr_ = free_list_.load(std::memory_order_relaxed);
+
+    while (!free_list_.compare_exchange_weak(
+                reinterpret_cast<Reference*&>(ref->ptr_), ref,
+                std::memory_order_release,
+                std::memory_order_relaxed)) {
+    }
+}
+
+ReferenceSpace::Page* ReferenceSpace::allocatePage() {
     // We use memory directly after the Page structure for an array of
     // Reference objects.  Assert that this will be propertly aligned.
     static_assert((sizeof(Page) % alignof(Reference)) == 0,
@@ -116,14 +142,14 @@ ReferenceSpace::Page* ReferenceSpace::allocatePage(std::size_t capacity) {
     // TODO: Support more than one page!
     WORTHY_CHECK(!root_);
 
-    const std::size_t size = sizeof(Page) + capacity * sizeof(Reference);
+    const std::size_t size = sizeof(Page) + page_capacity_ * sizeof(Reference);
 
     void* memory = std::malloc(size);
     if (!memory) {
         return nullptr;
     }
 
-    Page* page = new (memory) Page(this, capacity);
+    Page* page = new (memory) Page(this, page_capacity_);
     root_ = page;
 
     return page;

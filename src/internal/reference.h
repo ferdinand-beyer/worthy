@@ -22,11 +22,15 @@ public:
     void release();
 
 private:
+    void reset(void* ptr);
+
     void* ptr_;
     std::atomic<std::uint32_t> count_;
-    std::uint32_t index_;
+    const std::uint32_t index_;
 
     WORTHY_DISABLE_COPY(Reference);
+
+    friend class ReferenceSpace;
 };
 
 inline void* Reference::ptr() const {

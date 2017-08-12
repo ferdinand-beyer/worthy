@@ -4,6 +4,7 @@
 #include "internal/macros.h"
 #include "internal/space.h"
 
+#include <atomic>
 #include <cstddef>
 
 namespace worthy {
@@ -15,28 +16,27 @@ class ReferenceSpace : public Space {
 public:
     static ReferenceSpace* ownerOf(Reference* ref);
 
-    explicit ReferenceSpace(Heap* heap);
+    explicit ReferenceSpace(Heap* heap, std::size_t pageCapacity = 512);
     ~ReferenceSpace();
-
-    bool owns(Reference* ref) const;
 
     Reference* newReference(void* ptr);
 
 private:
     class Page;
 
-    static const std::size_t PageCapacity = 512;
+    Reference* allocateFromFreeList(void* ptr);
+    void addToFreeList(Reference* ref);
 
-    Page* allocatePage(std::size_t capacity = PageCapacity);
+    Page* allocatePage();
 
+    const std::size_t page_capacity_;
     Page* root_;
+    std::atomic<Reference*> free_list_;
 
     WORTHY_DISABLE_COPY(ReferenceSpace);
-};
 
-inline bool ReferenceSpace::owns(Reference* ref) const {
-    return ownerOf(ref) == this;
-}
+    friend class Reference;
+};
 
 } } // namespace worty::internal
 
