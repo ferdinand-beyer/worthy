@@ -20,7 +20,6 @@ set(Worthy_Library_SRCS
     src/internal/memory.h
     src/internal/page.cpp
     src/internal/page.h
-    src/internal/root-page.h
     src/internal/root-space.cpp
     src/internal/root-space.h
     src/internal/root.cpp
