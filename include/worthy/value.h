@@ -30,6 +30,7 @@ public:
     inline void swap(Value& other) {
         using std::swap;
         swap(data_, other.data_);
+        swap(type_, other.type_);
     }
 
     inline Type type() const {
