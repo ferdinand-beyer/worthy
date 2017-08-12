@@ -18,6 +18,10 @@ TEST_CASE("can allocate Reference objects", "[reference]") {
     REQUIRE(ref->ptr() == obj);
     REQUIRE(ref->useCount() == 1);
 
+    SECTION("created reference is owned by the space") {
+        REQUIRE(space.owns(ref));
+    }
+
     SECTION("multiple references are contiguous") {
         Reference* ref2 = space.newReference(obj);
 

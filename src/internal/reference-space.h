@@ -16,6 +16,8 @@ public:
     explicit ReferenceSpace(Heap* heap);
     ~ReferenceSpace();
 
+    bool owns(const Reference* ref) const;
+
     Reference* newReference(void* ptr);
 
 private:

@@ -16,6 +16,7 @@ public:
     void* ptr() const;
 
     std::uint32_t useCount() const;
+    std::uint32_t pageIndex() const;
 
     void use();
     void release();
@@ -26,8 +27,6 @@ private:
     std::uint32_t index_;
 
     WORTHY_DISABLE_COPY(Reference);
-
-    friend class ReferenceSpace;
 };
 
 inline void* Reference::ptr() const {
@@ -36,6 +35,10 @@ inline void* Reference::ptr() const {
 
 inline std::uint32_t Reference::useCount() const {
     return count_;
+}
+
+inline std::uint32_t Reference::pageIndex() const {
+    return index_;
 }
 
 } } // namespace worty::internal

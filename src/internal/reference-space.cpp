@@ -12,16 +12,30 @@ namespace internal {
 
 class ReferenceSpace::Page {
 public:
+    inline static const Page* of(const Reference* ref) {
+        // By subtracting the index from the ref pointer, we get the start of
+        // the data array, which is sizeof(Page) away from the page start.
+        return reinterpret_cast<const Page*>(ref - ref->pageIndex()) - 1;
+    }
+
     Page(ReferenceSpace* space, std::size_t capacity);
 
-    Reference* data();
+    inline const ReferenceSpace* space() const {
+        return space_;
+    }
+
+    inline Reference* data() {
+        // (this + 1) will point directly after the page.
+        return reinterpret_cast<Reference*>(this + 1);
+    }
+
     Reference* allocate(void* ptr);
 
 private:
     // Number of Reference objects this page can hold.
     const std::size_t capacity_;
 
-    ReferenceSpace* space_;
+    ReferenceSpace* const space_;
 
     Page* next_page_;
     Page* previous_page_;
@@ -29,7 +43,6 @@ private:
     // Next free index.
     std::atomic<std::uint32_t> next_;
 };
-
 
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     capacity_{capacity},
@@ -39,11 +52,6 @@ ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
     next_{0}
 {
     WORTHY_DCHECK(capacity > 0);
-}
-
-inline Reference* ReferenceSpace::Page::data() {
-    // (this + 1) will point directly after the page.
-    return reinterpret_cast<Reference*>(this + 1);
 }
 
 Reference* ReferenceSpace::Page::allocate(void* ptr) {
@@ -93,6 +101,10 @@ Reference* ReferenceSpace::newReference(void* ptr) {
     WORTHY_CHECK(ref);
 
     return ref;
+}
+
+bool ReferenceSpace::owns(const Reference* ref) const {
+    return (Page::of(ref)->space() == this);
 }
 
 ReferenceSpace::Page* ReferenceSpace::allocatePage(std::size_t capacity) {
