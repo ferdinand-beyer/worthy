@@ -65,7 +65,7 @@ protected:
     }
 
 private:
-    void use();
+    void retain();
     void release();
 
     internal::VariantData data_;

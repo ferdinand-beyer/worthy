@@ -25,18 +25,18 @@ public:
 
     void* ptr() const;
 
-    std::uint32_t useCount() const;
-    std::uint32_t pageIndex() const;
+    std::uint32_t retainCount() const;
 
-    void use();
+    void retain();
     void release();
 
 private:
+    std::uint32_t pageIndex() const;
     void reset(void* ptr);
 
     void* ptr_;
-    std::atomic<std::uint32_t> count_;
     const std::uint32_t index_;
+    std::atomic<std::uint32_t> retain_count_;
 
     WORTHY_DISABLE_COPY(Reference);
 
@@ -45,7 +45,7 @@ private:
 
 
 inline bool Reference::isValid() const {
-    return useCount() > 0;
+    return retainCount() > 0;
 }
 
 
@@ -54,13 +54,13 @@ inline void* Reference::ptr() const {
 }
 
 
-inline std::uint32_t Reference::useCount() const {
-    return count_.load(std::memory_order_relaxed);
+inline std::uint32_t Reference::pageIndex() const {
+    return index_;
 }
 
 
-inline std::uint32_t Reference::pageIndex() const {
-    return index_;
+inline std::uint32_t Reference::retainCount() const {
+    return retain_count_.load(std::memory_order_relaxed);
 }
 
 

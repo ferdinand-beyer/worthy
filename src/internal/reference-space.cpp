@@ -116,7 +116,6 @@ Reference* ReferenceSpace::newReference(void* ptr) {
     }
 
     WORTHY_DCHECK(ref->ptr() == ptr);
-    WORTHY_DCHECK(ref->useCount() == 1);
 
     return ref;
 }

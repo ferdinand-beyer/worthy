@@ -8,11 +8,10 @@ namespace worthy {
 namespace internal {
 
 
-Reference::Reference(std::uint32_t index, void* ptr) :
-    ptr_{ptr},
-    count_{1},
-    index_{index}
-{
+Reference::Reference(std::uint32_t index, void* ptr)
+    : ptr_{ptr},
+      index_{index},
+      retain_count_{1} {
 }
 
 
@@ -22,15 +21,15 @@ Object* Reference::object() {
 }
 
 
-void Reference::use() {
+void Reference::retain() {
     WORTHY_CHECK(isValid());
-    count_.fetch_add(1, std::memory_order_relaxed);
+    retain_count_.fetch_add(1, std::memory_order_relaxed);
 }
 
 
 void Reference::release() {
     WORTHY_CHECK(isValid());
-    if (count_.fetch_sub(1, std::memory_order_release) == 1) {
+    if (retain_count_.fetch_sub(1, std::memory_order_release) == 1) {
         std::atomic_thread_fence(std::memory_order_acquire);
 
         // Tell the space that this Reference can now be reused.
@@ -42,7 +41,7 @@ void Reference::release() {
 void Reference::reset(void* ptr) {
     // Called from ReferenceSpace when re-using.
     ptr_ = ptr;
-    count_.store(1, std::memory_order_relaxed);
+    retain_count_.store(1, std::memory_order_relaxed);
 }
 
 

@@ -17,7 +17,7 @@ TEST_CASE("can allocate Reference objects", "[reference]") {
 
     REQUIRE(ref != nullptr);
     REQUIRE(ref->ptr() == obj);
-    REQUIRE(ref->useCount() == 1);
+    REQUIRE(ref->retainCount() == 1);
 
     SECTION("created reference is owned by the space") {
         REQUIRE(ReferenceSpace::ownerOf(ref) == &space);

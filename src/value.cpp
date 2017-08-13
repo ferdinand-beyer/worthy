@@ -86,7 +86,7 @@ Value::Value(internal::Reference* ref, Type t) : type_{t} {
 
 
 Value::Value(const Value& other) : data_{other.data_}, type_{other.type_} {
-    use();
+    retain();
 }
 
 
@@ -120,9 +120,9 @@ const internal::Object* Value::object() const {
 }
 
 
-void Value::use() {
+void Value::retain() {
     if (is_reference_type(type_)) {
-        data_.ref->use();
+        data_.ref->retain();
     }
 }
 
