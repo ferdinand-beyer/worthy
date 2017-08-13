@@ -177,4 +177,4 @@ ReferenceSpace::Page* ReferenceSpace::allocatePage() {
     return new (memory) Page(this, page_capacity_);
 }
 
-} } // namespace worty::internal
+} } // namespace worthy::internal
