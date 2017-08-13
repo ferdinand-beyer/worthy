@@ -20,8 +20,11 @@ set(Worthy_Library_SRCS
     src/internal/internal-runtime.h
     src/internal/memory.cpp
     src/internal/memory.h
+    src/internal/object.cpp
+    src/internal/object.h
     src/internal/page.cpp
     src/internal/page.h
+    src/internal/variant.h
     src/internal/reference-space.cpp
     src/internal/reference-space.h
     src/internal/reference.cpp

@@ -1,18 +1,18 @@
 #include "internal/hashmap.h"
 
+
 namespace worthy {
 namespace internal {
 
-HashMap::HashMap() : count_{0}, root_{nullptr}, has_null_{false} {
-    null_value_.ptr = nullptr;
+
+HashMap::HashMap()
+    : Object(ObjectType::HashMap),
+      has_null_key_{false},
+      null_key_value_type_{VariantType::Null},
+      count_{0},
+      root_{nullptr} {
+    null_key_value_.obj = nullptr;
 }
 
-HashMap::HashMap(std::size_t count, void* root, bool has_null, ValueData null_value)
-    : count_{count},
-      root_{root},
-      has_null_{has_null},
-      null_value_{null_value} {
-}
 
-} // namespace internal
-} // namespace worthy
+} } // namespace worthy::internal
