@@ -2,21 +2,14 @@
 #include "worthy/runtime.h"
 
 #include "internal/hashmap.h"
-#include "internal/internal-runtime.h"
+#include "internal/runtime-impl.h"
+
 
 namespace worthy {
-namespace internal {
 
-InternalRuntime::InternalRuntime() {
-}
-
-InternalRuntime::~InternalRuntime() {
-}
-
-} // namespace internal
 
 Runtime::Runtime()
-    : internal_{std::make_unique<internal::InternalRuntime>()} {
+    : rt_{std::make_unique<internal::RuntimeImpl>()} {
 }
 
 Runtime::~Runtime() {
@@ -28,5 +21,6 @@ Map Runtime::map() {
     //return internal_->emptyHashMap();
     return Map();
 }
+
 
 } // namespace worthy

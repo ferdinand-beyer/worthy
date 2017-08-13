@@ -23,6 +23,6 @@ private:
     Heap* heap_;
 };
 
-} } // namespace worty::internal
+} } // namespace worthy::internal
 
 #endif // WORTHY_INTERNAL_SPACE_H_

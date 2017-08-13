@@ -14,7 +14,8 @@ set(Worthy_Library_SRCS
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
-    src/internal/internal-runtime.h
+    src/internal/runtime-impl.cpp
+    src/internal/runtime-impl.h
     src/internal/memory.cpp
     src/internal/memory.h
     src/internal/object.cpp
