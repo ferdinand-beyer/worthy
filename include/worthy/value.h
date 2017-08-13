@@ -11,6 +11,11 @@
 namespace worthy {
 
 
+namespace internal {
+class Reference;
+}
+
+
 class Value {
 public:
     // Construct a Null value.
@@ -22,6 +27,7 @@ public:
     Value(std::int16_t n);
     Value(std::int32_t n);
     Value(std::int64_t n);
+
     Value(std::uint8_t n);
     Value(std::uint16_t n);
     Value(std::uint32_t n);
@@ -49,15 +55,15 @@ public:
     }
 
 protected:
-    Value(Type t);
+    Value(internal::Reference* ref, Type t);
 
     friend inline void swap(Value& lhs, Value& rhs) {
         lhs.swap(rhs);
     }
 
 private:
-    void incRef();
-    void decRef();
+    void use();
+    void release();
 
     internal::VariantData data_;
     Type type_;

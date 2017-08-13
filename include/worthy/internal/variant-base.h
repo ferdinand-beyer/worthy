@@ -10,6 +10,7 @@ namespace internal {
 
 
 class Object;
+class Reference;
 
 
 enum VariantTypeEnum {
@@ -25,7 +26,9 @@ enum VariantTypeEnum {
     Type_UInt64,
     Type_Float,
     Type_Double,
-    Type_Object
+    Type_Object,
+
+    LastPrimitiveType = Type_Double
 };
 
 
@@ -42,6 +45,7 @@ union VariantData {
     float f;
     double d;
     Object* obj;
+    Reference* ref;
 };
 
 

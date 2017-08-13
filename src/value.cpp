@@ -1,11 +1,25 @@
 #include "worthy/value.h"
 
+#include "internal/check.h"
+#include "internal/reference.h"
+
 
 namespace worthy {
 
 
+namespace {
+
+
+inline bool is_reference_type(Type t) {
+    return (static_cast<int>(t) > internal::LastPrimitiveType);
+}
+
+
+} // namespace
+
+
 Value::Value() : type_{Type::Null} {
-    data_.obj = nullptr;
+    data_.ref = nullptr;
 }
 
 
@@ -63,30 +77,33 @@ Value::Value(double n) : type_{Type::Double} {
 }
 
 
-Value::Value(Type t) : type_{t} {
+Value::Value(internal::Reference* ref, Type t) : type_{t} {
+    WORTHY_CHECK(ref && is_reference_type(t));
+
+    // We steal the reference here.
+    data_.ref = ref;
 }
 
 
 Value::Value(const Value& other) : data_{other.data_}, type_{other.type_} {
-    incRef();
+    use();
 }
 
 
 Value::Value(Value&& other) : type_{Type::Null} {
-    data_.obj = nullptr;
+    data_.ref = nullptr;
     swap(other);
 }
 
 
 Value::~Value() {
-    decRef();
+    release();
 }
 
 
 Value& Value::operator=(const Value& other) {
-    type_ = other.type_;
-    data_ = other.data_;
-    incRef();
+    Value copy(other);
+    swap(copy);
     return *this;
 }
 
@@ -97,11 +114,17 @@ Value& Value::operator=(Value&& other) {
 }
 
 
-void Value::incRef() {
+void Value::use() {
+    if (is_reference_type(type_)) {
+        data_.ref->use();
+    }
 }
 
 
-void Value::decRef() {
+void Value::release() {
+    if (is_reference_type(type_)) {
+        data_.ref->release();
+    }
 }
 
 
