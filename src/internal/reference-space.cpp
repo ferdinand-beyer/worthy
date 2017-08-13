@@ -18,7 +18,7 @@ public:
         return reinterpret_cast<Page*>(ref - ref->pageIndex()) - 1;
     }
 
-    Page(ReferenceSpace* space, std::size_t capacity);
+    Page(ReferenceSpace* space, std::uint32_t capacity);
 
     inline Reference* data() {
         // (this + 1) will point directly after the page.
@@ -27,23 +27,25 @@ public:
 
     Reference* allocate(void* ptr);
 
-    // Number of Reference objects this page can hold.
-    const std::size_t capacity_;
+    // Number of Reference objects this page can hold.  We use 32-bit numbers
+    // (instead of size_t) to save memory for the Reference's index field.
+    const std::uint32_t capacity_;
+
+    // Number of allocated objects.
+    std::atomic<std::uint32_t> allocated_;
 
     ReferenceSpace* const space_;
 
     Page* next_;
     Page* prev_;
-
-    std::atomic<std::uint32_t> allocated_;
 };
 
-ReferenceSpace::Page::Page(ReferenceSpace* space, std::size_t capacity) :
+ReferenceSpace::Page::Page(ReferenceSpace* space, std::uint32_t capacity) :
     capacity_{capacity},
+    allocated_{0},
     space_{space},
     next_{nullptr},
-    prev_{nullptr},
-    allocated_{0}
+    prev_{nullptr}
 {
     WORTHY_DCHECK(capacity > 0);
 }
@@ -70,7 +72,7 @@ ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
     return Page::of(ref)->space_;
 }
 
-ReferenceSpace::ReferenceSpace(Heap* heap, std::size_t page_capacity) :
+ReferenceSpace::ReferenceSpace(Heap* heap, std::uint32_t page_capacity) :
     Space(heap),
     page_capacity_{page_capacity},
     top_page_{nullptr},
@@ -80,17 +82,13 @@ ReferenceSpace::ReferenceSpace(Heap* heap, std::size_t page_capacity) :
 }
 
 ReferenceSpace::~ReferenceSpace() {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    Page* page = top_page_.load(std::memory_order_acquire);
+    Page* page = top_page_.exchange(nullptr, std::memory_order_acq_rel);
 
     while (page) {
-        Page* next = page->next_;
+        Page* prev = page->prev_;
         std::free(page);
-        page = next;
+        page = prev;
     }
-
-    top_page_.store(nullptr, std::memory_order_release);
 }
 
 Reference* ReferenceSpace::newReference(void* ptr) {

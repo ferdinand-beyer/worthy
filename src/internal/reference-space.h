@@ -17,7 +17,7 @@ class ReferenceSpace : public Space {
 public:
     static ReferenceSpace* ownerOf(Reference* ref);
 
-    explicit ReferenceSpace(Heap* heap, std::size_t page_capacity = 512);
+    explicit ReferenceSpace(Heap* heap, std::uint32_t page_capacity = 512);
     ~ReferenceSpace();
 
     Reference* newReference(void* ptr);
@@ -32,7 +32,7 @@ private:
     Page* allocatePageSync(Page* top_page);
     Page* allocatePage();
 
-    const std::size_t page_capacity_;
+    const std::uint32_t page_capacity_;
     std::atomic<Page*> top_page_;
     std::atomic<Reference*> free_list_;
     std::mutex mutex_;
