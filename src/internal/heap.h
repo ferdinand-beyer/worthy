@@ -15,6 +15,8 @@ namespace worthy {
 namespace internal {
 
 
+class Object;
+class Reference;
 class ReferenceSpace;
 
 
@@ -22,6 +24,8 @@ class Heap {
 public:
     Heap();
     ~Heap();
+
+    Reference* newReference(Object* obj);
 
     template<typename T, typename... Args>
     T* construct(Args&&... args) {

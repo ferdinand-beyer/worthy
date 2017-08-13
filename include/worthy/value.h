@@ -12,6 +12,7 @@ namespace worthy {
 
 
 namespace internal {
+class Object;
 class Reference;
 }
 
@@ -56,6 +57,8 @@ public:
 
 protected:
     Value(internal::Reference* ref, Type t);
+
+    const internal::Object* object() const;
 
     friend inline void swap(Value& lhs, Value& rhs) {
         lhs.swap(rhs);

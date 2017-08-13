@@ -16,13 +16,15 @@ public:
     RuntimeImpl();
     ~RuntimeImpl();
 
-    inline Heap& heap() {
-        return heap_;
+    inline Heap* heap() {
+        return &heap_;
     }
 
-    inline const HashMap& emptyHashMap() const {
-        return empty_hashmap_;
+    inline HashMap* emptyHashMap() const {
+        return const_cast<HashMap*>(&empty_hashmap_);
     }
+
+    Reference* emptyHashMapReference();
 
 private:
     WORTHY_DISABLE_COPY(RuntimeImpl);

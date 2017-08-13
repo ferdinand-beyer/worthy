@@ -114,6 +114,12 @@ Value& Value::operator=(Value&& other) {
 }
 
 
+const internal::Object* Value::object() const {
+    WORTHY_CHECK(is_reference_type(type_));
+    return data_.ref->object();
+}
+
+
 void Value::use() {
     if (is_reference_type(type_)) {
         data_.ref->use();

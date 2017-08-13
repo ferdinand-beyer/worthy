@@ -23,6 +23,12 @@ Heap::~Heap() {
 }
 
 
+Reference* Heap::newReference(Object* obj) {
+    WORTHY_CHECK(obj);
+    return reference_space_->newReference(obj);
+}
+
+
 void* Heap::allocate(std::size_t size) {
     std::lock_guard<std::mutex> lock(mutex_);
     // This is a very naive scheme used for testing only!

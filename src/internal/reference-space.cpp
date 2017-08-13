@@ -7,8 +7,10 @@
 #include <cstdlib>
 #include <new>
 
+
 namespace worthy {
 namespace internal {
+
 
 class ReferenceSpace::Page {
 public:
@@ -40,6 +42,7 @@ public:
     Page* prev_;
 };
 
+
 ReferenceSpace::Page::Page(ReferenceSpace* space, std::uint32_t capacity) :
     capacity_{capacity},
     allocated_{0},
@@ -49,6 +52,7 @@ ReferenceSpace::Page::Page(ReferenceSpace* space, std::uint32_t capacity) :
 {
     WORTHY_DCHECK(capacity > 0);
 }
+
 
 Reference* ReferenceSpace::Page::allocate(void* ptr) {
     std::uint32_t index = allocated_.load(std::memory_order_relaxed);
@@ -68,9 +72,11 @@ Reference* ReferenceSpace::Page::allocate(void* ptr) {
     return new (memory) Reference(index, ptr);
 }
 
+
 ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
     return Page::of(ref)->space_;
 }
+
 
 ReferenceSpace::ReferenceSpace(Heap* heap, std::uint32_t page_capacity) :
     Space(heap),
@@ -81,6 +87,7 @@ ReferenceSpace::ReferenceSpace(Heap* heap, std::uint32_t page_capacity) :
     WORTHY_CHECK(page_capacity_ > 0);
 }
 
+
 ReferenceSpace::~ReferenceSpace() {
     Page* page = top_page_.exchange(nullptr, std::memory_order_acq_rel);
 
@@ -90,6 +97,7 @@ ReferenceSpace::~ReferenceSpace() {
         page = prev;
     }
 }
+
 
 Reference* ReferenceSpace::newReference(void* ptr) {
     Page* page = top_page_.load(std::memory_order_acquire);
@@ -107,14 +115,18 @@ Reference* ReferenceSpace::newReference(void* ptr) {
         }
     }
 
+    WORTHY_DCHECK(ref->ptr() == ptr);
+    WORTHY_DCHECK(ref->useCount() == 1);
+
     return ref;
 }
+
 
 Reference* ReferenceSpace::allocateFromFreeList(void* ptr) {
     Reference* ref = free_list_.load(std::memory_order_relaxed);
 
     while (ref && !free_list_.compare_exchange_weak(
-                ref, reinterpret_cast<Reference*>(ref->ptr()),
+                ref, static_cast<Reference*>(ref->ptr()),
                 std::memory_order_release,
                 std::memory_order_relaxed)) {
     }
@@ -126,6 +138,7 @@ Reference* ReferenceSpace::allocateFromFreeList(void* ptr) {
     return ref;
 }
 
+
 void ReferenceSpace::addToFreeList(Reference* ref) {
     ref->ptr_ = free_list_.load(std::memory_order_relaxed);
 
@@ -135,6 +148,7 @@ void ReferenceSpace::addToFreeList(Reference* ref) {
                 std::memory_order_relaxed)) {
     }
 }
+
 
 ReferenceSpace::Page* ReferenceSpace::allocatePageSync(Page* top_page) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -161,6 +175,7 @@ ReferenceSpace::Page* ReferenceSpace::allocatePageSync(Page* top_page) {
     return page;
 }
 
+
 ReferenceSpace::Page* ReferenceSpace::allocatePage() {
     // We use memory directly after the Page structure for an array of
     // Reference objects.  Assert that this will be propertly aligned.
@@ -176,5 +191,6 @@ ReferenceSpace::Page* ReferenceSpace::allocatePage() {
 
     return new (memory) Page(this, page_capacity_);
 }
+
 
 } } // namespace worthy::internal

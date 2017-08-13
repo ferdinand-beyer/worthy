@@ -36,6 +36,7 @@ set(Worthy_Library_SRCS
 
 set(Worthy_UnitTests_SRCS
     ${Worthy_Library_SRCS}
+    test/unit/map-test.cpp
     test/unit/reference-space-test.cpp
     test/unit/value-test.cpp
     test/main.cpp

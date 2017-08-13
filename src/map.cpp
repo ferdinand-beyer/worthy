@@ -1,9 +1,22 @@
 #include "worthy/map.h"
 
+#include "internal/hashmap.h"
+
+
+using worthy::internal::HashMap;
+
+
 namespace worthy {
 
-std::size_t Map::size() const {
-    return 0;
+
+Map::Map(internal::Reference* ref) : Value{ref, Type::Map} {
 }
+
+
+std::size_t Map::size() const {
+    const HashMap* map = HashMap::cast(object());
+    return map->count();
+}
+
 
 } // namespace worthy

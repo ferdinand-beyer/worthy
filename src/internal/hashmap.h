@@ -25,6 +25,8 @@ public:
         PointerSize + (BranchSize * PointerSize);
     static const std::size_t Padding = 5;
 
+    WORTHY_OBJECT_MAKE_CAST(HashMapArrayNode)
+
 private:
     std::uint8_t count_;
     TransientTag tag_;
@@ -36,6 +38,9 @@ WORTHY_ASSERT_SIZE(HashMapArrayNode);
 
 
 class HashMapBitmapNode final : public HashMapNode {
+public:
+    WORTHY_OBJECT_MAKE_CAST(HashMapBitmapNode)
+
 private:
     std::uint8_t bitmap_;
     TransientTag tag_;
@@ -45,6 +50,9 @@ private:
 
 
 class HashMapCollisionNode final : public HashMapNode {
+public:
+    WORTHY_OBJECT_MAKE_CAST(HashMapCollisionNode)
+
 private:
     HashCode hash_;
     TransientTag tag_;
@@ -59,7 +67,13 @@ public:
     static const std::size_t Size = Object::Size + 1 + 1 + 4 + 8 + PointerSize;
     static const std::size_t Padding = 0;
 
+    WORTHY_OBJECT_MAKE_CAST(HashMap)
+
     HashMap();
+
+    inline ElementCount count() const {
+        return count_;
+    }
 
 private:
     bool has_null_key_;
@@ -74,6 +88,9 @@ WORTHY_ASSERT_SIZE(HashMap);
 
 
 class TransientHashMap final : public HashMap {
+public:
+    WORTHY_OBJECT_MAKE_CAST(TransientHashMap)
+
 private:
     TransientTag tag_;
 };
