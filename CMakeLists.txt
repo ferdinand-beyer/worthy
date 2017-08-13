@@ -8,11 +8,8 @@ set(Worthy_Library_SRCS
     include/worthy/type.h
     include/worthy/value.h
     include/worthy/worthy.h
-    src/internal/block.h
     src/internal/check.cpp
     src/internal/check.h
-    src/internal/free-block.cpp
-    src/internal/free-block.h
     src/internal/hashmap.cpp
     src/internal/hashmap.h
     src/internal/heap.cpp
@@ -22,8 +19,6 @@ set(Worthy_Library_SRCS
     src/internal/memory.h
     src/internal/object.cpp
     src/internal/object.h
-    src/internal/page.cpp
-    src/internal/page.h
     src/internal/variant.h
     src/internal/reference-space.cpp
     src/internal/reference-space.h
