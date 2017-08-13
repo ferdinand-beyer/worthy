@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(worthy)
 
 set(Worthy_Library_SRCS
+    include/worthy/internal/variant-base.h
     include/worthy/map.h
     include/worthy/runtime.h
     include/worthy/type.h
@@ -20,13 +21,13 @@ set(Worthy_Library_SRCS
     src/internal/memory.h
     src/internal/object.cpp
     src/internal/object.h
-    src/internal/variant.h
     src/internal/reference-space.cpp
     src/internal/reference-space.h
     src/internal/reference.cpp
     src/internal/reference.h
     src/internal/space.cpp
     src/internal/space.h
+    src/internal/variant.h
     src/runtime.cpp
     src/map.cpp
     src/string.cpp
@@ -36,6 +37,7 @@ set(Worthy_Library_SRCS
 set(Worthy_UnitTests_SRCS
     ${Worthy_Library_SRCS}
     test/unit/reference-space-test.cpp
+    test/unit/value-test.cpp
     test/main.cpp
     )
 

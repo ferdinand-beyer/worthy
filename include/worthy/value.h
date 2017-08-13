@@ -1,24 +1,35 @@
 #ifndef WORTHY_VALUE_H
 #define WORTHY_VALUE_H
 
-#include <utility>
 
+#include "worthy/internal/variant-base.h"
 #include "worthy/type.h"
 
+#include <utility>
+
+
 namespace worthy {
-namespace internal {
 
-union ValueData {
-    char c;
-    int i;
-    void* ptr;
-};
-
-} // namespace internal
 
 class Value {
 public:
+    // Construct a Null value.
     Value();
+
+    Value(bool b);
+
+    Value(std::int8_t n);
+    Value(std::int16_t n);
+    Value(std::int32_t n);
+    Value(std::int64_t n);
+    Value(std::uint8_t n);
+    Value(std::uint16_t n);
+    Value(std::uint32_t n);
+    Value(std::uint64_t n);
+
+    Value(float n);
+    Value(double n);
+
     Value(const Value& other);
     Value(Value&& other);
 
@@ -48,10 +59,12 @@ private:
     void incRef();
     void decRef();
 
-    internal::ValueData data_;
+    internal::VariantData data_;
     Type type_;
 };
 
+
 } // namespace worthy
+
 
 #endif // WORTHY_VALUE_H

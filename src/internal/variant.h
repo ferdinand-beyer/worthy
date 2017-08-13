@@ -2,55 +2,33 @@
 #define WORTHY_INTERNAL_VARIANT_H_
 
 
-#include <cstdint>
+#include "worthy/internal/variant-base.h"
 
 
 namespace worthy {
 namespace internal {
 
 
-class Object;
-
-
 enum class VariantType : std::uint8_t {
-    Null,
-    Boolean,
-    Int8,
-    UInt8,
-    Int16,
-    UInt16,
-    Int32,
-    UInt32,
-    Int64,
-    UInt64,
-    Float,
-    Double,
-    Object
+    Null    = Type_Null,
+    Boolean = Type_Boolean,
+    Int8    = Type_Int8,
+    Int16   = Type_Int16,
+    Int32   = Type_Int32,
+    Int64   = Type_Int64,
+    UInt8   = Type_UInt8,
+    UInt16  = Type_UInt16,
+    UInt32  = Type_UInt32,
+    UInt64  = Type_UInt64,
+    Float   = Type_Float,
+    Double  = Type_Double,
+    Object  = Type_Object
 };
-
-
-union VariantValue {
-    std::int8_t i8;
-    std::int16_t i16;
-    std::int32_t i32;
-    std::int64_t i64;
-    std::uint8_t u8;
-    std::uint16_t u16;
-    std::uint32_t u32;
-    std::uint64_t u64;
-    float f;
-    double d;
-    Object* obj;
-};
-
-
-static_assert(sizeof(VariantValue) == 8, "unexpected size");
-static_assert(alignof(VariantValue) == 8, "unexpected alignment");
 
 
 class Variant {
 private:
-    VariantValue value_;
+    VariantData data_;
     VariantType type_;
 };
 

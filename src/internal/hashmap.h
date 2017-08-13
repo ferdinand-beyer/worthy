@@ -40,7 +40,7 @@ private:
     std::uint8_t bitmap_;
     TransientTag tag_;
     // VariantType types_
-    // VariantValue values_
+    // VariantData values_
 };
 
 
@@ -50,7 +50,7 @@ private:
     TransientTag tag_;
     ElementCount count_;
     // VariantType types_
-    // VariantValue values_
+    // VariantData values_
 };
 
 
@@ -65,7 +65,7 @@ private:
     bool has_null_key_;
     VariantType null_key_value_type_;
     ElementCount count_;
-    VariantValue null_key_value_;
+    VariantData null_key_value_;
     HashMapNode* root_;
 };
 
