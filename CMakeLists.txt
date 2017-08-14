@@ -19,6 +19,8 @@ set(Worthy_Library_SRCS
     src/internal/runtime-impl.h
     src/internal/memory.cpp
     src/internal/memory.h
+    src/internal/object-macros.h
+    src/internal/object-type.h
     src/internal/object.cpp
     src/internal/object.h
     src/internal/reference-space.cpp
@@ -42,13 +44,13 @@ set(Worthy_UnitTests_SRCS
     test/main.cpp
     )
 
-if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
-endif()
-
-find_package(Boost 1.36.0)
+find_package(Boost 1.54.0 REQUIRED)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
 endif()
 
 include_directories(include src)

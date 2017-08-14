@@ -3,6 +3,7 @@
 
 
 #include "internal/object.h"
+#include "internal/object-macros.h"
 
 
 namespace worthy {
@@ -25,7 +26,7 @@ public:
         PointerSize + (BranchSize * PointerSize);
     static const std::size_t Padding = 5;
 
-    WORTHY_OBJECT_MAKE_CAST(HashMapArrayNode)
+    DECL_CAST(HashMapArrayNode)
 
 private:
     std::uint8_t count_;
@@ -39,7 +40,7 @@ WORTHY_ASSERT_SIZE(HashMapArrayNode);
 
 class HashMapBitmapNode final : public HashMapNode {
 public:
-    WORTHY_OBJECT_MAKE_CAST(HashMapBitmapNode)
+    DECL_CAST(HashMapBitmapNode)
 
 private:
     std::uint8_t bitmap_;
@@ -51,7 +52,7 @@ private:
 
 class HashMapCollisionNode final : public HashMapNode {
 public:
-    WORTHY_OBJECT_MAKE_CAST(HashMapCollisionNode)
+    DECL_CAST(HashMapCollisionNode)
 
 private:
     HashCode hash_;
@@ -67,7 +68,7 @@ public:
     static const std::size_t Size = Object::Size + 1 + 1 + 4 + 8 + PointerSize;
     static const std::size_t Padding = 0;
 
-    WORTHY_OBJECT_MAKE_CAST(HashMap)
+    DECL_CAST(HashMap)
 
     HashMap();
 
@@ -89,7 +90,7 @@ WORTHY_ASSERT_SIZE(HashMap);
 
 class TransientHashMap final : public HashMap {
 public:
-    WORTHY_OBJECT_MAKE_CAST(TransientHashMap)
+    DECL_CAST(TransientHashMap)
 
 private:
     TransientTag tag_;
@@ -97,6 +98,10 @@ private:
 
 
 } } // namespace worthy::internal
+
+
+#define UNDEF_OBJECT_MACROS
+#include "internal/object-macros.h"
 
 
 #endif // WORTHY_INTERNAL_HASHMAP_H_
