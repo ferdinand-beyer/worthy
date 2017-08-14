@@ -32,7 +32,7 @@ typedef std::intptr_t TransientTag;
 enum class ObjectType : std::uint8_t {
     FreeSpace,
     String,
-    ByteArray,
+    Binary,
     Symbol,
     List,
     Vector,
@@ -48,7 +48,7 @@ enum class ObjectType : std::uint8_t {
 #define WORTHY_OBJECT_EACH_TYPE(M)  \
     M(FreeSpace)                    \
     M(String)                       \
-    M(ByteArray)                    \
+    M(Binary)                       \
     M(Symbol)                       \
     M(List)                         \
     M(Vector)                       \
