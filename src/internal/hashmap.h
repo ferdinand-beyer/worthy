@@ -3,6 +3,8 @@
 
 
 #include "internal/object.h"
+
+// Has to be the last include (doesn't have include guards)
 #include "internal/object-macros.h"
 
 

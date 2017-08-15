@@ -3,12 +3,14 @@
 
 
 #include "internal/check.h"
-#include "internal/object-macros.h"
 #include "internal/object-type.h"
 #include "internal/variant.h"
 
 #include <cstddef>
 #include <cstdint>
+
+// Has to be the last include (doesn't have include guards)
+#include "internal/object-macros.h"
 
 
 namespace worthy {
