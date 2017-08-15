@@ -46,6 +46,21 @@ union VariantData {
     double d;
     Object* obj;
     Reference* ref;
+
+    VariantData() : obj{nullptr} {}
+    VariantData(bool init) : b{init} {}
+    VariantData(std::int8_t init) : i8{init} {}
+    VariantData(std::int16_t init) : i16{init} {}
+    VariantData(std::int32_t init) : i32{init} {}
+    VariantData(std::int64_t init) : i64{init} {}
+    VariantData(std::uint8_t init) : u8{init} {}
+    VariantData(std::uint16_t init) : u16{init} {}
+    VariantData(std::uint32_t init) : u32{init} {}
+    VariantData(std::uint64_t init) : u64{init} {}
+    VariantData(float init) : f{init} {}
+    VariantData(double init) : d{init} {}
+    VariantData(Object* init) : obj{init} {}
+    VariantData(Reference* init) : ref{init} {}
 };
 
 

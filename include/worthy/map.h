@@ -2,13 +2,15 @@
 #define WORTHY_MAP_H_
 
 
-#include "worthy/value.h"
+#include "worthy/abstract-value.h"
+
+#include <cstddef>
 
 
 namespace worthy {
 
 
-class Map final : public Value {
+class Map final : public AbstractValue {
 public:
     std::size_t size() const;
 

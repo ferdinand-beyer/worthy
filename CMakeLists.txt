@@ -4,6 +4,7 @@ project(worthy)
 
 set(Worthy_Library_SRCS
     include/worthy/internal/variant-base.h
+    include/worthy/abstract-value.h
     include/worthy/map.h
     include/worthy/runtime.h
     include/worthy/type.h
@@ -15,8 +16,6 @@ set(Worthy_Library_SRCS
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
-    src/internal/runtime-impl.cpp
-    src/internal/runtime-impl.h
     src/internal/memory.cpp
     src/internal/memory.h
     src/internal/object-macros.h
@@ -27,11 +26,14 @@ set(Worthy_Library_SRCS
     src/internal/reference-space.h
     src/internal/reference.cpp
     src/internal/reference.h
+    src/internal/runtime-impl.cpp
+    src/internal/runtime-impl.h
     src/internal/space.cpp
     src/internal/space.h
     src/internal/variant.h
-    src/runtime.cpp
+    src/abstract-value.cpp
     src/map.cpp
+    src/runtime.cpp
     src/string.cpp
     src/value.cpp
     )
@@ -45,9 +47,7 @@ set(Worthy_UnitTests_SRCS
     )
 
 find_package(Boost 1.54.0 REQUIRED)
-if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
+include_directories(${Boost_INCLUDE_DIRS})
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")

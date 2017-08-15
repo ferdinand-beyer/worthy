@@ -9,7 +9,8 @@ using worthy::internal::HashMap;
 namespace worthy {
 
 
-Map::Map(internal::Reference* ref) : Value{ref, Type::Map} {
+Map::Map(internal::Reference* ref)
+    : AbstractValue{Type::Map, ref} {
 }
 
 

@@ -2,22 +2,13 @@
 #define WORTHY_VALUE_H
 
 
-#include "worthy/internal/variant-base.h"
-#include "worthy/type.h"
-
-#include <utility>
+#include "worthy/abstract-value.h"
 
 
 namespace worthy {
 
 
-namespace internal {
-class Object;
-class Reference;
-}
-
-
-class Value {
+class Value : public AbstractValue {
 public:
     // Construct a Null value.
     Value();
@@ -37,40 +28,38 @@ public:
     Value(float n);
     Value(double n);
 
-    Value(const Value& other);
-    Value(Value&& other);
+    Value(const Value&) = default;
+    Value(Value&&) = default;
 
-    ~Value();
+    Value& operator=(const Value& other) = default;
+    Value& operator=(Value&& other) = default;
 
-    Value& operator=(const Value& other);
-    Value& operator=(Value&& other);
-
-    inline void swap(Value& other) {
-        using std::swap;
-        swap(data_, other.data_);
-        swap(type_, other.type_);
-    }
-
-    inline Type type() const {
-        return type_;
-    }
-
-protected:
-    Value(internal::Reference* ref, Type t);
-
-    const internal::Object* object() const;
-
-    friend inline void swap(Value& lhs, Value& rhs) {
-        lhs.swap(rhs);
-    }
-
-private:
-    void retain();
-    void release();
-
-    internal::VariantData data_;
-    Type type_;
+    void swap(Value& other);
 };
+
+
+inline Value::Value() {}
+inline Value::Value(bool b) : AbstractValue{b} {}
+inline Value::Value(std::int8_t n) : AbstractValue{n} {}
+inline Value::Value(std::int16_t n) : AbstractValue{n} {}
+inline Value::Value(std::int32_t n) : AbstractValue{n} {}
+inline Value::Value(std::int64_t n) : AbstractValue{n} {}
+inline Value::Value(std::uint8_t n) : AbstractValue{n} {}
+inline Value::Value(std::uint16_t n) : AbstractValue{n} {}
+inline Value::Value(std::uint32_t n) : AbstractValue{n} {}
+inline Value::Value(std::uint64_t n) : AbstractValue{n} {}
+inline Value::Value(float n) : AbstractValue{n} {}
+inline Value::Value(double n) : AbstractValue{n} {}
+
+
+inline void Value::swap(Value& other) {
+    AbstractValue::swap(other);
+}
+
+
+inline void swap(Value& lhs, Value& rhs) {
+    lhs.swap(rhs);
+}
 
 
 } // namespace worthy
