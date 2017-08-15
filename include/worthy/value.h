@@ -38,6 +38,8 @@ public:
 
     using AbstractValue::type;
 
+    bool isNull() const;
+
     using AbstractValue::toBoolean;
 
     using AbstractValue::toInt8;
@@ -53,6 +55,11 @@ public:
     using AbstractValue::toFloat;
     using AbstractValue::toDouble;
 };
+
+
+inline void swap(Value& lhs, Value& rhs) {
+    lhs.swap(rhs);
+}
 
 
 inline Value::Value() {}
@@ -88,8 +95,8 @@ inline void Value::swap(Value& other) {
 }
 
 
-inline void swap(Value& lhs, Value& rhs) {
-    lhs.swap(rhs);
+inline bool Value::isNull() const {
+    return type() == Type::Null;
 }
 
 
