@@ -18,6 +18,8 @@ public:
     Map& operator=(const Map&) = default;
     Map& operator=(Map&&) = default;
 
+    void swap(Map& other);
+
     std::size_t size() const;
 
 private:
@@ -25,6 +27,16 @@ private:
 
     friend class Runtime;
 };
+
+
+inline void swap(Map& lhs, Map& rhs) {
+    lhs.swap(rhs);
+}
+
+
+inline void Map::swap(Map& other) {
+    AbstractValue::swap(other);
+}
 
 
 } // namespace worthy
