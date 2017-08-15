@@ -12,12 +12,17 @@ namespace worthy {
 
 class Map final : public AbstractValue {
 public:
+    Map(const Map&) = default;
+    Map(Map&&) = default;
+
+    Map& operator=(const Map&) = default;
+    Map& operator=(Map&&) = default;
+
     std::size_t size() const;
 
-protected:
+private:
     Map(internal::Reference* ref);
 
-private:
     friend class Runtime;
 };
 

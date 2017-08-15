@@ -17,7 +17,7 @@ class Reference;
 
 class AbstractValue {
 public:
-    ~AbstractValue();
+    bool isNull() const;
 
 protected:
     AbstractValue();
@@ -44,6 +44,8 @@ protected:
 
     AbstractValue& operator=(const AbstractValue& other);
     AbstractValue& operator=(AbstractValue&& other);
+
+    ~AbstractValue();
 
     void swap(AbstractValue& other);
 
@@ -126,6 +128,11 @@ inline AbstractValue::AbstractValue(double n)
 
 inline Type AbstractValue::type() const {
     return type_;
+}
+
+
+inline bool AbstractValue::isNull() const {
+    return type_ == Type::Null;
 }
 
 

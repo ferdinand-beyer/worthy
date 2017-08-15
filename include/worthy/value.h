@@ -8,7 +8,7 @@
 namespace worthy {
 
 
-class Value : public AbstractValue {
+class Value final : public AbstractValue {
 public:
     // Construct a Null value.
     Value();
@@ -28,17 +28,15 @@ public:
     Value(float n);
     Value(double n);
 
-    Value(const Value&) = default;
-    Value(Value&&) = default;
+    Value(const AbstractValue& v);
+    Value(AbstractValue&& v);
 
-    Value& operator=(const Value& other) = default;
-    Value& operator=(Value&& other) = default;
+    Value& operator=(const AbstractValue& v);
+    Value& operator=(AbstractValue&& v);
 
     void swap(Value& other);
 
     using AbstractValue::type;
-
-    bool isNull() const;
 
     using AbstractValue::toBoolean;
 
@@ -69,15 +67,24 @@ inline Value::Value(std::uint32_t n) : AbstractValue{n} {}
 inline Value::Value(std::uint64_t n) : AbstractValue{n} {}
 inline Value::Value(float n) : AbstractValue{n} {}
 inline Value::Value(double n) : AbstractValue{n} {}
+inline Value::Value(const AbstractValue& v) : AbstractValue{v} {}
+inline Value::Value(AbstractValue&& v) : AbstractValue{v} {}
+
+
+inline Value& Value::operator=(const AbstractValue& v) {
+    AbstractValue::operator=(v);
+    return *this;
+}
+
+
+inline Value& Value::operator=(AbstractValue&& v) {
+    AbstractValue::operator=(v);
+    return *this;
+}
 
 
 inline void Value::swap(Value& other) {
     AbstractValue::swap(other);
-}
-
-
-inline bool Value::isNull() const {
-    return type() == Type::Null;
 }
 
 
