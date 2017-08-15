@@ -35,6 +35,25 @@ public:
     Value& operator=(Value&& other) = default;
 
     void swap(Value& other);
+
+    using AbstractValue::type;
+
+    bool isNull() const;
+
+    using AbstractValue::toBoolean;
+
+    using AbstractValue::toInt8;
+    using AbstractValue::toInt16;
+    using AbstractValue::toInt32;
+    using AbstractValue::toInt64;
+
+    using AbstractValue::toUInt8;
+    using AbstractValue::toUInt16;
+    using AbstractValue::toUInt32;
+    using AbstractValue::toUInt64;
+
+    using AbstractValue::toFloat;
+    using AbstractValue::toDouble;
 };
 
 
@@ -54,6 +73,11 @@ inline Value::Value(double n) : AbstractValue{n} {}
 
 inline void Value::swap(Value& other) {
     AbstractValue::swap(other);
+}
+
+
+inline bool Value::isNull() const {
+    return type() == Type::Null;
 }
 
 

@@ -14,7 +14,6 @@ TEST_CASE("construct empty map", "[map]") {
 
     Map map = rt.map();
 
-    REQUIRE(map.type() == Type::Map);
     REQUIRE(map.size() == 0);
 }
 

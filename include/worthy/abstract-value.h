@@ -19,8 +19,6 @@ class AbstractValue {
 public:
     ~AbstractValue();
 
-    Type type() const;
-
 protected:
     AbstractValue();
 
@@ -48,6 +46,23 @@ protected:
     AbstractValue& operator=(AbstractValue&& other);
 
     void swap(AbstractValue& other);
+
+    Type type() const;
+
+    bool toBoolean() const;
+
+    std::int8_t toInt8() const;
+    std::int16_t toInt16() const;
+    std::int32_t toInt32() const;
+    std::int64_t toInt64() const;
+
+    std::uint8_t toUInt8() const;
+    std::uint16_t toUInt16() const;
+    std::uint32_t toUInt32() const;
+    std::uint64_t toUInt64() const;
+
+    float toFloat() const;
+    double toDouble() const;
 
     const internal::Object* object() const;
 
