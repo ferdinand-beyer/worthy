@@ -33,6 +33,37 @@ private:
 };
 
 
+template <typename Function>
+typename Function::return_type dispatch(const VariantData& data, const VariantType& type, Function f) {
+    switch (type) {
+    case VariantType::Boolean:
+        return f(data.b);
+    case VariantType::Int8:
+        return f(data.i8);
+    case VariantType::Int16:
+        return f(data.i16);
+    case VariantType::Int32:
+        return f(data.i32);
+    case VariantType::Int64:
+        return f(data.i64);
+    case VariantType::UInt8:
+        return f(data.u8);
+    case VariantType::UInt16:
+        return f(data.u16);
+    case VariantType::UInt32:
+        return f(data.u32);
+    case VariantType::UInt64:
+        return f(data.u64);
+    case VariantType::Float:
+        return f(data.f);
+    case VariantType::Double:
+        return f(data.d);
+    case VariantType::Object:
+        return f(data.obj);
+    }
+}
+
+
 } } // namespace worthy::internal
 
 

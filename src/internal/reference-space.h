@@ -50,7 +50,7 @@ private:
 };
 
 
-} } // namespace worty::internal
+} } // namespace worthy::internal
 
 
 #endif // WORTHY_INTERNAL_REFERENCE_SPACE_H_

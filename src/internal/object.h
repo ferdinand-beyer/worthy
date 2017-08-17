@@ -30,9 +30,6 @@ typedef std::intptr_t TransientTag;
 
 class Object {
 public:
-    static const std::size_t Size = 2;
-    static const std::size_t Padding = 0;
-
     inline ObjectType type() const {
         return type_;
     }
@@ -44,11 +41,12 @@ protected:
 
 private:
     const ObjectType type_;
-    std::uint8_t reserved_;
+    std::uint8_t flags_;
+    std::uint16_t page_offset_;
+    std::uint32_t control_;
+
+    friend class Space;
 };
-
-
-WORTHY_ASSERT_SIZE(Object);
 
 
 } } // namespace worthy::internal

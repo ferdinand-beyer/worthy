@@ -1,11 +1,13 @@
-#include "internal/memory.h"
+#include "internal/allocation.h"
 
 #include <cstdlib>
+
 
 namespace worthy {
 namespace internal {
 
-void* aligned_alloc(std::size_t size, std::size_t alignment) {
+
+void* allocateAligned(std::size_t size, std::size_t alignment) {
     void* result;
 #ifdef _MSC_VER 
     result = _aligned_malloc(size, alignment);
@@ -17,7 +19,8 @@ void* aligned_alloc(std::size_t size, std::size_t alignment) {
     return result;
 }
 
-void aligned_free(void* ptr) {
+
+void deallocateAligned(void* ptr) {
 #ifdef _MSC_VER 
     _aligned_free(ptr);
 #else
@@ -25,5 +28,5 @@ void aligned_free(void* ptr) {
 #endif
 }
 
-} // namespace internal
-} // namespace worthy
+
+} } // namespace worthy::internal

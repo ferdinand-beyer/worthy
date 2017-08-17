@@ -19,8 +19,6 @@ class Reference {
 public:
     Reference(std::uint32_t index, void* ptr);
 
-    bool isValid() const;
-
     Object* object();
 
     void* ptr() const;
@@ -31,6 +29,7 @@ public:
     void release();
 
 private:
+    bool isValid() const;
     std::uint32_t pageIndex() const;
     void reset(void* ptr);
 
@@ -64,7 +63,7 @@ inline std::uint32_t Reference::retainCount() const {
 }
 
 
-} } // namespace worty::internal
+} } // namespace worthy::internal
 
 
 #endif // WORTHY_INTERNAL_REFERENCE_H_

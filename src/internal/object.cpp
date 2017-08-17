@@ -5,7 +5,10 @@ namespace worthy {
 namespace internal {
 
 
-Object::Object(ObjectType type) : type_{type}, reserved_{0} {
+Object::Object(ObjectType type)
+    : type_{type},
+      flags_{0},
+      page_offset_{0} {
 }
 
 

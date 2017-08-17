@@ -24,10 +24,6 @@ protected:
 
 class HashMapArrayNode final : public HashMapNode {
 public:
-    static const std::size_t Size = Object::Size + 1 +
-        PointerSize + (BranchSize * PointerSize);
-    static const std::size_t Padding = 5;
-
     DECL_CAST(HashMapArrayNode)
 
 private:
@@ -35,9 +31,6 @@ private:
     TransientTag tag_;
     HashMapNode* nodes_[BranchSize];
 };
-
-
-WORTHY_ASSERT_SIZE(HashMapArrayNode);
 
 
 class HashMapBitmapNode final : public HashMapNode {
@@ -67,9 +60,6 @@ private:
 
 class HashMap : public Object {
 public:
-    static const std::size_t Size = Object::Size + 1 + 1 + 4 + 8 + PointerSize;
-    static const std::size_t Padding = 0;
-
     DECL_CAST(HashMap)
 
     HashMap();
@@ -85,9 +75,6 @@ private:
     VariantData null_key_value_;
     HashMapNode* root_;
 };
-
-
-WORTHY_ASSERT_SIZE(HashMap);
 
 
 class TransientHashMap final : public HashMap {

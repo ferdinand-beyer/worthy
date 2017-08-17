@@ -13,6 +13,24 @@ class Object;
 class Reference;
 
 
+#define WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)   \
+    F(Bool, 1, bool, b)                     \
+    F(Int8, 2, std::int8_t, i8)             \
+    F(UInt8, 3, std::uint8_t, u8)           \
+    F(Int16, 4, std::int16_t, i16)          \
+    F(UInt16, 5, std::uint16_t, u16)        \
+    F(Int32, 6, std::int32_t, i32)          \
+    F(UInt32, 7, std::uint32_t, u32)        \
+    F(Int64, 8, std::int64_t, i64)          \
+    F(UInt64, 9, std::uint64_t, u64)        \
+    F(Float32, 10, float, f32)              \
+    F(Float64, 11, double, f64)
+
+
+#define WORTHY_FOR_EACH_REFERENCE_TYPE(F) \
+    F(ObjectPtr, 12, worthy::internal::Object*, obj)
+
+
 enum VariantTypeEnum {
     Type_Null,
     Type_Boolean,
@@ -63,9 +81,6 @@ union VariantData {
     VariantData(Reference* init) : ref{init} {}
 };
 
-
-static_assert(sizeof(VariantData) == 8, "unexpected size");
-static_assert(alignof(VariantData) == 8, "unexpected alignment");
 
 } } // namespace worthy::internal
 
