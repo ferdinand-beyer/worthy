@@ -37,7 +37,7 @@ Space* Space::spaceOf(Object* obj) {
 
 Page* Space::pageOf(Object* obj) {
     WORTHY_CHECK(obj);
-    return Page::from(obj, obj->page_offset_);
+    return Page::fromMarker(&obj->page_marker_);
 }
 
 
@@ -51,7 +51,7 @@ Space::~Space() {
 
 
 void Space::initialize(Object* obj, Page* page) {
-    obj->page_offset_ = page->offsetOf(obj);
+    page->setMarker(&obj->page_marker_);
 }
 
 
@@ -122,7 +122,7 @@ Page* Space::allocatePage(std::size_t data_size) {
     // the page header.
     WORTHY_CHECK(page_size <= Page::MaxPageSize);
 
-    void* memory = allocateAligned(page_size, Page::Alignment);
+    void* memory = alignedAlloc(page_size, Page::Alignment);
     if (!memory) {
         return nullptr;
     }
@@ -135,7 +135,7 @@ void Space::deletePages() {
     std::lock_guard<std::mutex> lock(mutex_);
 
     while (!pages_.empty()) {
-        pages_.pop_front_and_dispose(deallocateAligned);
+        pages_.pop_front_and_dispose(alignedFree);
     }
 }
 

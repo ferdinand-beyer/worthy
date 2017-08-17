@@ -15,6 +15,7 @@ set(Worthy_Library_SRCS
     src/internal/allocation.h
     src/internal/check.cpp
     src/internal/check.h
+    src/internal/globals.h
     src/internal/hashmap.cpp
     src/internal/hashmap.h
     src/internal/heap.cpp

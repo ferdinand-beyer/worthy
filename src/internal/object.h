@@ -3,6 +3,7 @@
 
 
 #include "internal/check.h"
+#include "internal/globals.h"
 #include "internal/object-type.h"
 #include "internal/variant.h"
 
@@ -17,11 +18,6 @@ namespace worthy {
 namespace internal {
 
 
-// TODO: Move to different header
-const std::size_t PointerSize = sizeof(void*);
-const std::size_t WordSize = PointerSize;
-
-typedef std::size_t HashCode;
 typedef std::uint32_t ElementCount;
 
 // TODO: Transients are TBD
@@ -42,7 +38,7 @@ protected:
 private:
     const ObjectType type_;
     std::uint8_t flags_;
-    std::uint16_t page_offset_;
+    PageMarker page_marker_;
     std::uint32_t control_;
 
     friend class Space;

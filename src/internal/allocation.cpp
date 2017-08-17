@@ -10,10 +10,9 @@ namespace worthy {
 namespace internal {
 
 
-void* allocateAligned(std::size_t size, std::size_t alignment) {
+void* alignedAlloc(std::size_t size, std::size_t alignment) {
     WORTHY_CHECK(size > 0);
-    WORTHY_CHECK(isPowerOfTwo(alignment));
-    WORTHY_CHECK(alignment >= sizeof(void*));
+    WORTHY_CHECK((alignment >= PointerSize) && isPowerOfTwo(alignment));
 
     void* result;
 #ifdef _MSC_VER 
@@ -23,11 +22,12 @@ void* allocateAligned(std::size_t size, std::size_t alignment) {
         result = nullptr;
     }
 #endif
+
     return result;
 }
 
 
-void deallocateAligned(void* ptr) {
+void alignedFree(void* ptr) {
     WORTHY_CHECK(ptr);
 
 #ifdef _MSC_VER 

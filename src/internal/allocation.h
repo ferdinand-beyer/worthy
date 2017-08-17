@@ -2,16 +2,16 @@
 #define WORTHY_INTERNAL_ALLOCATION_H_
 
 
-#include <cstddef>
+#include "internal/globals.h"
 
 
 namespace worthy {
 namespace internal {
 
 
-void* allocateAligned(std::size_t size, std::size_t alignment);
+void* alignedAlloc(std::size_t size, std::size_t alignment);
 
-void deallocateAligned(void* ptr);
+void alignedFree(void* ptr);
 
 
 } } // namespace worthy::internal

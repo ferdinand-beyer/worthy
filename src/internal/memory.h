@@ -11,8 +11,8 @@ namespace worthy {
 namespace internal {
 
 
-template <typename Integer>
-constexpr inline bool isPowerOfTwo(Integer n) {
+template <typename T>
+constexpr inline bool isPowerOfTwo(T n) {
     return (n != 0 && ((n & (n - 1)) == 0));
 }
 
@@ -21,41 +21,41 @@ constexpr inline bool isPowerOfTwo(Integer n) {
     static_assert(isPowerOfTwo(b), "boundary " #b " must be a power of two");
 
 
-template <typename Ptr>
-constexpr inline std::intptr_t offsetFrom(Ptr p) {
-    return p - static_cast<Ptr>(0);
+template <typename T>
+constexpr inline std::intptr_t offsetFrom(T x) {
+    return x - static_cast<T>(0);
 }
 
 
-template <typename Ptr>
-constexpr inline Ptr addressFrom(std::intptr_t offset) {
-    return static_cast<Ptr>(static_cast<Ptr>(0) + offset);
+template <typename T>
+constexpr inline T addressFrom(std::intptr_t offset) {
+    return static_cast<T>(static_cast<T>(0) + offset);
 }
 
 
-template <typename Ptr>
-inline Ptr roundDown(Ptr p, std::intptr_t b) {
+template <typename T>
+inline T roundDown(T x, std::intptr_t b) {
     WORTHY_DCHECK(isPowerOfTwo(b));
-    return addressFrom<Ptr>(offsetFrom(p) & -b);
+    return addressFrom<T>(offsetFrom(x) & -b);
 }
 
 
-template <std::intptr_t b, typename Ptr>
-constexpr inline Ptr roundDown(Ptr p) {
+template <std::intptr_t b, typename T>
+constexpr inline T roundDown(T x) {
     WORTHY_STATIC_ASSERT_POWER_OF_TWO(b);
-    return addressFrom<Ptr>(offsetFrom(p) & -b);
+    return addressFrom<T>(offsetFrom(x) & -b);
 }
 
 
-template <typename Ptr>
-inline Ptr roundUp(Ptr p, std::intptr_t b) {
-    return roundDown<Ptr>(static_cast<Ptr>(p + b - 1), b);
+template <typename T>
+inline T roundUp(T x, std::intptr_t b) {
+    return roundDown<T>(static_cast<T>(x + b - 1), b);
 }
 
 
-template <std::intptr_t b, typename Ptr>
-constexpr inline Ptr roundUp(Ptr p) {
-    return roundDown<b, Ptr>(static_cast<Ptr>(p + b - 1));
+template <std::intptr_t b, typename T>
+constexpr inline T roundUp(T x) {
+    return roundDown<b, T>(static_cast<T>(x + b - 1));
 }
 
 

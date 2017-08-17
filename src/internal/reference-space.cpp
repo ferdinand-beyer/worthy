@@ -64,7 +64,7 @@ void ReferenceSpace::release(Reference* ref) {
 
 
 Reference* ReferenceSpace::allocateFromPage(Page* page, Object* obj) {
-    void* memory = page->allocate(sizeof(Reference), alignof(Reference));
+    Address memory = page->allocate(sizeof(Reference), alignof(Reference));
     if (!memory) {
         return nullptr;
     }

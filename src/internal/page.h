@@ -2,6 +2,7 @@
 #define WORTHY_INTERNAL_PAGE_H_
 
 
+#include "internal/globals.h"
 #include "internal/macros.h"
 
 #include <boost/intrusive/list.hpp>
@@ -20,33 +21,30 @@ class Space;
 
 class Page : public boost::intrusive::list_base_hook<> {
 public:
-    // TODO: Use the same type for Object::page_offset_
-    typedef std::uint16_t Offset;
+    // Alignment in bytes.  Together with the size of the PageMarker, this
+    // determines the maximum page size.
+    static const std::size_t Alignment = 16;
 
-    static const std::size_t OffsetBits = 8 * sizeof(Offset);
+    // Number of bits for page markers in Objects.
+    static const std::size_t MarkerBits = 8 * sizeof(PageMarker);
 
-    // Size of a logical block in bytes.
-    static const std::size_t BlockSize = 16;
+    // Maximum page size in bytes, including the header.
+    static const std::size_t MaxPageSize = (1 << MarkerBits) * Alignment;
 
-    // The page must be aligned to the block size to support allocations
-    // smaller than the block size.
-    static const std::size_t Alignment = BlockSize;
-
-    // Maximum number of addressable blocks.
-    static const std::size_t MaxBlockCount = 1 << OffsetBits;
-
-    // Maximum page size in bytes.
-    static const std::size_t MaxPageSize = MaxBlockCount * BlockSize;
-
-    static Page* from(void* addr, Offset offset);
+    // Return the Page from a page marker.  The marker must have been set
+    // with setMarker() before.
+    static Page* fromMarker(const PageMarker* marker);
 
     Page(Space* space, std::size_t data_size);
 
     Space* space();
 
-    Offset offsetOf(void* addr) const;
+    // Store a value in the given PageMarker that can later be used to
+    // retrieve this page.  The marker must point to an address within
+    // this page.
+    void setMarker(PageMarker* marker) const;
 
-    void* allocate(std::size_t size, std::size_t alignment);
+    Address allocate(std::size_t size, std::size_t alignment);
 
 protected:
     ~Page() = default;
@@ -54,12 +52,17 @@ protected:
 private:
     WORTHY_DISABLE_COPY(Page);
 
-    void* begin();
-    void* end();
+    Address address() const;
+
+    Address begin() const;
+    Address end() const;
+
+    // Tell if the given memory address lies within the page.
+    bool contains(Address addr) const;
 
     Space* const space_;
     const std::size_t data_size_;
-    std::atomic<void*> top_;
+    std::atomic<Address> top_;
 };
 
 
@@ -68,14 +71,25 @@ inline Space* Page::space() {
 }
 
 
-inline void* Page::begin() {
-    // Return address directly after the page header.
-    return (this + 1);
+inline Address Page::address() const
+{
+    return reinterpret_cast<Address>(const_cast<Page*>(this));
 }
 
 
-inline void* Page::end() {
-    return reinterpret_cast<char*>(begin()) + data_size_;
+inline Address Page::begin() const {
+    // Return address directly after the page header.
+    return reinterpret_cast<Address>(const_cast<Page*>(this + 1));
+}
+
+
+inline Address Page::end() const {
+    return begin() + data_size_;
+}
+
+
+inline bool Page::contains(Address addr) const {
+    return (addr >= begin()) && (addr < end());
 }
 
 
