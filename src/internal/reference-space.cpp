@@ -12,15 +12,15 @@ namespace worthy {
 namespace internal {
 
 
-class ReferenceSpace::Page {
+class ReferenceSpace::DeprPage {
 public:
-    inline static Page* of(Reference* ref) {
+    inline static DeprPage* of(Reference* ref) {
         // By subtracting the index from the ref pointer, we get the start of
-        // the data array, which is sizeof(Page) away from the page start.
-        return reinterpret_cast<Page*>(ref - ref->pageIndex()) - 1;
+        // the data array, which is sizeof(DeprPage) away from the page start.
+        return reinterpret_cast<DeprPage*>(ref - ref->pageIndex()) - 1;
     }
 
-    Page(ReferenceSpace* space, std::uint32_t capacity);
+    DeprPage(ReferenceSpace* space, std::uint32_t capacity);
 
     inline Reference* data() {
         // (this + 1) will point directly after the page.
@@ -38,12 +38,12 @@ public:
 
     ReferenceSpace* const space_;
 
-    Page* next_;
-    Page* prev_;
+    DeprPage* next_;
+    DeprPage* prev_;
 };
 
 
-ReferenceSpace::Page::Page(ReferenceSpace* space, std::uint32_t capacity) :
+ReferenceSpace::DeprPage::DeprPage(ReferenceSpace* space, std::uint32_t capacity) :
     capacity_{capacity},
     allocated_{0},
     space_{space},
@@ -54,7 +54,7 @@ ReferenceSpace::Page::Page(ReferenceSpace* space, std::uint32_t capacity) :
 }
 
 
-Reference* ReferenceSpace::Page::allocate(void* ptr) {
+Reference* ReferenceSpace::DeprPage::allocate(void* ptr) {
     std::uint32_t index = allocated_.load(std::memory_order_relaxed);
 
     do {
@@ -74,7 +74,7 @@ Reference* ReferenceSpace::Page::allocate(void* ptr) {
 
 
 ReferenceSpace* ReferenceSpace::ownerOf(Reference* ref) {
-    return Page::of(ref)->space_;
+    return DeprPage::of(ref)->space_;
 }
 
 
@@ -89,10 +89,10 @@ ReferenceSpace::ReferenceSpace(Heap* heap, std::uint32_t page_capacity) :
 
 
 ReferenceSpace::~ReferenceSpace() {
-    Page* page = top_page_.exchange(nullptr, std::memory_order_acq_rel);
+    DeprPage* page = top_page_.exchange(nullptr, std::memory_order_acq_rel);
 
     while (page) {
-        Page* prev = page->prev_;
+        DeprPage* prev = page->prev_;
         std::free(page);
         page = prev;
     }
@@ -100,7 +100,7 @@ ReferenceSpace::~ReferenceSpace() {
 
 
 Reference* ReferenceSpace::newReference(void* ptr) {
-    Page* page = top_page_.load(std::memory_order_acquire);
+    DeprPage* page = top_page_.load(std::memory_order_acquire);
     Reference* ref = page ? page->allocate(ptr) : nullptr;
 
     while (!ref) {
@@ -149,12 +149,12 @@ void ReferenceSpace::addToFreeList(Reference* ref) {
 }
 
 
-ReferenceSpace::Page* ReferenceSpace::allocatePageSync(Page* top_page) {
+ReferenceSpace::DeprPage* ReferenceSpace::allocatePageSync(DeprPage* top_page) {
     std::lock_guard<std::mutex> lock(mutex_);
 
     // Load the top page again as another thread could have allocated a
     // new page in the meantime.
-    Page* page = top_page_.load(std::memory_order_acquire);
+    DeprPage* page = top_page_.load(std::memory_order_acquire);
 
     if (page == top_page) {
         page = allocatePage();
@@ -175,20 +175,20 @@ ReferenceSpace::Page* ReferenceSpace::allocatePageSync(Page* top_page) {
 }
 
 
-ReferenceSpace::Page* ReferenceSpace::allocatePage() {
-    // We use memory directly after the Page structure for an array of
+ReferenceSpace::DeprPage* ReferenceSpace::allocatePage() {
+    // We use memory directly after the DeprPage structure for an array of
     // Reference objects.  Assert that this will be propertly aligned.
-    static_assert((sizeof(Page) % alignof(Reference)) == 0,
+    static_assert((sizeof(DeprPage) % alignof(Reference)) == 0,
                   "Reference requires proper alignment");
 
-    const std::size_t size = sizeof(Page) + page_capacity_ * sizeof(Reference);
+    const std::size_t size = sizeof(DeprPage) + page_capacity_ * sizeof(Reference);
 
     void* memory = std::malloc(size);
     if (!memory) {
         return nullptr;
     }
 
-    return new (memory) Page(this, page_capacity_);
+    return new (memory) DeprPage(this, page_capacity_);
 }
 
 

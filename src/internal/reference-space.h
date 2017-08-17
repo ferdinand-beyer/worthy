@@ -30,17 +30,17 @@ public:
     Reference* newReference(void* ptr);
 
 private:
-    class Page;
+    class DeprPage;
 
     Reference* allocateFromFreeList(void* ptr);
 
     void addToFreeList(Reference* ref);
 
-    Page* allocatePageSync(Page* top_page);
-    Page* allocatePage();
+    DeprPage* allocatePageSync(DeprPage* top_page);
+    DeprPage* allocatePage();
 
     const std::uint32_t page_capacity_;
-    std::atomic<Page*> top_page_;
+    std::atomic<DeprPage*> top_page_;
     std::atomic<Reference*> free_list_;
     std::mutex mutex_;
 

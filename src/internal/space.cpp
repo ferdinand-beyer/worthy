@@ -29,6 +29,7 @@ Space::Space(Heap* heap) : heap_{heap} {
 
 
 Space::~Space() {
+    deletePages();
 }
 
 
