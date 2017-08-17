@@ -1,3 +1,4 @@
+#include "internal/object.h"
 #include "internal/reference.h"
 #include "internal/reference-space.h"
 #include "internal/check.h"
@@ -5,33 +6,46 @@
 #include <algorithm>
 #include <catch.hpp>
 
+
+using worthy::internal::Object;
+using worthy::internal::ObjectType;
 using worthy::internal::Reference;
 using worthy::internal::ReferenceSpace;
 
+
+class MockObject : public Object {
+public:
+    MockObject() : Object{ObjectType::FreeSpace} {}
+};
+
+
 TEST_CASE("can allocate Reference objects", "[reference]") {
-    char obj[8] = {'F', 'o', 'o', 'b', 'a', 'r', '\0'};
+    MockObject obj;
 
     ReferenceSpace space(nullptr);
 
-    Reference* ref = space.newReference(obj);
+    Reference* ref = space.newReference(&obj);
 
     REQUIRE(ref != nullptr);
-    REQUIRE(ref->ptr() == obj);
-    REQUIRE(ref->retainCount() == 1);
+    REQUIRE(ref->get() == &obj);
+    REQUIRE(space.refCount(ref) == 1);
 
     SECTION("created reference is owned by the space") {
-        REQUIRE(ReferenceSpace::ownerOf(ref) == &space);
+        REQUIRE(ReferenceSpace::spaceOf(ref) == &space);
     }
 
     SECTION("multiple references are contiguous") {
-        Reference* ref2 = space.newReference(obj + 1);
+        MockObject obj2;
+
+        Reference* ref2 = space.newReference(&obj2);
 
         REQUIRE((ref + 1) == ref2);
     }
 }
 
+
 TEST_CASE("released references are reused", "[reference]") {
-    int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    MockObject arr[10];
 
     ReferenceSpace space(nullptr, 8);
 
@@ -69,7 +83,7 @@ TEST_CASE("released references are reused", "[reference]") {
 
                 // Check all references.
                 for (int i = 0; i < n; ++i) {
-                    CHECK(refs[i]->ptr() == (arr + i));
+                    CHECK(refs[i]->get() == (arr + i));
                 }
 
                 // Release (n - 1) references, leaking one.
@@ -88,13 +102,14 @@ TEST_CASE("released references are reused", "[reference]") {
     }
 }
 
+
 TEST_CASE("allocates new pages when out of memory", "[reference]") {
-    int obj = 0;
-    void* const sentinel = &obj;
+    MockObject obj;
+    Object* const sentinel = &obj;
 
     ReferenceSpace space(nullptr, 16);
 
-    void* ptr = sentinel;
+    Object* ptr = sentinel;
 
     for (int i = 0; i < 256; ++i) {
         Reference* ref = space.newReference(ptr);
@@ -104,7 +119,7 @@ TEST_CASE("allocates new pages when out of memory", "[reference]") {
 
     for (int i = 0; i < 256; ++i) {
         Reference* ref = reinterpret_cast<Reference*>(ptr);
-        ptr = ref->ptr();
+        ptr = ref->get();
         ref->release();
     }
 

@@ -159,7 +159,7 @@ double AbstractValue::toDouble() const {
 
 const internal::Object* AbstractValue::object() const {
     WORTHY_CHECK(isReferenceType(type_));
-    return data_.ref->object();
+    return data_.ref->get();
 }
 
 

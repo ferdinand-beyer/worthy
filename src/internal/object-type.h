@@ -13,6 +13,7 @@ namespace internal {
 
 #define WORTHY_OBJECT_TYPES     \
     (FreeSpace)                 \
+    (Reference)                 \
     (String)                    \
     (Binary)                    \
     (Symbol)                    \

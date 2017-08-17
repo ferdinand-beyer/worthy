@@ -3,67 +3,57 @@
 
 
 #include "internal/macros.h"
+#include "internal/object.h"
 
-#include <atomic>
-#include <cstdint>
+// Has to be the last include (doesn't have include guards)
+#include "internal/object-macros.h"
 
 
 namespace worthy {
 namespace internal {
 
 
-class Object;
+class ReferenceSpace;
 
 
-class Reference {
+class Reference : public Object {
 public:
-    Reference(std::uint32_t index, void* ptr);
+    DECL_CAST(Reference)
 
-    Object* object();
+    explicit Reference(Object* ptr);
 
-    void* ptr() const;
-
-    std::uint32_t retainCount() const;
+    Object* get();
+    const Object* get() const;
 
     void retain();
     void release();
 
 private:
-    bool isValid() const;
-    std::uint32_t pageIndex() const;
-    void reset(void* ptr);
-
-    void* ptr_;
-    const std::uint32_t index_;
-    std::atomic<std::uint32_t> retain_count_;
-
     WORTHY_DISABLE_COPY(Reference);
+
+    ReferenceSpace* space();
+
+    Object* ptr_;
 
     friend class ReferenceSpace;
 };
 
 
-inline bool Reference::isValid() const {
-    return retainCount() > 0;
-}
-
-
-inline void* Reference::ptr() const {
+inline Object* Reference::get() {
     return ptr_;
 }
 
 
-inline std::uint32_t Reference::pageIndex() const {
-    return index_;
-}
-
-
-inline std::uint32_t Reference::retainCount() const {
-    return retain_count_.load(std::memory_order_relaxed);
+inline const Object* Reference::get() const {
+    return ptr_;
 }
 
 
 } } // namespace worthy::internal
+
+
+#define UNDEF_OBJECT_MACROS
+#include "internal/object-macros.h"
 
 
 #endif // WORTHY_INTERNAL_REFERENCE_H_

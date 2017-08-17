@@ -26,7 +26,7 @@ public:
     static const std::size_t OffsetBits = 8 * sizeof(Offset);
 
     // Size of a logical block in bytes.
-    static const std::size_t BlockSize = 2;
+    static const std::size_t BlockSize = 16;
 
     // The page must be aligned to the block size to support allocations
     // smaller than the block size.
@@ -38,9 +38,13 @@ public:
     // Maximum page size in bytes.
     static const std::size_t MaxPageSize = MaxBlockCount * BlockSize;
 
-    Page(Space* space, std::size_t size);
+    static Page* from(void* addr, Offset offset);
 
-    Offset offsetOf(void* addr);
+    Page(Space* space, std::size_t data_size);
+
+    Space* space();
+
+    Offset offsetOf(void* addr) const;
 
     void* allocate(std::size_t size, std::size_t alignment);
 
@@ -54,9 +58,14 @@ private:
     void* end();
 
     Space* const space_;
-    const std::size_t size_;
+    const std::size_t data_size_;
     std::atomic<void*> top_;
 };
+
+
+inline Space* Page::space() {
+    return space_;
+}
 
 
 inline void* Page::begin() {
@@ -66,7 +75,7 @@ inline void* Page::begin() {
 
 
 inline void* Page::end() {
-    return reinterpret_cast<char*>(this) + size_;
+    return reinterpret_cast<char*>(begin()) + data_size_;
 }
 
 

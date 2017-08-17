@@ -12,7 +12,7 @@ namespace internal {
 
 
 template <typename Integer>
-constexpr inline bool isPowerOfTwo(Integer n> {
+constexpr inline bool isPowerOfTwo(Integer n) {
     return (n != 0 && ((n & (n - 1)) == 0));
 }
 

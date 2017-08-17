@@ -24,6 +24,7 @@ set(Worthy_Library_SRCS
     src/internal/object-type.h
     src/internal/object.cpp
     src/internal/object.h
+    src/internal/page.cpp
     src/internal/page.h
     src/internal/reference-space.cpp
     src/internal/reference-space.h
