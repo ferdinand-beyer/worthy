@@ -2,7 +2,7 @@
 #define WORTHY_TYPE_H
 
 
-#include "worthy/internal/variant-base.h"
+#include "worthy/internal/primitive.h"
 
 
 namespace worthy {
@@ -20,7 +20,9 @@ enum class Type {
     String,
     List,
     Vector,
-    Map
+    Map,
+
+    FirstReferenceType = Symbol
 };
 
 

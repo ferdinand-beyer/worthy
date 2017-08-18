@@ -80,13 +80,13 @@ TEST_CASE("construct primitive types", "[value]") {
     SECTION("float32") {
         Value val(3.1415f);
         REQUIRE(val.type() == Type::Float32);
-        REQUIRE(val.toFloat() == 3.1415f);
+        REQUIRE(val.toFloat32() == 3.1415f);
     }
 
     SECTION("float64") {
         Value val(3.1415);
         REQUIRE(val.type() == Type::Float64);
-        REQUIRE(val.toDouble() == 3.1415);
+        REQUIRE(val.toFloat64() == 3.1415);
     }
 }
 

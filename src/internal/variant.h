@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_VARIANT_H_
 
 
-#include "worthy/internal/variant-base.h"
+#include "worthy/internal/primitive.h"
 
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
@@ -13,6 +13,13 @@
 namespace worthy {
 namespace internal {
 
+
+class Object;
+
+
+#define WORTHY_FOR_EACH_VARIANT_TYPE(F) \
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)   \
+    F(ObjectPtr, 12, worthy::internal::Object*, obj)
 
 #define WORTHY_PARATHESIZE_TUPLE_4(a, b, c, d) ((a, b, c, d))
 
@@ -30,6 +37,21 @@ enum class VariantType : std::uint8_t {
     WORTHY_VARIANT_NAME(tuple) = WORTHY_VARIANT_ID(tuple)
     BOOST_PP_SEQ_ENUM( \
         BOOST_PP_SEQ_TRANSFORM(WORTHY_TEMP, ~, WORTHY_VARIANT_TYPES))
+#undef WORTHY_TEMP
+};
+
+
+union VariantData {
+#define WORTHY_TEMP(name, id, type, field) \
+    type field;
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+    VariantData() : obj{nullptr} {}
+
+#define WORTHY_TEMP(name, id, type, field) \
+    explicit VariantData(type field##_) : field{field##_} {}
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 };
 

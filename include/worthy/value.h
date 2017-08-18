@@ -13,20 +13,10 @@ public:
     // Construct a Null value.
     Value();
 
-    Value(bool b);
-
-    Value(std::int8_t n);
-    Value(std::int16_t n);
-    Value(std::int32_t n);
-    Value(std::int64_t n);
-
-    Value(std::uint8_t n);
-    Value(std::uint16_t n);
-    Value(std::uint32_t n);
-    Value(std::uint64_t n);
-
-    Value(float n);
-    Value(double n);
+#define WORTHY_TEMP(name, id, type, field) \
+    Value(type field##_);
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
 
     Value(const AbstractValue& v);
     Value(AbstractValue&& v);
@@ -40,20 +30,10 @@ public:
 
     bool isNull() const;
 
-    using AbstractValue::toBool;
-
-    using AbstractValue::toInt8;
-    using AbstractValue::toInt16;
-    using AbstractValue::toInt32;
-    using AbstractValue::toInt64;
-
-    using AbstractValue::toUInt8;
-    using AbstractValue::toUInt16;
-    using AbstractValue::toUInt32;
-    using AbstractValue::toUInt64;
-
-    using AbstractValue::toFloat;
-    using AbstractValue::toDouble;
+#define WORTHY_TEMP(name, id, type, field) \
+    type to##name() const;
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
 };
 
 
@@ -63,17 +43,14 @@ inline void swap(Value& lhs, Value& rhs) {
 
 
 inline Value::Value() {}
-inline Value::Value(bool b) : AbstractValue{b} {}
-inline Value::Value(std::int8_t n) : AbstractValue{n} {}
-inline Value::Value(std::int16_t n) : AbstractValue{n} {}
-inline Value::Value(std::int32_t n) : AbstractValue{n} {}
-inline Value::Value(std::int64_t n) : AbstractValue{n} {}
-inline Value::Value(std::uint8_t n) : AbstractValue{n} {}
-inline Value::Value(std::uint16_t n) : AbstractValue{n} {}
-inline Value::Value(std::uint32_t n) : AbstractValue{n} {}
-inline Value::Value(std::uint64_t n) : AbstractValue{n} {}
-inline Value::Value(float n) : AbstractValue{n} {}
-inline Value::Value(double n) : AbstractValue{n} {}
+
+
+#define WORTHY_TEMP(name, id, type, field) \
+inline Value::Value(type field##_) : AbstractValue{field##_} {}
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+
 inline Value::Value(const AbstractValue& v) : AbstractValue{v} {}
 inline Value::Value(AbstractValue&& v) : AbstractValue{v} {}
 
@@ -98,6 +75,14 @@ inline void Value::swap(Value& other) {
 inline bool Value::isNull() const {
     return type() == Type::Null;
 }
+
+
+#define WORTHY_TEMP(name, id, type, field)  \
+inline type Value::to##name() const {       \
+    return toPrimitive<type>();             \
+}
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
 
 
 } // namespace worthy

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(worthy)
 
 set(Worthy_Library_SRCS
-    include/worthy/internal/variant-base.h
+    include/worthy/internal/primitive.h
     include/worthy/abstract-value.h
     include/worthy/map.h
     include/worthy/runtime.h
