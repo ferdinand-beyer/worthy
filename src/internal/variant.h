@@ -4,25 +4,33 @@
 
 #include "worthy/internal/variant-base.h"
 
+#include <boost/preprocessor/seq/enum.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/transform.hpp>
+#include <boost/preprocessor/tuple/elem.hpp>
+
 
 namespace worthy {
 namespace internal {
 
 
+#define WORTHY_PARATHESIZE_TUPLE_4(a, b, c, d) ((a, b, c, d))
+
+#define WORTHY_VARIANT_TYPES \
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_PARATHESIZE_TUPLE_4)
+
+#define WORTHY_VARIANT_NAME(tuple)  BOOST_PP_TUPLE_ELEM(4, 0, tuple)
+#define WORTHY_VARIANT_ID(tuple)    BOOST_PP_TUPLE_ELEM(4, 1, tuple)
+#define WORTHY_VARIANT_TYPE(tuple)  BOOST_PP_TUPLE_ELEM(4, 2, tuple)
+#define WORTHY_VARIANT_FIELD(tuple) BOOST_PP_TUPLE_ELEM(4, 3, tuple)
+
+
 enum class VariantType : std::uint8_t {
-    Null    = Type_Null,
-    Boolean = Type_Boolean,
-    Int8    = Type_Int8,
-    Int16   = Type_Int16,
-    Int32   = Type_Int32,
-    Int64   = Type_Int64,
-    UInt8   = Type_UInt8,
-    UInt16  = Type_UInt16,
-    UInt32  = Type_UInt32,
-    UInt64  = Type_UInt64,
-    Float   = Type_Float,
-    Double  = Type_Double,
-    Object  = Type_Object
+#define WORTHY_TEMP(s, _, tuple) \
+    WORTHY_VARIANT_NAME(tuple) = WORTHY_VARIANT_ID(tuple)
+    BOOST_PP_SEQ_ENUM( \
+        BOOST_PP_SEQ_TRANSFORM(WORTHY_TEMP, ~, WORTHY_VARIANT_TYPES))
+#undef WORTHY_TEMP
 };
 
 
@@ -36,30 +44,11 @@ private:
 template <typename Function>
 typename Function::return_type dispatch(const VariantData& data, const VariantType& type, Function f) {
     switch (type) {
-    case VariantType::Boolean:
-        return f(data.b);
-    case VariantType::Int8:
-        return f(data.i8);
-    case VariantType::Int16:
-        return f(data.i16);
-    case VariantType::Int32:
-        return f(data.i32);
-    case VariantType::Int64:
-        return f(data.i64);
-    case VariantType::UInt8:
-        return f(data.u8);
-    case VariantType::UInt16:
-        return f(data.u16);
-    case VariantType::UInt32:
-        return f(data.u32);
-    case VariantType::UInt64:
-        return f(data.u64);
-    case VariantType::Float:
-        return f(data.f);
-    case VariantType::Double:
-        return f(data.d);
-    case VariantType::Object:
-        return f(data.obj);
+#define WORTHY_TEMP(name, id, type, field) \
+    case VariantType::name: \
+        return f(data.field);
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
     }
 }
 

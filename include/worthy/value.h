@@ -40,7 +40,7 @@ public:
 
     bool isNull() const;
 
-    using AbstractValue::toBoolean;
+    using AbstractValue::toBool;
 
     using AbstractValue::toInt8;
     using AbstractValue::toInt16;

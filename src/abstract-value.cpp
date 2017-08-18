@@ -6,6 +6,9 @@
 #include <utility>
 
 
+using worthy::internal::Reference;
+
+
 namespace worthy {
 
 
@@ -20,7 +23,7 @@ inline bool isReferenceType(Type t) {
 } // namespace
 
 
-AbstractValue::AbstractValue(Type t, internal::Reference* ref)
+AbstractValue::AbstractValue(Type t, Reference* ref)
     : data_{ref},
       type_{t} {
     WORTHY_DCHECK(isReferenceType(t));
@@ -56,6 +59,7 @@ AbstractValue& AbstractValue::operator=(AbstractValue&& other) {
     data_ = other.data_;
     type_ = other.type_;
     other.reset();
+    return *this;
 }
 
 
@@ -72,27 +76,27 @@ void AbstractValue::swap(AbstractValue& other) {
 
 
 void AbstractValue::reset() {
-    data_.ref = nullptr;
+    data_.obj = nullptr;
     type_ = Type::Null;
 }
 
 
 void AbstractValue::retain() {
     if (isReferenceType(type_)) {
-        data_.ref->retain();
+        Reference::cast(data_.obj)->retain();
     }
 }
 
 
 void AbstractValue::release() {
     if (isReferenceType(type_)) {
-        data_.ref->release();
+        Reference::cast(data_.obj)->release();
     }
 }
 
 
-bool AbstractValue::toBoolean() const {
-    WORTHY_CHECK(type() == Type::Boolean);
+bool AbstractValue::toBool() const {
+    WORTHY_CHECK(type() == Type::Bool);
     return data_.b;
 }
 
@@ -146,20 +150,20 @@ std::uint64_t AbstractValue::toUInt64() const {
 
 
 float AbstractValue::toFloat() const {
-    WORTHY_CHECK(type() == Type::Float);
-    return data_.f;
+    WORTHY_CHECK(type() == Type::Float32);
+    return data_.f32;
 }
 
 
 double AbstractValue::toDouble() const {
-    WORTHY_CHECK(type() == Type::Double);
-    return data_.d;
+    WORTHY_CHECK(type() == Type::Float64);
+    return data_.f64;
 }
 
 
 const internal::Object* AbstractValue::object() const {
     WORTHY_CHECK(isReferenceType(type_));
-    return data_.ref->get();
+    return internal::Reference::cast(data_.obj)->get();
 }
 
 

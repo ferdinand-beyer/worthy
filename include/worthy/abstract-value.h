@@ -48,7 +48,7 @@ protected:
 
     Type type() const;
 
-    bool toBoolean() const;
+    bool toBool() const;
 
     std::int8_t toInt8() const;
     std::int16_t toInt16() const;
@@ -70,6 +70,7 @@ private:
     void retain();
     void release();
 
+    // TODO: Use a separate union with Reference* instead of Object*
     internal::VariantData data_;
     Type type_;
 };
@@ -80,7 +81,7 @@ inline AbstractValue::AbstractValue()
 
 
 inline AbstractValue::AbstractValue(bool b)
-    : data_{b}, type_{Type::Boolean} {}
+    : data_{b}, type_{Type::Bool} {}
 
 
 inline AbstractValue::AbstractValue(std::int8_t n)
@@ -116,11 +117,11 @@ inline AbstractValue::AbstractValue(std::uint64_t n)
 
 
 inline AbstractValue::AbstractValue(float n)
-    : data_{n}, type_{Type::Float} {}
+    : data_{n}, type_{Type::Float32} {}
 
 
 inline AbstractValue::AbstractValue(double n)
-    : data_{n}, type_{Type::Double} {}
+    : data_{n}, type_{Type::Float64} {}
 
 
 inline Type AbstractValue::type() const {

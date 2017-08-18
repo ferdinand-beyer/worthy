@@ -17,8 +17,8 @@ TEST_CASE("construct primitive types", "[value]") {
 
     SECTION("bool") {
         Value val(true);
-        REQUIRE(val.type() == Type::Boolean);
-        REQUIRE(val.toBoolean() == true);
+        REQUIRE(val.type() == Type::Bool);
+        REQUIRE(val.toBool() == true);
     }
 
     SECTION("int8") {
@@ -77,15 +77,15 @@ TEST_CASE("construct primitive types", "[value]") {
         REQUIRE(val.toUInt64() == 7);
     }
 
-    SECTION("float") {
+    SECTION("float32") {
         Value val(3.1415f);
-        REQUIRE(val.type() == Type::Float);
+        REQUIRE(val.type() == Type::Float32);
         REQUIRE(val.toFloat() == 3.1415f);
     }
 
-    SECTION("double") {
+    SECTION("float64") {
         Value val(3.1415);
-        REQUIRE(val.type() == Type::Double);
+        REQUIRE(val.type() == Type::Float64);
         REQUIRE(val.toDouble() == 3.1415);
     }
 }
