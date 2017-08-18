@@ -6,11 +6,11 @@
 
 
 namespace worthy {
+
+
 namespace internal {
-
-class RuntimeImpl;
-
-} // namespace internal
+class Heap;
+}
 
 
 class Map;
@@ -25,7 +25,7 @@ public:
     Map map();
 
 private:
-    std::unique_ptr<internal::RuntimeImpl> rt_;
+    std::unique_ptr<internal::Heap> heap_;
 };
 
 

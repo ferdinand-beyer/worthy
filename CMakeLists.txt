@@ -22,6 +22,8 @@ set(Worthy_Library_SRCS
     src/internal/heap.h
     src/internal/memory.h
     src/internal/object-macros.h
+    src/internal/object-space.cpp
+    src/internal/object-space.h
     src/internal/object-type.h
     src/internal/object.cpp
     src/internal/object.h
@@ -31,8 +33,6 @@ set(Worthy_Library_SRCS
     src/internal/reference-space.h
     src/internal/reference.cpp
     src/internal/reference.h
-    src/internal/runtime-impl.cpp
-    src/internal/runtime-impl.h
     src/internal/space.cpp
     src/internal/space.h
     src/internal/variant.h

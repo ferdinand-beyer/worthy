@@ -3,12 +3,9 @@
 
 
 #include "internal/macros.h"
+#include "internal/object-space.h"
 
-#include <cstddef>
 #include <memory>
-#include <mutex>
-#include <new>
-#include <set>
 
 
 namespace worthy {
@@ -20,30 +17,28 @@ class Reference;
 class ReferenceSpace;
 
 
-class Heap {
+class Heap final {
 public:
     Heap();
+
     ~Heap();
 
     Reference* newReference(Object* obj);
 
     template<typename T, typename... Args>
-    T* construct(Args&&... args) {
-        void* memory = allocate(sizeof(T));
-        if (!memory) {
-            return nullptr;
-        }
-        return new (memory) T(std::forward<Args>(args)...);
+    inline T* newObject(Args&&... args) {
+        return object_space_->allocateObject<T>(std::forward<Args>(args)...);
     }
 
-    void* allocate(std::size_t size);
+    Reference* emptyHashMap();
 
 private:
     WORTHY_DISABLE_COPY(Heap);
 
-    std::mutex mutex_;
-    std::set<void*> allocated_;
     std::unique_ptr<ReferenceSpace> reference_space_;
+    std::unique_ptr<ObjectSpace> object_space_;
+
+    Reference* empty_hash_map_;
 };
 
 

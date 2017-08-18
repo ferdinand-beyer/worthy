@@ -20,6 +20,7 @@ ReferenceSpace::ReferenceSpace(Heap* heap, std::uint32_t page_capacity) :
 
 
 ReferenceSpace::~ReferenceSpace() {
+    // TODO: Check that all refcounts are zero?
 }
 
 

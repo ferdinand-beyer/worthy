@@ -1,14 +1,15 @@
-#include "worthy/map.h"
 #include "worthy/runtime.h"
 
-#include "internal/runtime-impl.h"
+#include "worthy/map.h"
+
+#include "internal/heap.h"
 
 
 namespace worthy {
 
 
 Runtime::Runtime()
-    : rt_{std::make_unique<internal::RuntimeImpl>()} {
+    : heap_{std::make_unique<internal::Heap>()} {
 }
 
 
@@ -17,7 +18,7 @@ Runtime::~Runtime() {
 
 
 Map Runtime::map() {
-    return rt_->emptyHashMapReference();
+    return heap_->emptyHashMap();
 }
 
 

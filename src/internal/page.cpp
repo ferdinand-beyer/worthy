@@ -22,6 +22,9 @@ Page::Page(Space* space, std::size_t data_size)
     : space_{space},
       data_size_{data_size},
       top_{begin()} {
+    // TODO: Check for MaxPageSize.  Or, if we want to allow
+    // larger pages for huge objects, make sure that we don't
+    // allocate objects after the maximum marker point.
 }
 
 

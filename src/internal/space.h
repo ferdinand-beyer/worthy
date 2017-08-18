@@ -22,11 +22,13 @@ class Space {
 public:
     static Space* spaceOf(Object* obj);
 
-    explicit Space(Heap* heap);
-
     virtual ~Space();
 
+    Heap* heap();
+
 protected:
+    explicit Space(Heap* heap);
+
     typedef boost::intrusive::list<Page> PageList;
 
     static Page* pageOf(Object* obj);
@@ -44,17 +46,22 @@ protected:
     Page* addPage(std::size_t data_size);
 
 private:
+    WORTHY_DISABLE_COPY(Space);
+
     virtual void reclaim(Object* obj);
 
     Page* allocatePage(std::size_t data_size);
     void deletePages();
 
-    WORTHY_DISABLE_COPY(Space);
-
     Heap* heap_;
     PageList pages_;
     std::mutex mutex_;
 };
+
+
+inline Heap* Space::heap() {
+    return heap_;
+}
 
 
 inline Page* Space::firstPage() {
