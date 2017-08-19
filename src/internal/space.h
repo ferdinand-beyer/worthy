@@ -20,18 +20,18 @@ class Object;
 
 class Space {
 public:
-    static Space* spaceOf(Object* obj);
+    static Space* spaceOf(const Object* obj);
 
     virtual ~Space();
 
     Heap* heap();
 
 protected:
-    explicit Space(Heap* heap);
-
     typedef boost::intrusive::list<Page> PageList;
 
-    static Page* pageOf(Object* obj);
+    static Page* pageOf(const Object* obj);
+
+    explicit Space(Heap* heap);
 
     void initialize(Object* obj, Page* page);
 

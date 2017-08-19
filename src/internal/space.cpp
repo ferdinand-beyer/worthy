@@ -35,12 +35,12 @@ typedef std::atomic<std::uint32_t> AtomicRefCount;
                   "offset of " #cls "::" #member " misaligned for type " #type);
 
 
-Space* Space::spaceOf(Object* obj) {
+Space* Space::spaceOf(const Object* obj) {
     return pageOf(obj)->space();
 }
 
 
-Page* Space::pageOf(Object* obj) {
+Page* Space::pageOf(const Object* obj) {
     WORTHY_CHECK(obj);
     return Page::fromMarker(&obj->page_marker_);
 }

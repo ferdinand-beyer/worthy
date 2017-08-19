@@ -18,6 +18,9 @@ namespace worthy {
 namespace internal {
 
 
+class Heap;
+
+
 typedef std::uint32_t ElementCount;
 
 // TODO: Transients are TBD
@@ -26,9 +29,9 @@ typedef std::intptr_t TransientTag;
 
 class Object {
 public:
-    inline ObjectType type() const {
-        return type_;
-    }
+    ObjectType type() const;
+
+    Heap* heap() const;
 
     DECL_IS_TYPE(WORTHY_OBJECT_TYPES)
 
@@ -43,6 +46,11 @@ private:
 
     friend class Space;
 };
+
+
+inline ObjectType Object::type() const {
+    return type_;
+}
 
 
 } } // namespace worthy::internal
