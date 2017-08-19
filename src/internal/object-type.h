@@ -11,20 +11,22 @@ namespace worthy {
 namespace internal {
 
 
-#define WORTHY_OBJECT_TYPES     \
-    (FreeSpace)                 \
+#define WORTHY_OBJECT_DERIVED   \
     (Reference)                 \
-    (String)                    \
-    (Binary)                    \
-    (Symbol)                    \
-    (List)                      \
-    (Vector)                    \
-    (VectorNode)                \
+    (FreeSpace)                 \
     (HashMap)                   \
-    (HashMapArrayNode)          \
-    (HashMapBitmapNode)         \
-    (HashMapCollisionNode)      \
     (TransientHashMap)
+
+
+#define WORTHY_HASHMAPNODE_DERIVED  \
+    (HashMapArrayNode)              \
+    (HashMapBitmapNode)             \
+    (HashMapCollisionNode)
+
+
+#define WORTHY_OBJECT_TYPES     \
+    WORTHY_OBJECT_DERIVED       \
+    WORTHY_HASHMAPNODE_DERIVED
 
 
 enum class ObjectType : std::uint8_t {

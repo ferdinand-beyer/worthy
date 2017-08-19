@@ -17,6 +17,10 @@ const std::size_t BranchSize = 1 << BranchBits;
 
 
 class HashMapNode : public Object {
+public:
+    HashMapNode* assoc(int shift, HashCode hash,
+            const Variant& key, const Variant& value, bool* added_leaf);
+
 protected:
     HashMapNode() = default;
 };
@@ -25,6 +29,9 @@ protected:
 class HashMapArrayNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapArrayNode)
+
+    HashMapNode* _assoc(int shift, HashCode hash,
+            const Variant& key, const Variant& value, bool* added_leaf);
 
 private:
     std::uint8_t count_;
@@ -37,6 +44,9 @@ class HashMapBitmapNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapBitmapNode)
 
+    HashMapNode* _assoc(int shift, HashCode hash,
+            const Variant& key, const Variant& value, bool* added_leaf);
+
 private:
     std::uint8_t bitmap_;
     TransientTag tag_;
@@ -48,6 +58,9 @@ private:
 class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
+
+    HashMapNode* _assoc(int shift, HashCode hash,
+            const Variant& key, const Variant& value, bool* added_leaf);
 
 private:
     HashCode hash_;
@@ -84,6 +97,14 @@ public:
 private:
     TransientTag tag_;
 };
+
+
+inline HashMapNode* HashMapNode::assoc(int shift, HashCode hash,
+        const Variant& key, const Variant& value, bool* added_leaf) {
+    DISPATCH(WORTHY_HASHMAPNODE_DERIVED, _assoc,
+            (shift, hash, key, value, added_leaf));
+    WORTHY_UNREACHABLE();
+}
 
 
 } } // namespace worthy::internal

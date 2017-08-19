@@ -30,6 +30,9 @@ BOOST_NORETURN void fatal(const char* file, int line, const char* format, ...);
 #define WORTHY_FATAL(msg) \
     ::worthy::internal::fatal(WORTHY_FILE, WORTHY_LINE, "%s", (msg))
 
+#define WORTHY_UNREACHABLE() \
+    ::worthy::internal::fatal(WORTHY_FILE, WORTHY_LINE, "unreachable code")
+
 
 #define WORTHY_CHECK_MSG(condition, message)        \
     do {                                            \
