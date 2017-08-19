@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <cstdint>
 
-// Has to be the last include (doesn't have include guards)
-#include "internal/object-macros.h"
+#include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
 
 
 namespace worthy {
@@ -25,7 +25,10 @@ class Object {
 public:
     ObjectType type() const;
 
-    DECL_IS_TYPE(WORTHY_OBJECT_TYPES)
+#define WORTHY_TEMP(r, _, object_type) \
+    bool BOOST_PP_CAT(is, object_type)() const;
+    BOOST_PP_SEQ_FOR_EACH(WORTHY_TEMP, _, WORTHY_OBJECT_TYPES)
+#undef WORTHY_TEMP
 
     Heap* heap() const;
 
@@ -51,11 +54,15 @@ inline ObjectType Object::type() const {
 }
 
 
+#define WORTHY_TEMP(r, _, object_type)                          \
+inline bool BOOST_PP_CAT(Object::is, object_type)() const {     \
+    return (type() == ObjectType::object_type);                 \
+}
+    BOOST_PP_SEQ_FOR_EACH(WORTHY_TEMP, _, WORTHY_OBJECT_TYPES)
+#undef WORTHY_TEMP
+
+
 } } // namespace worthy::internal
-
-
-#define UNDEF_OBJECT_MACROS
-#include "internal/object-macros.h"
 
 
 #endif // WORTHY_INTERNAL_OBJECT_H_

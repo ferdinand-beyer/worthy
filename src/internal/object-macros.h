@@ -19,25 +19,8 @@
         return static_cast<const object_type*>(obj);            \
     }
 
-
-#define DECL_IS_TYPE_HELPER(r, _, object_type)                  \
-    inline bool BOOST_PP_CAT(is, object_type)() const {         \
-        return (type() == ObjectType::object_type);             \
-    }
-
-
-#define DECL_IS_TYPE(object_type_seq) \
-    BOOST_PP_SEQ_FOR_EACH(DECL_IS_TYPE_HELPER, _, object_type_seq)
-
-
-// TODO
-#define WORTHY_ASSERT_SIZE(Cls) \
-    static_assert(sizeof(Cls) == (Cls::Size + Cls::Padding), \
-            "unexpected size of type " #Cls)
-
-
 // ----------------------------------------------------------------------------
-// DISPATCH -- create a pseudo-virtual dispatch method
+// DISPATCH
 
 #define DISPATCH_CASE(object_type, method, args, const_qualifier)   \
     case ObjectType::object_type:                                   \
@@ -65,16 +48,14 @@
 #define DISPATCH(object_type_seq, method, args) \
     DISPATCH_EX(object_type_seq, method, args, BOOST_PP_EMPTY())
 
-
 // ----------------------------------------------------------------------------
+
 #else // UNDEF_OBJECT_MACROS
 
 
 #undef UNDEF_OBJECT_MACROS
 
 #undef DECL_CAST
-#undef DECL_IS_TYPE_HELPER
-#undef DECL_IS_TYPE
 
 #undef DISPATCH_CASE
 #undef DISPATCH_CASE_APPLY
