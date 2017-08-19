@@ -11,8 +11,6 @@ set(Worthy_Library_SRCS
     include/worthy/value.h
     include/worthy/worthy.h
 
-    src/internal/allocation.cpp
-    src/internal/allocation.h
     src/internal/check.cpp
     src/internal/check.h
     src/internal/globals.h

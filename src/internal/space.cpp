@@ -1,11 +1,16 @@
 #include "internal/space.h"
 
-#include "internal/allocation.h"
 #include "internal/check.h"
 #include "internal/object.h"
 
+#include <boost/align/aligned_alloc.hpp>
+
 #include <atomic>
 #include <new>
+
+
+using boost::alignment::aligned_alloc;
+using boost::alignment::aligned_free;
 
 
 namespace worthy {
@@ -122,7 +127,7 @@ Page* Space::allocatePage(std::size_t data_size) {
     // the page header.
     WORTHY_CHECK(page_size <= Page::MaxPageSize);
 
-    void* memory = alignedAlloc(page_size, Page::Alignment);
+    void* memory = aligned_alloc(Page::Alignment, page_size);
     if (!memory) {
         return nullptr;
     }
@@ -132,10 +137,8 @@ Page* Space::allocatePage(std::size_t data_size) {
 
 
 void Space::deletePages() {
-    std::lock_guard<std::mutex> lock(mutex_);
-
     while (!pages_.empty()) {
-        pages_.pop_front_and_dispose(alignedFree);
+        pages_.pop_front_and_dispose(aligned_free);
     }
 }
 
