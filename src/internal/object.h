@@ -21,19 +21,17 @@ namespace internal {
 class Heap;
 
 
-typedef std::uint32_t ElementCount;
-
-// TODO: Transients are TBD
-typedef std::intptr_t TransientTag;
-
-
 class Object {
 public:
     ObjectType type() const;
 
+    DECL_IS_TYPE(WORTHY_OBJECT_TYPES)
+
     Heap* heap() const;
 
-    DECL_IS_TYPE(WORTHY_OBJECT_TYPES)
+    HashCode hashCode() const;
+
+    bool equals(const Object* other) const;
 
 protected:
     Object(ObjectType type);

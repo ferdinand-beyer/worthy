@@ -20,4 +20,15 @@ Heap* Object::heap() const {
 }
 
 
+HashCode Object::hashCode() const {
+    // TODO
+    return 1;
+}
+
+
+bool Object::equals(const Object* other) const {
+    return this == other;
+}
+
+
 } } // namespace worthy::internal
