@@ -5,9 +5,6 @@
 #include "worthy/internal/primitive.h"
 
 #include <boost/preprocessor/seq/enum.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-#include <boost/preprocessor/seq/transform.hpp>
-#include <boost/preprocessor/tuple/elem.hpp>
 
 
 namespace worthy {
@@ -17,26 +14,14 @@ namespace internal {
 class Object;
 
 
-#define WORTHY_FOR_EACH_VARIANT_TYPE(F) \
-    WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)   \
-    F(Object, 12, worthy::internal::Object*, obj)
-
-#define WORTHY_PARATHESIZE_TUPLE_4(a, b, c, d) ((a, b, c, d))
-
-#define WORTHY_VARIANT_TYPES \
-    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_PARATHESIZE_TUPLE_4)
-
-#define WORTHY_VARIANT_NAME(tuple)  BOOST_PP_TUPLE_ELEM(4, 0, tuple)
-#define WORTHY_VARIANT_ID(tuple)    BOOST_PP_TUPLE_ELEM(4, 1, tuple)
-#define WORTHY_VARIANT_TYPE(tuple)  BOOST_PP_TUPLE_ELEM(4, 2, tuple)
-#define WORTHY_VARIANT_FIELD(tuple) BOOST_PP_TUPLE_ELEM(4, 3, tuple)
+#define WORTHY_FOR_EACH_VARIANT_TYPE(F)             \
+    F(Object, 0, worthy::internal::Object*, obj)    \
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)
 
 
 enum class VariantType : std::uint8_t {
-#define WORTHY_TEMP(s, _, tuple) \
-    WORTHY_VARIANT_NAME(tuple) = WORTHY_VARIANT_ID(tuple)
-    BOOST_PP_SEQ_ENUM( \
-        BOOST_PP_SEQ_TRANSFORM(WORTHY_TEMP, ~, WORTHY_VARIANT_TYPES))
+#define WORTHY_TEMP(name, id, type, field) (name = id)
+    BOOST_PP_SEQ_ENUM(WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP))
 #undef WORTHY_TEMP
 };
 
