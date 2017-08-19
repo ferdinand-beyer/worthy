@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(worthy VERSION 0.1.0)
+project(Worthy VERSION 0.1.0)
 
 
-set(Worthy_API_VERSION 1.0.0)
+set(Worthy_API_VERSION 1)
 
-set(Worthy_Library_SRCS
+set(Worthy_SRCS
     include/worthy/internal/primitive.h
     include/worthy/abstract-value.h
     include/worthy/map.h
@@ -46,7 +46,7 @@ set(Worthy_Library_SRCS
     src/value.cpp
     )
 
-set(Worthy_UnitTests_SRCS
+set(UnitTests_SRCS
     test/unit/hash-test.cpp
     test/unit/map-test.cpp
     test/unit/reference-space-test.cpp
@@ -86,22 +86,20 @@ add_library(catch INTERFACE)
 target_include_directories(catch INTERFACE third-party/catch)
 
 
-add_library(worthy SHARED ${Worthy_Library_SRCS})
+add_library(worthy SHARED ${Worthy_SRCS})
 target_include_directories(worthy INTERFACE include)
 target_include_directories(worthy PRIVATE
     include src ${CMAKE_CURRENT_BINARY_DIR}/src-gen)
 target_link_libraries(worthy murmur3)
-set_target_properties(worthy PROPERTIES SOVERSION ${Worthy_API_VERSION})
+#set_target_properties(worthy PROPERTIES
+#    VERSION ${Worthy_VERSION}
+#    SOVERSION ${Worthy_API_VERSION})
 
 
-add_executable(unit-tests ${Worthy_UnitTests_SRCS})
+add_executable(unit-tests ${UnitTests_SRCS})
 target_include_directories(unit-tests PRIVATE test src)
 target_link_libraries(unit-tests worthy catch)
 target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
-
-
-set_target_properties(worthy unit-tests
-    PROPERTIES VERSION ${worthy_VERSION})
 
 
 enable_testing()
