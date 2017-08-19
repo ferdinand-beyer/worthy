@@ -34,64 +34,34 @@ We could try to move or merge references with the following idea:
   releasing the reference count.
 - References can be merged if they contain the same pointer.
 
-## Misc
+### Misc
 - Transient tag: per-runtime atomic counter?
 
-### Generalized heap
-- Make Reference an Object
-- Currently it has: Pointer, Index (32), RefCount (32)
-- It needs: Type (8), GC info
+## Heap
+- Make sure that the "data area" of a page is aligned to 16 bytes, by
+  making the Page class size a multiple of 16 or explicitly storing the
+  data start address.
+- Align pages to 4KB (OS page size)
+- Ideally make page sizes a multiple of the OS page size
+- Use runtime limits to allow user-tuning of the heap
+- Avoid default malloc/new and allocate memory for the heap in one go at
+  startup.  Additional allocations should all be pages.
+- The Heap class should be abstract, to allow mocks when testing spaces,
+  and to experiment with different strategies.
+- Allocations triggered by an Object should pass the object, so the Heap
+  can determine which space to allocate in.  This allows for example for
+  a separate space of internal data structures, and to optimize for
+  cache locality.
 
-New object types:
-- Reference
-- FixedSizeFreeSpace: Page knows the block size
+## Abstract/Final
+- Check that all assignable classes are either abstract or final
 
-Strategies to access an Object's page:
-- Fixed-block Space: block index
-- Fixed-block Space: control block w/ page number, close to next blocks,
-  to use a compact pointer within the data block
-- Aligned pages, page pointer can be inferred from block pointer
-
-Strategies to implement Garbage Collection:
-- Reference counting (atomic counter, 32)
-- Tracing: Space requirement TBD, external bitmap?
-
-Common patterns:
-- Allocate pages
-- Segment allocated space into blocks
-
-Desirable:
-- For fixed-block-size spaces, the size of the page header and the size
-  of blocks should fit tightly into a page
-- Use reserved space in an object for different GC strategies
-- Strategy how to access page must be inferable from the Object header
-
-Object header: Some union of:
-- Type: 8
-- Forwarding Address (Pointer): 64
-- RefCount: 32
-- Block Index: 32 -- Required size depends on page and block size.  A
-  16-bit index can address 64k (2^16) blocks.  With a minimum block size
-  of 128 bits (Object header), the maximum page size would be 8M (128 *
-  64k = 2^7 * 2^16 = 2^23)
-
-
-struct ObjectHeader {
-  uint8 type
-  uint8 flags // static? pinned? moved? 16-bit aligned?
-  uint16 index
-  uint32 reserved32; // refcount? age?
-  uint64 reserved64; // pointer? size?
-};
-
-- We could also strip the reserved64 and just make sure that objects are
-  at least 16 bytes long, reusing 8 bytes of the payload for forwarding
-  addresses.
-- "Special" objects could use the object header, e.g. free space,
-  references, arrays.
-
-See also:
-https://stackoverflow.com/questions/26357186/what-is-in-java-object-header
+## Boost
+Check out:
+- Boost.Align for alligned_alloc
+- Boost.Interprocess for mapped_region::get_page_size()
+  define: BOOST_DATE_TIME_NO_LIB
+  internal/config.h?
 
 ## Arrays
 - Use a base class for Arrays:
@@ -101,16 +71,4 @@ struct Array {
   uint32 size;
   Byte[] data
 };
-
-
-## Style
-- consider using underscore_separated_words for all methods.  Pro:
-  readable.  Con: Need to change style for things like isHashMap,
-  generated using a Macro.  is_hash_map.
-- consider using the same naming for variables and constants.  Pro:
-  there are const fields that are not necessarily variables.  Con: Use a
-  special name for compile-time constants.  Con: Without uppercasing,
-  cannot use predefined names as constants (Null, Bool, Double).
-- consider pulling the cstdint types into the worthy::internal
-  namespace, or typedef'ing them
 
