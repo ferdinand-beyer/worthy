@@ -18,7 +18,6 @@ set(Worthy_Library_SRCS
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
-    src/internal/memory.h
     src/internal/object-macros.h
     src/internal/object-space.cpp
     src/internal/object-space.h
