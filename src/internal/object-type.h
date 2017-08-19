@@ -13,7 +13,6 @@ namespace internal {
 
 #define WORTHY_OBJECT_DERIVED   \
     (Reference)                 \
-    (FreeSpace)                 \
     (HashMap)                   \
     (TransientHashMap)
 

@@ -17,7 +17,7 @@ namespace {
 
 class MockObject : public Object {
 public:
-    MockObject() : Object{ObjectType::FreeSpace} {}
+    MockObject() : Object{ObjectType::Reference} {}
 };
 
 

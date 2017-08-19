@@ -19,7 +19,7 @@ class Object;
 
 #define WORTHY_FOR_EACH_VARIANT_TYPE(F) \
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)   \
-    F(ObjectPtr, 12, worthy::internal::Object*, obj)
+    F(Object, 12, worthy::internal::Object*, obj)
 
 #define WORTHY_PARATHESIZE_TUPLE_4(a, b, c, d) ((a, b, c, d))
 
@@ -56,15 +56,9 @@ union VariantData {
 };
 
 
-class Variant {
-private:
-    VariantData data_;
-    VariantType type_;
-};
-
-
 template <typename Function>
-typename Function::return_type dispatch(const VariantData& data, const VariantType& type, Function f) {
+inline typename Function::return_type
+dispatch(const VariantData& data, const VariantType& type, Function f) {
     switch (type) {
 #define WORTHY_TEMP(name, id, type, field) \
     case VariantType::name: \
@@ -72,6 +66,54 @@ typename Function::return_type dispatch(const VariantData& data, const VariantTy
     WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
     }
+}
+
+
+class Variant {
+public:
+    Variant();
+
+    Variant(VariantType type, VariantData data);
+
+    VariantType type() const;
+    VariantData data() const;
+
+    bool isNull() const;
+
+    bool operator==(const Variant& other) const;
+    bool operator!=(const Variant& other) const;
+
+private:
+    VariantData data_;
+    VariantType type_;
+};
+
+
+inline Variant::Variant()
+    : data_{}, type_{VariantType::Object} {}
+
+
+inline Variant::Variant(VariantType type, VariantData data)
+    : data_{data}, type_{type} {}
+
+
+inline VariantType Variant::type() const {
+    return type_;
+}
+
+
+inline VariantData Variant::data() const {
+    return data_;
+}
+
+
+inline bool Variant::isNull() const {
+    return (type_ == VariantType::Object) && (data_.obj == nullptr);
+}
+
+
+inline bool Variant::operator!=(const Variant& other) const {
+    return !operator==(other);
 }
 
 

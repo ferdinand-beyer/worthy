@@ -23,6 +23,8 @@ class Heap;
 
 class Object {
 public:
+    static bool equals(const Object* a, const Object* b);
+
     ObjectType type() const;
 
 #define WORTHY_TEMP(r, _, object_type) \
@@ -40,6 +42,9 @@ protected:
     Object(ObjectType type);
 
 private:
+    HashCode _hashCode() const;
+    bool _equals(const Object* other) const;
+
     const ObjectType type_;
     std::uint8_t flags_;
     PageMarker page_marker_;
@@ -47,6 +52,11 @@ private:
 
     friend class Space;
 };
+
+
+inline bool Object::equals(const Object* a, const Object* b) {
+    return a ? a->equals(b) : !b;
+}
 
 
 inline ObjectType Object::type() const {

@@ -38,7 +38,7 @@
                 DISPATCH_CASE_APPLY,                                \
                 (method, args, const_qualifier),                    \
                 object_type_seq)                                    \
-        default: break;                                             \
+        default: WORTHY_UNREACHABLE();                              \
         }                                                           \
     } while (false)
 

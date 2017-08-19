@@ -81,11 +81,15 @@ public:
         return count_;
     }
 
+    const HashMap* assoc(const Variant& key, const Variant& value) const;
+
 private:
+    Variant nullValue() const;
+
     bool has_null_key_;
-    VariantType null_key_value_type_;
+    VariantType null_type_;
     ElementCount count_;
-    VariantData null_key_value_;
+    VariantData null_data_;
     HashMapNode* root_;
 };
 
@@ -103,7 +107,6 @@ inline HashMapNode* HashMapNode::assoc(int shift, HashCode hash,
         const Variant& key, const Variant& value, bool* added_leaf) {
     DISPATCH(WORTHY_HASHMAPNODE_DERIVED, _assoc,
             (shift, hash, key, value, added_leaf));
-    WORTHY_UNREACHABLE();
 }
 
 

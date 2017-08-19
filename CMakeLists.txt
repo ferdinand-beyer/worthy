@@ -37,6 +37,7 @@ set(Worthy_SRCS
     src/internal/reference.h
     src/internal/space.cpp
     src/internal/space.h
+    src/internal/variant.cpp
     src/internal/variant.h
 
     src/abstract-value.cpp
