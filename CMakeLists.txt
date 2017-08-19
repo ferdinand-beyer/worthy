@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(worthy)
+project(worthy VERSION 0.1.0)
 
 
 set(Worthy_Library_SRCS
@@ -59,8 +59,20 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 
 if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 endif()
+
+set(Worthy_DEBUG_FLAGS "-Wall -DWORTHY_DEBUG")
+
+set(CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} ${Worthy_DEBUG_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${Worthy_DEBUG_FLAGS}")
+
+
+configure_file(
+    "src/internal/version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/src-gen/internal/version.h")
 
 
 add_library(murmur3 STATIC
@@ -75,7 +87,8 @@ target_include_directories(catch INTERFACE third-party/catch)
 
 add_library(worthy SHARED ${Worthy_Library_SRCS})
 target_include_directories(worthy INTERFACE include)
-target_include_directories(worthy PRIVATE include src)
+target_include_directories(worthy PRIVATE
+    include src ${CMAKE_CURRENT_BINARY_DIR}/src-gen)
 target_link_libraries(worthy murmur3)
 
 

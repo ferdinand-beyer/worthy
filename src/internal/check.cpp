@@ -4,10 +4,12 @@
 #include <cstdio>
 #include <cstdlib>
 
+
 namespace worthy {
 namespace internal {
 
-void fatal(const char* file, int line, const char* format, ...) {
+
+BOOST_NORETURN void fatal(const char* file, int line, const char* format, ...) {
     using namespace std;
 
     fflush(stdout);
@@ -23,5 +25,6 @@ void fatal(const char* file, int line, const char* format, ...) {
     fflush(stderr);
     abort();
 }
+
 
 } } // namespace worthy::internal

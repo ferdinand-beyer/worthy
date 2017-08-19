@@ -11,40 +11,50 @@ namespace worthy {
 namespace internal {
 
 
-void fatal(const char* file, int line, const char* format, ...);
+BOOST_NORETURN void fatal(const char* file, int line, const char* format, ...);
 
 
-#if !defined(WORTHY_ENABLE_DEBUG_CHECKS)
-    #if defined(DEBUG)
-        #define WORTHY_ENABLE_DEBUG_CHECKS 1
-    #else
-        #define WORTHY_ENABLE_DEBUG_CHECKS 0
+#ifdef WORTHY_DEBUG
+    #define WORTHY_FILE __FILE__
+    #define WORTHY_LINE __LINE__
+
+    #ifndef WORTHY_ENABLE_DEBUG_CHECKS
+        #define WORTHY_ENABLE_DEBUG_CHECKS
     #endif
+#else
+    #define WORTHY_FILE "(unknown)"
+    #define WORTHY_LINE 0
 #endif
 
 
-#define WORTHY_CHECK_MSG(condition, message)                \
-    do {                                                    \
-        if (BOOST_UNLIKELY(!(condition))) {                 \
-            ::worthy::internal::fatal(__FILE__, __LINE__,   \
-                    "Check failed: %s", message);           \
-        }                                                   \
+#define WORTHY_FATAL(msg) \
+    ::worthy::internal::fatal(WORTHY_FILE, WORTHY_LINE, "%s", (msg))
+
+
+#define WORTHY_CHECK_MSG(condition, message)        \
+    do {                                            \
+        if (BOOST_UNLIKELY(!(condition))) {         \
+            ::worthy::internal::fatal(              \
+                    WORTHY_FILE, WORTHY_LINE,       \
+                    "Check failed: %s", message);   \
+        }                                           \
     } while (false)
 
 
-#define WORTHY_CHECK(condition)                             \
+#define WORTHY_CHECK(condition) \
     WORTHY_CHECK_MSG(condition, #condition)
 
 
-#if WORTHY_ENABLE_DEBUG_CHECKS
+#ifdef WORTHY_ENABLE_DEBUG_CHECKS
 
 
-#define WORTHY_DCHECK_MSG(condition, message)               \
-    do {                                                    \
-        if (BOOST_UNLIKELY(!(condition))) {                 \
-            ::worthy::internal::fatal(__FILE__, __LINE__,   \
-                    "Debug check failed: %s", message);     \
-        }                                                   \
+#define WORTHY_DCHECK_MSG(condition, message)           \
+    do {                                                \
+        if (BOOST_UNLIKELY(!(condition))) {             \
+            ::worthy::internal::fatal(                  \
+                    WORTHY_FILE, WORTHY_LINE,           \
+                    "Debug check failed: %s", message); \
+        }                                               \
     } while (false)
 
 
