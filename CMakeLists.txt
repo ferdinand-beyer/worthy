@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 project(worthy)
 
 
-cmake_policy(SET CMP0042 NEW)
-
-
 set(Worthy_Library_SRCS
     include/worthy/internal/primitive.h
     include/worthy/abstract-value.h
