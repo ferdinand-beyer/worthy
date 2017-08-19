@@ -13,10 +13,16 @@ using worthy::internal::Reference;
 using worthy::internal::ReferenceSpace;
 
 
+namespace {
+
+
 class MockObject : public Object {
 public:
     MockObject() : Object{ObjectType::FreeSpace} {}
 };
+
+
+} // namespace
 
 
 TEST_CASE("can allocate Reference objects", "[reference]") {

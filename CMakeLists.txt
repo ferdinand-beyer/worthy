@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 project(worthy)
+
+
+cmake_policy(SET CMP0042 NEW)
+
 
 set(Worthy_Library_SRCS
     include/worthy/internal/primitive.h
@@ -14,6 +18,8 @@ set(Worthy_Library_SRCS
     src/internal/check.cpp
     src/internal/check.h
     src/internal/globals.h
+    src/internal/hash.h
+    src/internal/hash.cpp
     src/internal/hashmap.cpp
     src/internal/hashmap.h
     src/internal/heap.cpp
@@ -41,30 +47,46 @@ set(Worthy_Library_SRCS
     src/value.cpp
     )
 
+
 set(Worthy_UnitTests_SRCS
-    ${Worthy_Library_SRCS}
+    test/unit/hash-test.cpp
     test/unit/map-test.cpp
     test/unit/reference-space-test.cpp
     test/unit/value-test.cpp
     test/main.cpp
     )
 
+
 find_package(Boost 1.54.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++14")
 endif()
 
-include_directories(include src)
+
+add_library(murmur3 STATIC
+    third-party/murmur3/MurmurHash3.h
+    third-party/murmur3/MurmurHash3.cpp)
+target_include_directories(murmur3 INTERFACE third-party/murmur3)
+
 
 add_library(catch INTERFACE)
 target_include_directories(catch INTERFACE third-party/catch)
 
+
+add_library(worthy SHARED ${Worthy_Library_SRCS})
+target_include_directories(worthy INTERFACE include)
+target_include_directories(worthy PRIVATE include src)
+target_link_libraries(worthy murmur3)
+
+
 add_executable(unit-tests ${Worthy_UnitTests_SRCS})
-target_include_directories(unit-tests PRIVATE test)
-target_link_libraries(unit-tests catch)
+target_include_directories(unit-tests PRIVATE test src)
+target_link_libraries(unit-tests worthy catch)
 target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
+
 
 enable_testing()
 add_test(NAME unit-tests COMMAND unit-tests)
