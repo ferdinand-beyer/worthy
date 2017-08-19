@@ -15,9 +15,14 @@ namespace internal {
 HashCode hash(const void* buffer, std::size_t size);
 
 
+inline HashCode hash(std::size_t x) {
+    return hash(&x, sizeof(x));
+}
+
+
 #define WORTHY_TEMP(name, id, type, field)  \
-    inline HashCode hash(type field) {      \
-        return hash(&field, sizeof(type));  \
+    inline HashCode hash(type x) {          \
+        return hash(&x, sizeof(x));         \
     }
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
