@@ -20,14 +20,28 @@ TEST_CASE("construct empty map", "[map]") {
 }
 
 
+TEST_CASE("add values", "[map]") {
+    Runtime rt;
+
+    Map map1 = rt.map();
+    Map map2 = map1.add(42, 1337);
+
+    REQUIRE(map2.size() == 1);
+    //REQUIRE(map2.containsKey(Value()));
+    //REQUIRE(map2.get(Value()) == 42);
+
+    REQUIRE(map1.size() == 0);
+}
+
+
 TEST_CASE("add value with null key", "[map]") {
     Runtime rt;
 
     Map map = rt.map();
-    map = map.add(Value(), 42);
+    map = map.add(nullptr, 42);
 
     REQUIRE(map.size() == 1);
     REQUIRE(map.containsKey(Value()));
-    REQUIRE(map.get(Value()) == 42);
+    REQUIRE(map.get(nullptr) == 42);
 }
 

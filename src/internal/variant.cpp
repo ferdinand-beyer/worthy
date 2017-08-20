@@ -41,23 +41,23 @@ bool Variant::operator==(const Variant& other) const {
 }
 
 
-void VariantArray::copyTo(VariantArray& dst, std::size_t dstIndex,
-                          std::size_t srcIndex, std::size_t length) {
-    WORTHY_DCHECK(&dst != this);
+void VariantArray::copy(std::size_t dstIndex, const VariantArray& src,
+                        std::size_t srcIndex, std::size_t length) {
+    WORTHY_DCHECK(&src != this);
 
     if (length == 0) {
         return;
     }
 
-    WORTHY_CHECK(srcIndex + length <= length_);
-    WORTHY_CHECK(dstIndex + length <= dst.length_);
+    WORTHY_CHECK(srcIndex + length <= src.length_);
+    WORTHY_CHECK(dstIndex + length <= length_);
 
-    std::memcpy(dst.data_array_ + dstIndex,
-                data_array_ + srcIndex,
+    std::memcpy(data_array_ + dstIndex,
+                src.data_array_ + srcIndex,
                 length * sizeof(VariantData));
 
-    std::memcpy(dst.type_array_ + dstIndex,
-                type_array_ + srcIndex,
+    std::memcpy(type_array_ + dstIndex,
+                src.type_array_ + srcIndex,
                 length * sizeof(VariantType));
 }
 

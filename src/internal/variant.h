@@ -154,8 +154,10 @@ public:
     Variant get(std::size_t index) const;
     void set(std::size_t index, const Variant& value);
 
-    void copyTo(VariantArray& dst, std::size_t dstIndex,
-                std::size_t srcIndex, std::size_t length);
+    void copy(std::size_t dstIndex,
+              const VariantArray& src,
+              std::size_t srcIndex,
+              std::size_t length);
 
 private:
     const std::size_t length_;

@@ -50,7 +50,7 @@ TEST_CASE("compact array of variant types", "[variant]") {
             array2.set(i, 7);
         }
 
-        array1.copyTo(array2, 3, 1, 5);
+        array2.copy(3, array1, 1, 5);
 
         for (int i = 0; i < 3; ++i) {
             REQUIRE(array2.get(i) == 7);

@@ -34,7 +34,9 @@ public:
 
     template<typename T, typename... Args>
     inline T* newDynamicObject(std::size_t extra_size, Args&&... args) {
-        return object_space_->newDynamicObject<T>(std::forward<Args>(args)...);
+        return object_space_->newDynamicObject<T>(
+                extra_size,
+                std::forward<Args>(args)...);
     }
 
     HashMap* emptyHashMap() const;

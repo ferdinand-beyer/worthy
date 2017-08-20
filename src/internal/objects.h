@@ -192,12 +192,10 @@ public:
                       bool* added_leaf) const;
 
 private:
+    std::uint8_t count() const;
     std::uint8_t index(std::uint32_t bit) const;
 
     VariantArray array() const;
-
-    Variant keyAt(std::uint8_t index) const;
-    Variant valueAt(std::uint8_t index) const;
 
     std::uint32_t bitmap_;
     TransientTag tag_;

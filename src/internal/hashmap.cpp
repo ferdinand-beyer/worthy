@@ -1,6 +1,8 @@
 #include "internal/hashmap.h"
 
 #include "internal/heap.h"
+#include "internal/objects.h"
+#include "internal/variant.h"
 
 #include <bitset>
 
@@ -12,6 +14,11 @@ namespace internal {
 namespace {
 
 
+inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
+    return caller->heap()->emptyHashMapBitmapNode();
+}
+
+
 inline HashMap* newHashMap(const Object* caller, ElementCount count,
                            const HashMapNode* root, bool has_null_key,
                            const Variant& null_value) {
@@ -20,8 +27,10 @@ inline HashMap* newHashMap(const Object* caller, ElementCount count,
 }
 
 
-inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
-    return caller->heap()->emptyHashMapBitmapNode();
+inline HashMapBitmapNode* newBitmapNode(const Object* caller,
+                                        std::uint8_t array_length) {
+    return caller->heap()->newDynamicObject<HashMapBitmapNode>(
+        VariantArray::sizeFor(array_length));
 }
 
 
@@ -147,6 +156,11 @@ HashMapBitmapNode::HashMapBitmapNode()
 }
 
 
+std::uint8_t HashMapBitmapNode::count() const {
+    return bitcount(bitmap_);
+}
+
+
 std::uint8_t HashMapBitmapNode::index(std::uint32_t bit) const {
     return bitcount(bitmap_ & (bit - 1));
 }
@@ -155,17 +169,7 @@ std::uint8_t HashMapBitmapNode::index(std::uint32_t bit) const {
 VariantArray HashMapBitmapNode::array() const {
     return {reinterpret_cast<Address>(
                 const_cast<HashMapBitmapNode*>(this + 1)),
-            static_cast<std::size_t>(2 * bitcount(bitmap_))};
-}
-
-
-Variant HashMapBitmapNode::keyAt(std::uint8_t index) const {
-    return array().get(2*index);
-}
-
-
-Variant HashMapBitmapNode::valueAt(std::uint8_t index) const {
-    return array().get(2*index + 1);
+            static_cast<std::size_t>(2 * count())};
 }
 
 
@@ -175,10 +179,12 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
     const auto bit = bitpos(hash, shift);
     const auto idx = index(bit);
 
+    const auto arr = array();
+
     if (bitmap_ & bit) {
         // We already have an element at this position.
-        auto key = keyAt(idx);
-        auto value = valueAt(idx);
+        auto key = arr.get(2*idx);
+        auto value = arr.get(2*idx + 1);
 
         if (key.isNull()) {
             // Null key means the value is a node.
@@ -200,14 +206,27 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
         WORTHY_UNIMPLEMENTED();
     }
 
-    const auto n = bitcount(bitmap_);
+    const auto n = count();
 
     if (n >= 16) {
         // TODO: Switch to ArrayNode
         WORTHY_UNIMPLEMENTED();
     }
 
-    WORTHY_UNIMPLEMENTED();
+    HashMapBitmapNode* new_node = newBitmapNode(this, 2 * (n+1));
+
+    new_node->bitmap_ = bitmap_ | bit;
+
+    auto new_array = new_node->array();
+
+    new_array.copy(0, arr, 0, 2*idx);
+    new_array.set(2*idx, key);
+    new_array.set(2*idx+1, value);
+    new_array.copy(2*(idx+1), arr, 2*idx, 2*(n-idx));
+
+    *added_leaf = true;
+
+    return new_node;
 }
 
 
