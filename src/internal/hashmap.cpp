@@ -84,7 +84,7 @@ bool HashMap::containsKey(const Variant& key) const {
     if (!root_) {
         return false;
     }
-    const Variant not_found(this);
+    const Variant not_found(const_cast<HashMap*>(this));
     return root_->find(0, hash(key), key, not_found) != not_found;
 }
 
@@ -141,10 +141,10 @@ HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
 }
 
 
-const Variant& HashMapNode::find(std::uint8_t shift,
-                                 HashCode hash,
-                                 const Variant& key,
-                                 const Variant& not_found) const {
+Variant HashMapNode::find(std::uint8_t shift,
+                          HashCode hash,
+                          const Variant& key,
+                          const Variant& not_found) const {
     NODE_DISPATCH(_find, (shift, hash, key, not_found));
 }
 
@@ -161,10 +161,10 @@ HashMapNode* HashMapArrayNode::_add(std::uint8_t shift, HashCode hash,
 }
 
 
-const Variant& HashMapArrayNode::_find(std::uint8_t shift,
-                                       HashCode hash,
-                                       const Variant& key,
-                                       const Variant& not_found) const {
+Variant HashMapArrayNode::_find(std::uint8_t shift,
+                                HashCode hash,
+                                const Variant& key,
+                                const Variant& not_found) const {
     // TODO
     WORTHY_UNIMPLEMENTED();
 }
@@ -176,8 +176,7 @@ const Variant& HashMapArrayNode::_find(std::uint8_t shift,
 
 HashMapBitmapNode::HashMapBitmapNode()
     : HashMapNode{ObjectType::HashMapBitmapNode},
-      bitmap_{0},
-      tag_{0} {
+      bitmap_{0} {
 }
 
 
@@ -255,10 +254,10 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
 }
 
 
-const Variant& HashMapBitmapNode::_find(std::uint8_t shift,
-                                        HashCode hash,
-                                        const Variant& key,
-                                        const Variant& not_found) const {
+Variant HashMapBitmapNode::_find(std::uint8_t shift,
+                                 HashCode hash,
+                                 const Variant& key,
+                                 const Variant& not_found) const {
     const auto bit = bitpos(hash, shift);
     if ((bitmap_ & bit) == 0) {
         return not_found;
@@ -297,10 +296,10 @@ HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift,
 }
 
 
-const Variant& HashMapCollisionNode::_find(std::uint8_t shift,
-                                           HashCode hash,
-                                           const Variant& key,
-                                           const Variant& not_found) const {
+Variant HashMapCollisionNode::_find(std::uint8_t shift,
+                                    HashCode hash,
+                                    const Variant& key,
+                                    const Variant& not_found) const {
     // TODO
     WORTHY_UNIMPLEMENTED();
 }

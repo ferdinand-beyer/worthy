@@ -161,8 +161,8 @@ public:
                      const Variant& key, const Variant& value,
                      bool& added_leaf) const;
 
-    const Variant& find(std::uint8_t shift, HashCode hash,
-                        const Variant& key, const Variant& not_found) const;
+    Variant find(std::uint8_t shift, HashCode hash,
+                 const Variant& key, const Variant& not_found) const;
 
 protected:
     HashMapNode(ObjectType type);
@@ -177,13 +177,13 @@ public:
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    const Variant& _find(std::uint8_t shift, HashCode hash,
-                         const Variant& key, const Variant& not_found) const;
+    Variant _find(std::uint8_t shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
 
 private:
-    std::uint8_t count_;
-    TransientTag tag_;
-    HashMapNode* nodes_[32];
+    //std::uint8_t count_;
+    //TransientTag tag_;
+    //HashMapNode* nodes_[32];
 };
 
 
@@ -197,8 +197,8 @@ public:
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    const Variant& _find(std::uint8_t shift, HashCode hash,
-                         const Variant& key, const Variant& not_found) const;
+    Variant _find(std::uint8_t shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
 
 private:
     std::uint8_t count() const;
@@ -207,7 +207,7 @@ private:
     VariantArray array() const;
 
     std::uint32_t bitmap_;
-    TransientTag tag_;
+    //TransientTag tag_;
 };
 
 
@@ -219,13 +219,13 @@ public:
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    const Variant& _find(std::uint8_t shift, HashCode hash,
-                         const Variant& key, const Variant& not_found) const;
+    Variant _find(std::uint8_t shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
 
 private:
-    HashCode hash_;
-    TransientTag tag_;
-    ElementCount count_;
+    //HashCode hash_;
+    //TransientTag tag_;
+    //ElementCount count_;
 };
 
 
@@ -259,7 +259,7 @@ public:
     DECL_CAST(TransientHashMap)
 
 private:
-    TransientTag tag_;
+    //TransientTag tag_;
 };
 
 
