@@ -77,6 +77,9 @@ public:
 
     HashMap();
 
+    HashMap(ElementCount count, HashMapNode* root,
+            bool has_null_key, const Variant& null_value);
+
     inline ElementCount count() const {
         return count_;
     }
@@ -84,6 +87,9 @@ public:
     const HashMap* assoc(const Variant& key, const Variant& value) const;
 
 private:
+    HashMap* newHashMap(ElementCount count, HashMapNode* root,
+            bool has_null_key, const Variant& null_value) const;
+
     Variant nullValue() const;
 
     bool has_null_key_;
