@@ -44,6 +44,9 @@ union VariantData {
 };
 
 
+/**
+ * Tagged union for primitives and Objects.
+ */
 class Variant {
 public:
     Variant();
@@ -68,12 +71,17 @@ public:
     bool operator==(const Variant& other) const;
     bool operator!=(const Variant& other) const;
 
+    Object* toObject() const;
+
 private:
     VariantData data_;
     VariantType type_;
 };
 
 
+/**
+ * Compute the hash code for a Variant.
+ */
 HashCode hash(const Variant& variant);
 
 
@@ -120,6 +128,23 @@ inline bool Variant::operator!=(const Variant& other) const {
 }
 
 
+inline Object* Variant::toObject() const {
+    WORTHY_DCHECK(isObject());
+    return data_.obj;
+}
+
+
+/**
+ * A compact Variant array.
+ *
+ * VariantData takes a whole word, whereas VariantType is only one byte
+ * wide.  Therefore an array of Variant objects will waste 7 bytes per
+ * object on a 64-bit system.
+ *
+ * The VariantArray class interprets a memory buffer as two consecutive
+ * arrays: a VariantData array and a VariantType array, improving memory
+ * usage.
+ */
 class VariantArray {
 public:
     static std::size_t sizeFor(std::size_t count);

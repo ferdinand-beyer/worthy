@@ -176,14 +176,18 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
     const std::uint8_t idx = index(bit);
 
     if (bitmap_ & bit) {
+        // We already have an element at this position.
         Variant key = keyAt(idx);
-        Variant value_or_node = valueAt(idx);
+        Variant value = valueAt(idx);
 
         if (key.isNull()) {
-            WORTHY_DCHECK(value_or_node.isObject());
-            HashMapNode* node = static_cast<HashMapNode*>(value_or_node.data().obj);
+            // Null key means the value is a node.
+            WORTHY_DCHECK(value.isObject());
+
+            HashMapNode* node = static_cast<HashMapNode*>(value.toObject());
             HashMapNode* new_node = node->add(shift + 5, hash, key, value,
                                               added_leaf);
+
             if (node == new_node) {
                 return const_cast<HashMapBitmapNode*>(this);
             }

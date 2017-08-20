@@ -1,3 +1,4 @@
+#include "internal/hash.h"
 #include "internal/variant.h"
 
 #include <vector>
@@ -5,10 +6,16 @@
 #include <catch.hpp>
 
 
-using worthy::internal::Byte;
-using worthy::internal::Variant;
-using worthy::internal::VariantArray;
-using worthy::internal::VariantType;
+using namespace worthy::internal;
+
+
+TEST_CASE("hash code", "[variant]") {
+    Variant v1(true);
+    Variant v2(17);
+
+    REQUIRE(hash(v1) == hash(true));
+    REQUIRE(hash(v2) == hash(17));
+}
 
 
 TEST_CASE("compact array of variant types", "[variant]") {
@@ -27,3 +34,4 @@ TEST_CASE("compact array of variant types", "[variant]") {
     REQUIRE(array.get(5) == 105);
     REQUIRE(array.get(9) == 109);
 }
+
