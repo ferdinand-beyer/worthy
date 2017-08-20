@@ -5,7 +5,7 @@
 #include "worthy/internal/primitive.h"
 
 #include "internal/globals.h"
-#include "internal/object.h"
+#include "internal/objects.h"
 
 
 namespace worthy {

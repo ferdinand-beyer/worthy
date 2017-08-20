@@ -1,7 +1,7 @@
 #include "worthy/abstract-value.h"
 
 #include "internal/check.h"
-#include "internal/reference.h"
+#include "internal/objects.h"
 
 #include <utility>
 

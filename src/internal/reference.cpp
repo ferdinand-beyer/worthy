@@ -1,10 +1,20 @@
-#include "internal/reference.h"
-
+#include "internal/objects.h"
 #include "internal/reference-space.h"
 
 
 namespace worthy {
 namespace internal {
+
+
+namespace {
+
+
+inline ReferenceSpace* spaceOf(Reference* ref) {
+    return static_cast<ReferenceSpace*>(Space::spaceOf(ref));
+}
+
+
+} // namespace
 
 
 Reference::Reference(Object* ptr)
@@ -13,18 +23,13 @@ Reference::Reference(Object* ptr)
 }
 
 
-ReferenceSpace* Reference::space() {
-    return static_cast<ReferenceSpace*>(Space::spaceOf(this));
-}
-
-
 void Reference::retain() {
-    space()->retain(this);
+    spaceOf(this)->retain(this);
 }
 
 
 void Reference::release() {
-    space()->release(this);
+    spaceOf(this)->release(this);
 }
 
 

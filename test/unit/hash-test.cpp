@@ -1,5 +1,5 @@
 #include "internal/hash.h"
-#include "internal/object.h"
+#include "internal/objects.h"
 
 #include <string>
 

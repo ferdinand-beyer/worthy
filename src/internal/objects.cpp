@@ -1,12 +1,8 @@
-#include "internal/object.h"
+#include "internal/objects.h"
 
 #include "internal/hash.h"
-#include "internal/hashmap.h"
-#include "internal/reference.h"
 #include "internal/space.h"
 
-// Has to be the last include (doesn't have include guards)
-#include "internal/object-macros.h"
 
 namespace worthy {
 namespace internal {

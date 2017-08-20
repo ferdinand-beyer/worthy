@@ -1,13 +1,10 @@
 #include "internal/heap.h"
 
 #include "internal/check.h"
-#include "internal/hashmap.h"
 #include "internal/object-space.h"
+#include "internal/objects.h"
 #include "internal/reference-space.h"
-#include "internal/reference.h"
 
-// TODO
-#include <iostream>
 
 namespace worthy {
 namespace internal {

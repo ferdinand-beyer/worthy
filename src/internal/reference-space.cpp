@@ -1,7 +1,7 @@
 #include "internal/reference-space.h"
 
 #include "internal/check.h"
-#include "internal/reference.h"
+#include "internal/objects.h"
 
 #include <new>
 
