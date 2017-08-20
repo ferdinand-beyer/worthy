@@ -4,6 +4,8 @@
 
 #include "worthy/abstract-value.h"
 
+#include <cstddef>
+
 
 namespace worthy {
 
@@ -12,6 +14,7 @@ class Value final : public AbstractValue {
 public:
     // Construct a Null value.
     Value();
+    Value(std::nullptr_t);
 
 #define WORTHY_TEMP(name, id, type, field) \
     Value(type field##_);
@@ -46,6 +49,9 @@ inline void swap(Value& lhs, Value& rhs) {
 
 
 inline Value::Value() {}
+
+
+inline Value::Value(std::nullptr_t) {}
 
 
 #define WORTHY_TEMP(name, id, type, field) \
