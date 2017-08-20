@@ -1,7 +1,10 @@
 #include "internal/variant.h"
 
+#include "internal/check.h"
 #include "internal/hash.h"
 #include "internal/objects.h"
+
+#include <cstring>
 
 
 namespace worthy {
@@ -35,6 +38,27 @@ bool Variant::operator==(const Variant& other) const {
         }
     }
     return false;
+}
+
+
+void VariantArray::copyTo(VariantArray& dst, std::size_t dstIndex,
+                          std::size_t srcIndex, std::size_t length) {
+    WORTHY_DCHECK(&dst != this);
+
+    if (length == 0) {
+        return;
+    }
+
+    WORTHY_CHECK(srcIndex + length <= length_);
+    WORTHY_CHECK(dstIndex + length <= dst.length_);
+
+    std::memcpy(dst.data_array_ + dstIndex,
+                data_array_ + srcIndex,
+                length * sizeof(VariantData));
+
+    std::memcpy(dst.type_array_ + dstIndex,
+                type_array_ + srcIndex,
+                length * sizeof(VariantType));
 }
 
 

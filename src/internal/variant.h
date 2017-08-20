@@ -147,39 +147,42 @@ inline Object* Variant::toObject() const {
  */
 class VariantArray {
 public:
-    static std::size_t sizeFor(std::size_t count);
+    static std::size_t sizeFor(std::size_t length);
 
-    VariantArray(Address start, std::size_t count);
+    VariantArray(Address start, std::size_t length);
 
     Variant get(std::size_t index) const;
     void set(std::size_t index, const Variant& value);
 
+    void copyTo(VariantArray& dst, std::size_t dstIndex,
+                std::size_t srcIndex, std::size_t length);
+
 private:
-    const std::size_t count_;
+    const std::size_t length_;
     VariantData* const data_array_;
     VariantType* const type_array_;
 };
 
 
-inline std::size_t VariantArray::sizeFor(std::size_t count) {
-    return count * (sizeof(VariantData) + sizeof(VariantType));
+inline std::size_t VariantArray::sizeFor(std::size_t length) {
+    return length * (sizeof(VariantData) + sizeof(VariantType));
 }
 
 
-inline VariantArray::VariantArray(Address start, std::size_t count)
-    : count_{count},
+inline VariantArray::VariantArray(Address start, std::size_t length)
+    : length_{length},
       data_array_{reinterpret_cast<VariantData*>(start)},
-      type_array_{reinterpret_cast<VariantType*>(data_array_ + count)} {}
+      type_array_{reinterpret_cast<VariantType*>(data_array_ + length)} {}
 
 
 inline Variant VariantArray::get(std::size_t index) const {
-    WORTHY_DCHECK(index < count_);
+    WORTHY_DCHECK(index < length_);
     return {type_array_[index], data_array_[index]};
 }
 
 
 inline void VariantArray::set(std::size_t index, const Variant& value) {
-    WORTHY_DCHECK(index < count_);
+    WORTHY_DCHECK(index < length_);
     data_array_[index] = value.data();
     type_array_[index] = value.type();
 }
