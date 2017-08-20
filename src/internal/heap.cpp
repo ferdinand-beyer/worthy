@@ -14,10 +14,8 @@ Heap::Heap() {
     reference_space_.reset(new ReferenceSpace(this));
     object_space_.reset(new ObjectSpace(this));
 
-    empty_hash_map_ = reference_space_->newReference(
-            object_space_->allocateObject<HashMap>());
-    empty_hash_map_bitmap_node_ = reference_space_->newReference(
-            object_space_->allocateObject<HashMapBitmapNode>());
+    empty_hash_map_ = newReference(newObject<HashMap>());
+    empty_hash_map_bitmap_node_ = newReference(newObject<HashMapBitmapNode>());
 }
 
 

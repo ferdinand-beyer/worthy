@@ -20,14 +20,19 @@ public:
     ~ObjectSpace();
 
     template<typename T, typename... Args>
-    T* allocateObject(Args&&... args) {
+    inline T* newObject(Args&&... args) {
+        return newDynamicObject<T>(0, std::forward<Args>(args)...);
+    }
+
+    template<typename T, typename... Args>
+    T* newDynamicObject(std::size_t extra_size, Args&&... args) {
         static_assert(std::is_base_of<Object, T>::value,
             "can only allocate Object-derived instances");
 
         void* memory;
         Page* page;
 
-        if (!allocate(sizeof(T), alignof(T), memory, page)) {
+        if (!allocate(sizeof(T) + extra_size, alignof(T), memory, page)) {
             return nullptr;
         }
 
