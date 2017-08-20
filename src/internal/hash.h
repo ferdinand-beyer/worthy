@@ -5,7 +5,6 @@
 #include "worthy/internal/primitive.h"
 
 #include "internal/globals.h"
-#include "internal/objects.h"
 
 
 namespace worthy {
@@ -26,11 +25,6 @@ inline HashCode hash(std::size_t x) {
     }
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
-
-
-inline HashCode hash(const Object* obj) {
-    return obj ? obj->hashCode() : 0;
-}
 
 
 } } // namespace worthy::internal

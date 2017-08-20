@@ -12,6 +12,8 @@ namespace worthy {
 namespace internal {
 
 
+class HashMap;
+class HashMapBitmapNode;
 class Object;
 class Reference;
 class ReferenceSpace;
@@ -30,7 +32,10 @@ public:
         return object_space_->allocateObject<T>(std::forward<Args>(args)...);
     }
 
-    Reference* emptyHashMap();
+    HashMap* emptyHashMap() const;
+    HashMapBitmapNode* emptyHashMapBitmapNode() const;
+
+    Reference* emptyHashMapReference() const;
 
 private:
     WORTHY_DISABLE_COPY(Heap);
@@ -39,6 +44,7 @@ private:
     std::unique_ptr<ObjectSpace> object_space_;
 
     Reference* empty_hash_map_;
+    Reference* empty_hash_map_bitmap_node_;
 };
 
 

@@ -55,35 +55,49 @@ const std::size_t BranchSize = 1 << BranchBits;
     }
 
 
-#define DISPATCH_CASE(object_type, method, args, const_qualifier)   \
-    case ObjectType::object_type:                                   \
-        return static_cast<const_qualifier object_type*>(this)      \
-            ->method(BOOST_PP_TUPLE_ENUM(args));
+#define CALL_METHOD(object_ptr, method, args) \
+    (object_ptr)->method(BOOST_PP_TUPLE_ENUM(args))
 
 
-#define DISPATCH_CASE_APPLY(r, case_args, object_type)              \
-    BOOST_PP_EXPAND(DISPATCH_CASE                                   \
-            BOOST_PP_TUPLE_PUSH_FRONT(case_args, object_type))
+#define CALL_FUNCTION(object_ptr, function, args) \
+    function((object_ptr), BOOST_PP_TUPLE_ENUM(args))
 
 
-#define DISPATCH_EX(object_type_seq, method, args, const_qualifier) \
-    do {                                                            \
-        switch (type()) {                                           \
-        BOOST_PP_SEQ_FOR_EACH(                                      \
-                DISPATCH_CASE_APPLY,                                \
-                (method, args, const_qualifier),                    \
-                object_type_seq)                                    \
-        default: WORTHY_UNREACHABLE();                              \
-        }                                                           \
+#define DISPATCH_CASE(object_type, call_macro, object_ptr, name, args,      \
+                      const_qualifier)                                      \
+    case ObjectType::object_type:                                           \
+        return call_macro(                                                  \
+                    static_cast<const_qualifier object_type*>(object_ptr),  \
+                    name, args);
+
+
+#define DISPATCH_CASE_APPLY(s, args, object_type)                           \
+    BOOST_PP_EXPAND(DISPATCH_CASE                                           \
+                    BOOST_PP_TUPLE_PUSH_FRONT(args, object_type))
+
+
+#define DISPATCH_EX(call_macro, object_ptr, name, args, const_qualifier,    \
+                    object_type_seq)                                        \
+    do {                                                                    \
+        switch ((object_ptr)->type()) {                                     \
+        BOOST_PP_SEQ_FOR_EACH(                                              \
+                DISPATCH_CASE_APPLY,                                        \
+                (call_macro, object_ptr, name, args, const_qualifier),      \
+                object_type_seq)                                            \
+        default:                                                            \
+            WORTHY_UNREACHABLE();                                           \
+        }                                                                   \
     } while (false)
 
 
-#define DISPATCH_CONST(object_type_seq, method, args) \
-    DISPATCH_EX(object_type_seq, method, args, const)
+#define DISPATCH_CONST(object_type_seq, method, args)   \
+    DISPATCH_EX(CALL_METHOD, this, method, args, const, \
+                object_type_seq)
 
 
-#define DISPATCH(object_type_seq, method, args) \
-    DISPATCH_EX(object_type_seq, method, args, BOOST_PP_EMPTY())
+#define DISPATCH(object_type_seq, method, args)                     \
+    DISPATCH_EX(CALL_METHOD, this, method, args, BOOST_PP_EMPTY(),  \
+                object_type_seq)
 
 
 enum class ObjectType : std::uint8_t {
@@ -147,11 +161,12 @@ private:
 
 class HashMapNode : public Object {
 public:
-    HashMapNode* assoc(int shift, HashCode hash,
-            const Variant& key, const Variant& value, bool* added_leaf);
+    HashMapNode* add(std::uint8_t shift, HashCode hash,
+                     const Variant& key, const Variant& value,
+                     bool* added_leaf) const;
 
 protected:
-    HashMapNode() = default;
+    HashMapNode(ObjectType type);
 };
 
 
@@ -159,8 +174,9 @@ class HashMapArrayNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapArrayNode)
 
-    HashMapNode* _assoc(int shift, HashCode hash,
-            const Variant& key, const Variant& value, bool* added_leaf);
+    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+                      const Variant& key, const Variant& value,
+                      bool* added_leaf) const;
 
 private:
     std::uint8_t count_;
@@ -173,8 +189,11 @@ class HashMapBitmapNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapBitmapNode)
 
-    HashMapNode* _assoc(int shift, HashCode hash,
-            const Variant& key, const Variant& value, bool* added_leaf);
+    HashMapBitmapNode();
+
+    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+                      const Variant& key, const Variant& value,
+                      bool* added_leaf) const;
 
 private:
     std::uint8_t bitmap_;
@@ -188,8 +207,9 @@ class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
 
-    HashMapNode* _assoc(int shift, HashCode hash,
-            const Variant& key, const Variant& value, bool* added_leaf);
+    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+                      const Variant& key, const Variant& value,
+                      bool* added_leaf) const;
 
 private:
     HashCode hash_;
@@ -237,6 +257,11 @@ private:
 // ---------------------------------------------------------------------
 
 
+inline HashCode hash(const Object* obj) {
+    return obj ? obj->hashCode() : 0;
+}
+
+
 inline bool Object::equals(const Object* a, const Object* b) {
     return a ? a->equals(b) : !b;
 }
@@ -265,16 +290,6 @@ inline Object* Reference::get() {
 
 inline const Object* Reference::get() const {
     return ptr_;
-}
-
-
-// ---------------------------------------------------------------------
-
-
-inline HashMapNode* HashMapNode::assoc(int shift, HashCode hash,
-        const Variant& key, const Variant& value, bool* added_leaf) {
-    DISPATCH(WORTHY_HASHMAPNODE_DERIVED, _assoc,
-            (shift, hash, key, value, added_leaf));
 }
 
 

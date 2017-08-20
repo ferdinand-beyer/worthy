@@ -1,10 +1,23 @@
 #include "internal/variant.h"
 
+#include "internal/hash.h"
 #include "internal/objects.h"
 
 
 namespace worthy {
 namespace internal {
+
+
+HashCode hash(const Variant& variant) {
+    switch (variant.type()) {
+#define WORTHY_TEMP(name, id, type, field)  \
+    case VariantType::name:                 \
+        return hash(variant.data().field);
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+    }
+    WORTHY_UNREACHABLE();
+}
 
 
 bool Variant::operator==(const Variant& other) const {
@@ -17,6 +30,8 @@ bool Variant::operator==(const Variant& other) const {
 #undef WORTHY_TEMP
         case VariantType::Object:
             return Object::equals(data_.obj, other.data_.obj);
+        default:
+            WORTHY_UNREACHABLE();
         }
     }
     return false;

@@ -4,6 +4,8 @@
 
 #include "worthy/internal/primitive.h"
 
+#include "internal/globals.h"
+
 #include <boost/preprocessor/seq/enum.hpp>
 
 
@@ -77,6 +79,9 @@ private:
     VariantData data_;
     VariantType type_;
 };
+
+
+HashCode hash(const Variant& variant);
 
 
 inline Variant::Variant()

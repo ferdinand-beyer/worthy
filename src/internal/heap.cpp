@@ -16,6 +16,8 @@ Heap::Heap() {
 
     empty_hash_map_ = reference_space_->newReference(
             object_space_->allocateObject<HashMap>());
+    empty_hash_map_bitmap_node_ = reference_space_->newReference(
+            object_space_->allocateObject<HashMapBitmapNode>());
 }
 
 
@@ -29,7 +31,17 @@ Reference* Heap::newReference(Object* obj) {
 }
 
 
-Reference* Heap::emptyHashMap() {
+HashMap* Heap::emptyHashMap() const {
+    return HashMap::cast(empty_hash_map_->get());
+}
+
+
+HashMapBitmapNode* Heap::emptyHashMapBitmapNode() const {
+    return HashMapBitmapNode::cast(empty_hash_map_bitmap_node_->get());
+}
+
+
+Reference* Heap::emptyHashMapReference() const {
     empty_hash_map_->retain();
     return empty_hash_map_;
 }

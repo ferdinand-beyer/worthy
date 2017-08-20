@@ -18,7 +18,7 @@ Runtime::~Runtime() {
 
 
 Map Runtime::map() {
-    return heap_->emptyHashMap();
+    return heap_->emptyHashMapReference();
 }
 
 
