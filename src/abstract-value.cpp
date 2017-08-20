@@ -1,7 +1,9 @@
 #include "worthy/abstract-value.h"
 
 #include "internal/check.h"
+#include "internal/heap.h"
 #include "internal/objects.h"
+#include "internal/variant.h"
 
 #include <utility>
 
@@ -92,9 +94,27 @@ void AbstractValue::release() {
 }
 
 
-const internal::Object* AbstractValue::object() const {
-    WORTHY_CHECK(isReferenceType(type_));
+internal::Object* AbstractValue::object() const {
+    WORTHY_DCHECK(isReferenceType(type_));
     return data_.ref->get();
+}
+
+
+internal::Variant toVariant(const AbstractValue& value) {
+    switch (value.type_) {
+    case Type::Null:
+        return internal::Variant();
+
+#define WORTHY_TEMP(name, id, type, field)      \
+    case Type::name:                            \
+        return internal::Variant(value.data_.field);
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+    default:
+        WORTHY_DCHECK(isReferenceType(value.type_));
+        return internal::Variant(value.data_.ref->get());
+    }
 }
 
 

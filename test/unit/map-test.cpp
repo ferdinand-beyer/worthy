@@ -1,5 +1,6 @@
 #include "worthy/map.h"
 #include "worthy/runtime.h"
+#include "worthy/value.h"
 
 #include <catch.hpp>
 
@@ -7,6 +8,7 @@
 using worthy::Runtime;
 using worthy::Map;
 using worthy::Type;
+using worthy::Value;
 
 
 TEST_CASE("construct empty map", "[map]") {
@@ -15,5 +17,15 @@ TEST_CASE("construct empty map", "[map]") {
     Map map = rt.map();
 
     REQUIRE(map.size() == 0);
+}
+
+
+TEST_CASE("associate value with null key", "[map]") {
+    Runtime rt;
+
+    Map map = rt.map();
+    map = map.assoc(Value(), 42);
+
+    REQUIRE(map.size() == 1);
 }
 

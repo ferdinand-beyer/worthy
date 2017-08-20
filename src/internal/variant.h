@@ -58,6 +58,11 @@ class Variant {
 public:
     Variant();
 
+#define WORTHY_TEMP(name, id, type, field) \
+    Variant(type x);
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
     Variant(VariantType type, VariantData data);
 
     VariantType type() const;
@@ -76,6 +81,13 @@ private:
 
 inline Variant::Variant()
     : data_{}, type_{VariantType::Object} {}
+
+
+#define WORTHY_TEMP(name, id, type, field)  \
+inline Variant::Variant(type x)             \
+    : data_{x}, type_{VariantType::name} {}
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
 
 
 inline Variant::Variant(VariantType type, VariantData data)

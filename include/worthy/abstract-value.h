@@ -12,6 +12,7 @@ namespace worthy {
 namespace internal {
 class Object;
 class Reference;
+class Variant;
 }
 
 
@@ -38,13 +39,13 @@ protected:
 
     Type type() const;
 
-    const internal::Object* object() const;
+    internal::Object* object() const;
 
     template <typename T>
     inline T toPrimitive() const {
         switch (type_) {
-#define WORTHY_TEMP(name, id, type, field) \
-        case Type::name: \
+#define WORTHY_TEMP(name, id, type, field)  \
+        case Type::name:                    \
             return data_.field;
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
@@ -75,6 +76,8 @@ private:
 
     Data data_;
     Type type_;
+
+    friend internal::Variant toVariant(const AbstractValue& value);
 };
 
 

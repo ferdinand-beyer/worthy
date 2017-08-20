@@ -59,12 +59,12 @@ const std::size_t BranchSize = 1 << BranchBits;
     case ObjectType::object_type:                                   \
         return static_cast<const_qualifier object_type*>(this)      \
             ->method(BOOST_PP_TUPLE_ENUM(args));
- 
+
 
 #define DISPATCH_CASE_APPLY(r, case_args, object_type)              \
     BOOST_PP_EXPAND(DISPATCH_CASE                                   \
             BOOST_PP_TUPLE_PUSH_FRONT(case_args, object_type))
- 
+
 
 #define DISPATCH_EX(object_type_seq, method, args, const_qualifier) \
     do {                                                            \
@@ -80,7 +80,7 @@ const std::size_t BranchSize = 1 << BranchBits;
 
 #define DISPATCH_CONST(object_type_seq, method, args) \
     DISPATCH_EX(object_type_seq, method, args, const)
- 
+
 
 #define DISPATCH(object_type_seq, method, args) \
     DISPATCH_EX(object_type_seq, method, args, BOOST_PP_EMPTY())
@@ -206,26 +206,20 @@ public:
 
     HashMap();
 
-    HashMap(ElementCount count, HashMapNode* root,
+    HashMap(ElementCount count, const HashMapNode* root,
             bool has_null_key, const Variant& null_value);
 
-    inline ElementCount count() const {
-        return count_;
-    }
+    ElementCount count() const;
 
-    const HashMap* assoc(const Variant& key, const Variant& value) const;
+    const Variant& nullValue() const;
+
+    HashMap* assoc(const Variant& key, const Variant& value) const;
 
 private:
-    HashMap* newHashMap(ElementCount count, HashMapNode* root,
-            bool has_null_key, const Variant& null_value) const;
-
-    Variant nullValue() const;
-
-    bool has_null_key_;
-    VariantType null_type_;
-    ElementCount count_;
-    VariantData null_data_;
-    HashMapNode* root_;
+    const HashMapNode* const root_;
+    const Variant null_value_;
+    const bool has_null_key_;
+    const ElementCount count_;
 };
 
 
@@ -279,6 +273,19 @@ inline HashMapNode* HashMapNode::assoc(int shift, HashCode hash,
         const Variant& key, const Variant& value, bool* added_leaf) {
     DISPATCH(WORTHY_HASHMAPNODE_DERIVED, _assoc,
             (shift, hash, key, value, added_leaf));
+}
+
+
+// ---------------------------------------------------------------------
+
+
+inline ElementCount HashMap::count() const {
+    return count_;
+}
+
+
+inline const Variant& HashMap::nullValue() const {
+    return null_value_;
 }
 
 

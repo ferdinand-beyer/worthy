@@ -10,6 +10,9 @@
 namespace worthy {
 
 
+class Value;
+
+
 class Map final : public AbstractValue {
 public:
     Map(const Map&) = default;
@@ -21,6 +24,8 @@ public:
     void swap(Map& other);
 
     std::size_t size() const;
+
+    Map assoc(const Value& key, const Value& value) const;
 
 private:
     Map(internal::Reference* ref);
