@@ -49,6 +49,7 @@ set(UnitTests_SRCS
     test/unit/hash-test.cpp
     test/unit/map-test.cpp
     test/unit/reference-space-test.cpp
+    test/unit/variant-test.cpp
     test/unit/value-test.cpp
     test/main.cpp
     )

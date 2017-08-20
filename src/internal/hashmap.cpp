@@ -2,6 +2,8 @@
 
 #include "internal/heap.h"
 
+#include <bitset>
+
 
 namespace worthy {
 namespace internal {
@@ -20,6 +22,21 @@ inline HashMap* newHashMap(const Object* caller, ElementCount count,
 
 inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
     return caller->heap()->emptyHashMapBitmapNode();
+}
+
+
+inline std::uint8_t mask(HashCode hash, std::uint8_t shift) {
+    return (hash >> shift) & 0x1f;
+}
+
+
+inline std::uint8_t bitpos(HashCode hash, std::uint8_t shift) {
+    return 1 << mask(hash, shift);
+}
+
+
+inline std::uint8_t bitcount(std::uint32_t bitmap) {
+    return std::bitset<32>(bitmap).count();
 }
 
 
@@ -130,9 +147,50 @@ HashMapBitmapNode::HashMapBitmapNode()
 }
 
 
+std::uint8_t HashMapBitmapNode::index(std::uint32_t bit) const {
+    return bitcount(bitmap_ & (bit - 1));
+}
+
+
+VariantArray HashMapBitmapNode::array() const {
+    return {reinterpret_cast<Address>(
+                const_cast<HashMapBitmapNode*>(this + 1)),
+            static_cast<std::size_t>(2 * bitcount(bitmap_))};
+}
+
+
+Variant HashMapBitmapNode::keyAt(std::uint8_t index) const {
+    return array().get(2*index);
+}
+
+
+Variant HashMapBitmapNode::valueAt(std::uint8_t index) const {
+    return array().get(2*index + 1);
+}
+
+
 HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
                                      const Variant& key, const Variant& value,
                                      bool* added_leaf) const {
+    const std::uint8_t bit = bitpos(hash, shift);
+    const std::uint8_t idx = index(bit);
+
+    if (bitmap_ & bit) {
+        Variant key = keyAt(idx);
+        Variant value_or_node = valueAt(idx);
+
+        if (key.isNull()) {
+            WORTHY_DCHECK(value_or_node.isObject());
+            HashMapNode* node = static_cast<HashMapNode*>(value_or_node.data().obj);
+            HashMapNode* new_node = node->add(shift + 5, hash, key, value,
+                                              added_leaf);
+            if (node == new_node) {
+                return const_cast<HashMapBitmapNode*>(this);
+            }
+            // TODO
+        }
+        // TODO
+    }
     // TODO
     return nullptr;
 }

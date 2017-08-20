@@ -4,6 +4,7 @@
 
 #include "worthy/internal/primitive.h"
 
+#include "internal/check.h"
 #include "internal/globals.h"
 
 #include <boost/preprocessor/seq/enum.hpp>
@@ -43,19 +44,6 @@ union VariantData {
 };
 
 
-template <typename Function>
-inline typename Function::return_type
-dispatch(const VariantData& data, const VariantType& type, Function f) {
-    switch (type) {
-#define WORTHY_TEMP(name, id, type, field) \
-    case VariantType::name: \
-        return f(data.field);
-    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
-#undef WORTHY_TEMP
-    }
-}
-
-
 class Variant {
 public:
     Variant();
@@ -69,6 +57,11 @@ public:
 
     VariantType type() const;
     VariantData data() const;
+
+#define WORTHY_TEMP(name, id, type, field) \
+    bool is##name() const;
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
 
     bool isNull() const;
 
@@ -109,13 +102,61 @@ inline VariantData Variant::data() const {
 }
 
 
+#define WORTHY_TEMP(name, id, type, field)  \
+inline bool Variant::is##name() const {     \
+    return type_ == VariantType::name;      \
+}
+    WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+
 inline bool Variant::isNull() const {
-    return (type_ == VariantType::Object) && (data_.obj == nullptr);
+    return isObject() && (data_.obj == nullptr);
 }
 
 
 inline bool Variant::operator!=(const Variant& other) const {
     return !operator==(other);
+}
+
+
+class VariantArray {
+public:
+    static std::size_t sizeFor(std::size_t count);
+
+    VariantArray(Address start, std::size_t count);
+
+    Variant get(std::size_t index) const;
+    void set(std::size_t index, const Variant& value);
+
+private:
+    const std::size_t count_;
+    VariantData* const data_array_;
+    VariantType* const type_array_;
+};
+
+
+inline std::size_t VariantArray::sizeFor(std::size_t count) {
+    return count * (sizeof(VariantData) + sizeof(VariantType));
+}
+
+
+inline VariantArray::VariantArray(Address start, std::size_t count)
+    : count_{count},
+      data_array_{reinterpret_cast<VariantData*>(start)},
+      type_array_{reinterpret_cast<VariantType*>(data_array_ + count)} {}
+
+
+inline Variant VariantArray::get(std::size_t index) const {
+    WORTHY_DCHECK(index < count_);
+    return {type_array_[index], data_array_[index]};
+}
+
+
+inline void VariantArray::set(std::size_t index, const Variant& value) {
+    WORTHY_DCHECK(index < count_);
+    data_array_[index] = value.data();
+    type_array_[index] = value.type();
 }
 
 

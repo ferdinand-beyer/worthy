@@ -23,10 +23,6 @@ namespace internal {
 class Heap;
 
 
-const std::size_t BranchBits = 5;
-const std::size_t BranchSize = 1 << BranchBits;
-
-
 #define WORTHY_OBJECT_DERIVED   \
     (Reference)                 \
     (HashMap)                   \
@@ -181,7 +177,7 @@ public:
 private:
     std::uint8_t count_;
     TransientTag tag_;
-    HashMapNode* nodes_[BranchSize];
+    HashMapNode* nodes_[32];
 };
 
 
@@ -196,10 +192,15 @@ public:
                       bool* added_leaf) const;
 
 private:
-    std::uint8_t bitmap_;
+    std::uint8_t index(std::uint32_t bit) const;
+
+    VariantArray array() const;
+
+    Variant keyAt(std::uint8_t index) const;
+    Variant valueAt(std::uint8_t index) const;
+
+    std::uint32_t bitmap_;
     TransientTag tag_;
-    // VariantType types_
-    // VariantData values_
 };
 
 
