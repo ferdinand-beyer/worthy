@@ -38,9 +38,9 @@ Value Map::get(const Value& key) const {
 }
 
 
-Map Map::assoc(const Value& key, const Value& value) const {
+Map Map::add(const Value& key, const Value& value) const {
     const HashMap* map = HashMap::cast(object());
-    HashMap* result = map->assoc(toVariant(key), toVariant(value));
+    HashMap* result = map->add(toVariant(key), toVariant(value));
     if (result == map) {
         return *this;
     }

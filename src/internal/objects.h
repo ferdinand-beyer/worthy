@@ -215,7 +215,7 @@ public:
 
     Variant get(const Variant& key) const;
 
-    HashMap* assoc(const Variant& key, const Variant& value) const;
+    HashMap* add(const Variant& key, const Variant& value) const;
 
 private:
     const HashMapNode* const root_;

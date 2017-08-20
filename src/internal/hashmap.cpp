@@ -52,7 +52,7 @@ Variant HashMap::get(const Variant& key) const {
 }
 
 
-HashMap* HashMap::assoc(const Variant& key, const Variant& value) const {
+HashMap* HashMap::add(const Variant& key, const Variant& value) const {
     if (key.isNull()) {
         if (has_null_key_ && value == null_value_) {
             // No change to the map.

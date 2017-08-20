@@ -20,11 +20,11 @@ TEST_CASE("construct empty map", "[map]") {
 }
 
 
-TEST_CASE("associate value with null key", "[map]") {
+TEST_CASE("add value with null key", "[map]") {
     Runtime rt;
 
     Map map = rt.map();
-    map = map.assoc(Value(), 42);
+    map = map.add(Value(), 42);
 
     REQUIRE(map.size() == 1);
     REQUIRE(map.containsKey(Value()));

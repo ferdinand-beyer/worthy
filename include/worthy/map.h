@@ -29,7 +29,7 @@ public:
 
     Value get(const Value& key) const;
 
-    Map assoc(const Value& key, const Value& value) const;
+    Map add(const Value& key, const Value& value) const;
 
 private:
     Map(internal::Reference* ref);
