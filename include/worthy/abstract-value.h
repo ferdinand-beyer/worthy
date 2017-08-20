@@ -5,6 +5,8 @@
 #include "worthy/internal/primitive.h"
 #include "worthy/type.h"
 
+#include <iosfwd>
+
 
 namespace worthy {
 
@@ -84,6 +86,7 @@ private:
     Type type_;
 
     friend internal::Variant toVariant(const AbstractValue& value);
+    friend std::ostream& operator<<(std::ostream& os, const AbstractValue& value);
 };
 
 

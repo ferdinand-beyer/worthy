@@ -7,6 +7,7 @@
 #include "internal/objects.h"
 #include "internal/variant.h"
 
+#include <ostream>
 #include <utility>
 
 
@@ -138,6 +139,28 @@ internal::Variant toVariant(const AbstractValue& value) {
         WORTHY_DCHECK(isReferenceType(value.type_));
         return internal::Variant(value.data_.ref->get());
     }
+}
+
+
+std::ostream& operator<<(std::ostream& os, const AbstractValue& value) {
+    switch (value.type_) {
+    case Type::Null:
+        break;
+
+#define WORTHY_TEMP(name, id, type, field)  \
+    case Type::name:                        \
+        os << value.data_.field;            \
+        break;
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+    default:
+        WORTHY_DCHECK(isReferenceType(value.type_));
+        // TODO: Delegate to Object!
+        os << value.data_.ref->get();
+        break;
+    }
+    return os;
 }
 
 
