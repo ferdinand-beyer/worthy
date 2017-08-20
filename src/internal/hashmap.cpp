@@ -132,7 +132,7 @@ HashMapNode* HashMapArrayNode::_add(std::uint8_t shift, HashCode hash,
                                     const Variant& key, const Variant& value,
                                     bool* added_leaf) const {
     // TODO
-    return nullptr;
+    WORTHY_UNIMPLEMENTED();
 }
 
 
@@ -172,31 +172,42 @@ Variant HashMapBitmapNode::valueAt(std::uint8_t index) const {
 HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
                                      const Variant& key, const Variant& value,
                                      bool* added_leaf) const {
-    const std::uint8_t bit = bitpos(hash, shift);
-    const std::uint8_t idx = index(bit);
+    const auto bit = bitpos(hash, shift);
+    const auto idx = index(bit);
 
     if (bitmap_ & bit) {
         // We already have an element at this position.
-        Variant key = keyAt(idx);
-        Variant value = valueAt(idx);
+        auto key = keyAt(idx);
+        auto value = valueAt(idx);
 
         if (key.isNull()) {
             // Null key means the value is a node.
             WORTHY_DCHECK(value.isObject());
 
-            HashMapNode* node = static_cast<HashMapNode*>(value.toObject());
-            HashMapNode* new_node = node->add(shift + 5, hash, key, value,
-                                              added_leaf);
+            auto node = static_cast<HashMapNode*>(value.toObject());
+            auto new_node = node->add(shift + 5, hash, key, value, added_leaf);
 
             if (node == new_node) {
                 return const_cast<HashMapBitmapNode*>(this);
             }
-            // TODO
+
+            // TODO: Replace value with new_node
+            WORTHY_UNIMPLEMENTED();
         }
-        // TODO
+
+        // TODO: Equal keys?
+        // TODO: Create a new node.
+        WORTHY_UNIMPLEMENTED();
     }
-    // TODO
-    return nullptr;
+
+    const auto n = bitcount(bitmap_);
+
+    if (n >= 16) {
+        // TODO: Switch to ArrayNode
+        WORTHY_UNIMPLEMENTED();
+    }
+
+    WORTHY_UNIMPLEMENTED();
 }
 
 
@@ -208,7 +219,7 @@ HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift, HashCode hash,
                                         const Variant& key, const Variant& value,
                                         bool* added_leaf) const {
     // TODO
-    return nullptr;
+    WORTHY_UNIMPLEMENTED();
 }
 
 
