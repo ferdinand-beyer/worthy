@@ -17,6 +17,10 @@ class Variant;
 
 
 class AbstractValue {
+public:
+    bool operator==(const AbstractValue& other) const;
+    bool operator!=(const AbstractValue& other) const;
+
 protected:
     AbstractValue();
 
@@ -36,6 +40,8 @@ protected:
     ~AbstractValue();
 
     void swap(AbstractValue& other);
+
+    bool equals(const AbstractValue& other) const;
 
     Type type() const;
 
@@ -94,6 +100,16 @@ inline AbstractValue::AbstractValue(type field##_) \
 
 inline Type AbstractValue::type() const {
     return type_;
+}
+
+
+inline bool AbstractValue::operator==(const AbstractValue& other) const {
+    return equals(other);
+}
+
+
+inline bool AbstractValue::operator!=(const AbstractValue& other) const {
+    return !equals(other);
 }
 
 

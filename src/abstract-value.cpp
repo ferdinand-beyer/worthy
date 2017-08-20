@@ -1,5 +1,7 @@
 #include "worthy/abstract-value.h"
 
+#include "internals.h"
+
 #include "internal/check.h"
 #include "internal/heap.h"
 #include "internal/objects.h"
@@ -71,6 +73,27 @@ void AbstractValue::swap(AbstractValue& other) {
     using std::swap;
     swap(data_, other.data_);
     swap(type_, other.type_);
+}
+
+
+bool AbstractValue::equals(const AbstractValue& other) const {
+    if (type_ != other.type_) {
+        return false;
+    }
+    switch (type_) {
+    case Type::Null:
+        return true;
+
+#define WORTHY_TEMP(name, id, type, field)      \
+    case Type::name:                            \
+        return (data_.field == other.data_.field);
+    WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
+#undef WORTHY_TEMP
+
+    default:
+        WORTHY_DCHECK(isReferenceType(type_));
+        return worthy::equals(data_.ref, other.data_.ref);
+    }
 }
 
 

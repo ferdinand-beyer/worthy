@@ -9,9 +9,18 @@
 namespace worthy {
 
 
+class Value;
+
+
+Value toValue(const internal::Variant& v);
+
+
 inline internal::Reference* newReference(internal::Object* obj) {
     return obj->heap()->newReference(obj);
 }
+
+
+bool equals(internal::Reference* lhs, internal::Reference* rhs);
 
 
 } // namespace worthy

@@ -27,5 +27,7 @@ TEST_CASE("associate value with null key", "[map]") {
     map = map.assoc(Value(), 42);
 
     REQUIRE(map.size() == 1);
+    REQUIRE(map.containsKey(Value()));
+    REQUIRE(map.get(Value()) == 42);
 }
 

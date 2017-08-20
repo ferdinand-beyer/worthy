@@ -38,11 +38,11 @@ set(Worthy_SRCS
     src/internal/variant.h
 
     src/abstract-value.cpp
+    src/internals.cpp
     src/internals.h
     src/map.cpp
     src/runtime.cpp
     src/string.cpp
-    src/value.cpp
     )
 
 set(UnitTests_SRCS

@@ -40,9 +40,21 @@ HashMap::HashMap(ElementCount count,
 }
 
 
+bool HashMap::containsKey(const Variant& key) const {
+    // TODO
+    return true;
+}
+
+
+Variant HashMap::get(const Variant& key) const {
+    // TODO
+    return null_value_;
+}
+
+
 HashMap* HashMap::assoc(const Variant& key, const Variant& value) const {
     if (key.isNull()) {
-        if (has_null_key_ && value == nullValue()) {
+        if (has_null_key_ && value == null_value_) {
             // No change to the map.
             return const_cast<HashMap*>(this);
         }

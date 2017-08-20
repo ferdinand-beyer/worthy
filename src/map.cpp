@@ -8,12 +8,14 @@
 
 
 using worthy::internal::HashMap;
+using worthy::internal::Reference;
+using worthy::internal::Variant;
 
 
 namespace worthy {
 
 
-Map::Map(internal::Reference* ref)
+Map::Map(Reference* ref)
     : AbstractValue{Type::Map, ref} {
 }
 
@@ -21,6 +23,18 @@ Map::Map(internal::Reference* ref)
 std::size_t Map::size() const {
     const HashMap* map = HashMap::cast(object());
     return map->count();
+}
+
+
+bool Map::containsKey(const Value& key) const {
+    const HashMap* map = HashMap::cast(object());
+    return map->containsKey(toVariant(key));
+}
+
+
+Value Map::get(const Value& key) const {
+    const HashMap* map = HashMap::cast(object());
+    return toValue(map->get(toVariant(key)));
 }
 
 

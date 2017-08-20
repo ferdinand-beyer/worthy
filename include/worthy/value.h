@@ -30,6 +30,9 @@ public:
 
     bool isNull() const;
 
+    bool operator==(const Value& other) const;
+    bool operator!=(const Value& other) const;
+
 #define WORTHY_TEMP(name, id, type, field) \
     type to##name() const;
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
@@ -74,6 +77,16 @@ inline void Value::swap(Value& other) {
 
 inline bool Value::isNull() const {
     return type() == Type::Null;
+}
+
+
+inline bool Value::operator==(const Value& other) const {
+    return equals(other);
+}
+
+
+inline bool Value::operator!=(const Value& other) const {
+    return !equals(other);
 }
 
 

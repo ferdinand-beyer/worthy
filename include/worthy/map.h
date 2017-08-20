@@ -25,6 +25,10 @@ public:
 
     std::size_t size() const;
 
+    bool containsKey(const Value& key) const;
+
+    Value get(const Value& key) const;
+
     Map assoc(const Value& key, const Value& value) const;
 
 private:

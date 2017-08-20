@@ -211,7 +211,9 @@ public:
 
     ElementCount count() const;
 
-    const Variant& nullValue() const;
+    bool containsKey(const Variant& key) const;
+
+    Variant get(const Variant& key) const;
 
     HashMap* assoc(const Variant& key, const Variant& value) const;
 
@@ -281,11 +283,6 @@ inline HashMapNode* HashMapNode::assoc(int shift, HashCode hash,
 
 inline ElementCount HashMap::count() const {
     return count_;
-}
-
-
-inline const Variant& HashMap::nullValue() const {
-    return null_value_;
 }
 
 
