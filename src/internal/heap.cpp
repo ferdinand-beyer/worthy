@@ -10,9 +10,9 @@ namespace worthy {
 namespace internal {
 
 
-Heap::Heap() {
-    reference_space_.reset(new ReferenceSpace(this));
-    object_space_.reset(new ObjectSpace(this));
+Heap::Heap()
+    : reference_space_{std::make_unique<ReferenceSpace>(this)},
+      object_space_{std::make_unique<ObjectSpace>(this)} {
 
     empty_hash_map_ = newReference(newObject<HashMap>());
     empty_hash_map_bitmap_node_ = newReference(newObject<HashMapBitmapNode>());
@@ -24,7 +24,7 @@ Heap::~Heap() {
 
 
 Reference* Heap::newReference(Object* obj) {
-    WORTHY_CHECK(obj);
+    WORTHY_DCHECK(obj);
     return reference_space_->newReference(obj);
 }
 
