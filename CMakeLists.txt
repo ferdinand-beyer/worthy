@@ -56,6 +56,8 @@ set(UnitTests_SRCS
 find_package(Boost 1.54.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_package(Doxygen)
+
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
@@ -103,3 +105,15 @@ target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
 enable_testing()
 add_test(NAME unit-tests COMMAND unit-tests)
 
+
+if(DOXYGEN_FOUND)
+    set(DOXYGEN_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    configure_file(doc/Doxyfile.in ${DOXYGEN_CONFIG_FILE} @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CONFIG_FILE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+endif()
