@@ -78,14 +78,22 @@ HashMap::HashMap(ElementCount count,
 
 
 bool HashMap::containsKey(const Variant& key) const {
-    // TODO
-    return true;
+    if (key.isNull()) {
+        return has_null_key_;
+    }
+    if (!root_) {
+        return false;
+    }
+    const Variant not_found(this);
+    return root_->find(0, hash(key), key, not_found) != not_found;
 }
 
 
-Variant HashMap::get(const Variant& key) const {
-    // TODO
-    return null_value_;
+Variant HashMap::get(const Variant& key, const Variant& not_found) const {
+    if (key.isNull()) {
+        return has_null_key_ ? null_value_ : not_found;
+    }
+    return root_ ? root_->find(0, hash(key), key, not_found) : not_found;
 }
 
 
@@ -101,7 +109,7 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
 
     bool added_leaf = false;
     HashMapNode* new_root = (root_ ? root_ : emptyBitmapNode(this))
-        ->add(0, hash(key), key, value, &added_leaf);
+        ->add(0, hash(key), key, value, added_leaf);
 
     if (new_root == root_) {
         // No change to the map.
@@ -128,8 +136,16 @@ HashMapNode::HashMapNode(ObjectType type)
 
 HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
                               const Variant& key, const Variant& value,
-                              bool* added_leaf) const {
+                              bool& added_leaf) const {
     NODE_DISPATCH(_add, (shift, hash, key, value, added_leaf));
+}
+
+
+const Variant& HashMapNode::find(std::uint8_t shift,
+                                 HashCode hash,
+                                 const Variant& key,
+                                 const Variant& not_found) const {
+    NODE_DISPATCH(_find, (shift, hash, key, not_found));
 }
 
 
@@ -139,7 +155,16 @@ HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
 
 HashMapNode* HashMapArrayNode::_add(std::uint8_t shift, HashCode hash,
                                     const Variant& key, const Variant& value,
-                                    bool* added_leaf) const {
+                                    bool& added_leaf) const {
+    // TODO
+    WORTHY_UNIMPLEMENTED();
+}
+
+
+const Variant& HashMapArrayNode::_find(std::uint8_t shift,
+                                       HashCode hash,
+                                       const Variant& key,
+                                       const Variant& not_found) const {
     // TODO
     WORTHY_UNIMPLEMENTED();
 }
@@ -175,7 +200,7 @@ VariantArray HashMapBitmapNode::array() const {
 
 HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
                                      const Variant& key, const Variant& value,
-                                     bool* added_leaf) const {
+                                     bool& added_leaf) const {
     const auto bit = bitpos(hash, shift);
     const auto idx = index(bit);
 
@@ -183,14 +208,14 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
 
     if (bitmap_ & bit) {
         // We already have an element at this position.
-        auto key = arr.get(2*idx);
-        auto value = arr.get(2*idx + 1);
+        auto key_or_null = arr.get(2*idx);
+        auto val_or_node = arr.get(2*idx + 1);
 
-        if (key.isNull()) {
+        if (key_or_null.isNull()) {
             // Null key means the value is a node.
-            WORTHY_DCHECK(value.isObject());
+            WORTHY_DCHECK(val_or_node.isObject());
 
-            auto node = static_cast<HashMapNode*>(value.toObject());
+            auto node = static_cast<HashMapNode*>(val_or_node.toObject());
             auto new_node = node->add(shift + 5, hash, key, value, added_leaf);
 
             if (node == new_node) {
@@ -224,9 +249,37 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
     new_array.set(2*idx+1, value);
     new_array.copy(2*(idx+1), arr, 2*idx, 2*(n-idx));
 
-    *added_leaf = true;
+    added_leaf = true;
 
     return new_node;
+}
+
+
+const Variant& HashMapBitmapNode::_find(std::uint8_t shift,
+                                        HashCode hash,
+                                        const Variant& key,
+                                        const Variant& not_found) const {
+    const auto bit = bitpos(hash, shift);
+    if ((bitmap_ & bit) == 0) {
+        return not_found;
+    }
+
+    const auto arr = array();
+    const auto idx = index(bit);
+
+    const auto key_or_null = arr.get(2*idx);
+    const auto val_or_node = arr.get(2*idx+1);
+
+    if (key_or_null.isNull()) {
+        const auto node = static_cast<HashMapNode*>(val_or_node.toObject());
+        return node->find(shift + 5, hash, key, not_found);
+    }
+
+    if (key_or_null == key) {
+        return val_or_node;
+    }
+
+    return not_found;
 }
 
 
@@ -234,9 +287,20 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
 // HashMapCollisionNode
 
 
-HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift, HashCode hash,
-                                        const Variant& key, const Variant& value,
-                                        bool* added_leaf) const {
+HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift,
+                                        HashCode hash,
+                                        const Variant& key,
+                                        const Variant& value,
+                                        bool& added_leaf) const {
+    // TODO
+    WORTHY_UNIMPLEMENTED();
+}
+
+
+const Variant& HashMapCollisionNode::_find(std::uint8_t shift,
+                                           HashCode hash,
+                                           const Variant& key,
+                                           const Variant& not_found) const {
     // TODO
     WORTHY_UNIMPLEMENTED();
 }

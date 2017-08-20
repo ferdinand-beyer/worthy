@@ -27,10 +27,11 @@ TEST_CASE("add values", "[map]") {
     Map map2 = map1.add(42, 1337);
 
     REQUIRE(map2.size() == 1);
-    //REQUIRE(map2.containsKey(Value()));
-    //REQUIRE(map2.get(Value()) == 42);
+    REQUIRE(map2.containsKey(42));
+    REQUIRE(map2.get(42) == 1337);
 
     REQUIRE(map1.size() == 0);
+    REQUIRE(!map1.containsKey(42));
 }
 
 

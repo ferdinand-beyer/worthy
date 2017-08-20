@@ -159,7 +159,10 @@ class HashMapNode : public Object {
 public:
     HashMapNode* add(std::uint8_t shift, HashCode hash,
                      const Variant& key, const Variant& value,
-                     bool* added_leaf) const;
+                     bool& added_leaf) const;
+
+    const Variant& find(std::uint8_t shift, HashCode hash,
+                        const Variant& key, const Variant& not_found) const;
 
 protected:
     HashMapNode(ObjectType type);
@@ -172,7 +175,10 @@ public:
 
     HashMapNode* _add(std::uint8_t shift, HashCode hash,
                       const Variant& key, const Variant& value,
-                      bool* added_leaf) const;
+                      bool& added_leaf) const;
+
+    const Variant& _find(std::uint8_t shift, HashCode hash,
+                         const Variant& key, const Variant& not_found) const;
 
 private:
     std::uint8_t count_;
@@ -189,7 +195,10 @@ public:
 
     HashMapNode* _add(std::uint8_t shift, HashCode hash,
                       const Variant& key, const Variant& value,
-                      bool* added_leaf) const;
+                      bool& added_leaf) const;
+
+    const Variant& _find(std::uint8_t shift, HashCode hash,
+                         const Variant& key, const Variant& not_found) const;
 
 private:
     std::uint8_t count() const;
@@ -208,14 +217,15 @@ public:
 
     HashMapNode* _add(std::uint8_t shift, HashCode hash,
                       const Variant& key, const Variant& value,
-                      bool* added_leaf) const;
+                      bool& added_leaf) const;
+
+    const Variant& _find(std::uint8_t shift, HashCode hash,
+                         const Variant& key, const Variant& not_found) const;
 
 private:
     HashCode hash_;
     TransientTag tag_;
     ElementCount count_;
-    // VariantType types_
-    // VariantData values_
 };
 
 
@@ -232,7 +242,7 @@ public:
 
     bool containsKey(const Variant& key) const;
 
-    Variant get(const Variant& key) const;
+    Variant get(const Variant& key, const Variant& not_found = Variant()) const;
 
     HashMap* add(const Variant& key, const Variant& value) const;
 
