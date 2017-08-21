@@ -52,13 +52,13 @@ We could try to move or merge references with the following idea:
   can determine which space to allocate in.  This allows for example for
   a separate space of internal data structures, and to optimize for
   cache locality.
+- Prevent mixing values from different runtimes!
 
 ## Abstract/Final
 - Check that all assignable classes are either abstract or final
 
 ## Boost
 Check out:
-- Boost.Align for alligned_alloc
 - Boost.Interprocess for mapped_region::get_page_size()
   define: BOOST_DATE_TIME_NO_LIB
   internal/config.h?
@@ -71,4 +71,12 @@ struct Array {
   uint32 size;
   Byte[] data
 };
+
+## Inline
+- Don't inline anything but the most trivial functions
+- Move most of the existing inlines to their source file
+- Build a performance test suite to check if inlining helps
+
+## VariantArray
+- Support a fixed-size VariantArray for HashMapArrayNode?
 
