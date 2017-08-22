@@ -53,6 +53,17 @@ We could try to move or merge references with the following idea:
   a separate space of internal data structures, and to optimize for
   cache locality.
 - Prevent mixing values from different runtimes!
+- Make sure that all Objects are 8- or 16-bit aligned.  Round all
+  allocations up to 8 or 16.
+- Store the allocated size in the Object header, because it may be
+  padded for alignment.
+
+
+## Object layout
+- -8: size
+- -4
+- +0: type
+- +4: ref-count
 
 ## Abstract/Final
 - Check that all assignable classes are either abstract or final
@@ -79,4 +90,19 @@ struct Array {
 
 ## VariantArray
 - Support a fixed-size VariantArray for HashMapArrayNode?
+
+## Debug logging
+- Add debug logging to the library, for example to track allocations.
+- Add warnings if Objects are not aligned nicely.
+
+## Interfaces
+- If we make sizeof(Object) zero (by externalizing the object header),
+  we could use multiple inheritance for interfaces without penalty.
+- But: Leaving the type in Object might be a good idea for cache lines,
+  assuming that 64 bytes are read when accessing an Object through the
+  pointer, we should grab as much as needed.  For normal code, this
+  certainly includes the type, because we will use it for casting,
+  dispatching and checks.  The header on the other hand is mainly used
+  during allocation and garbage collection.
+- What about the page marker?
 
