@@ -1,10 +1,8 @@
 #include "worthy/map.h"
 
-#include "worthy/value.h"
-
-#include "internals.h"
-
+#include "adapters.h"
 #include "internal/hashmap.h"
+#include "worthy/value.h"
 
 
 using worthy::internal::HashMap;

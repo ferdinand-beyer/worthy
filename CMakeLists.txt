@@ -38,8 +38,8 @@ set(Worthy_SRCS
     src/internal/variant.h
 
     src/abstract-value.cpp
-    src/internals.cpp
-    src/internals.h
+    src/adapters.cpp
+    src/adapters.h
     src/map.cpp
     src/runtime.cpp
     src/string.cpp

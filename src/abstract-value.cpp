@@ -1,7 +1,6 @@
 #include "worthy/abstract-value.h"
 
-#include "internals.h"
-
+#include "adapters.h"
 #include "internal/check.h"
 #include "internal/heap.h"
 #include "internal/objects.h"
@@ -9,6 +8,11 @@
 
 #include <ostream>
 #include <utility>
+
+
+using worthy::internal::Object;
+using worthy::internal::Reference;
+using worthy::internal::Variant;
 
 
 namespace worthy {
@@ -22,10 +26,21 @@ inline bool isReferenceType(Type t) {
 }
 
 
+bool equals(Reference* lhs, Reference* rhs) {
+    if (lhs == rhs) {
+        return true;
+    }
+    if (!lhs || !rhs) {
+        return false;
+    }
+    return Object::equals(lhs->get(), rhs->get());
+}
+
+
 } // namespace
 
 
-AbstractValue::AbstractValue(Type t, internal::Reference* ref)
+AbstractValue::AbstractValue(Type t, Reference* ref)
     : data_{ref},
       type_{t} {
     WORTHY_DCHECK(isReferenceType(t));
@@ -118,26 +133,26 @@ void AbstractValue::release() {
 }
 
 
-internal::Object* AbstractValue::object() const {
+Object* AbstractValue::object() const {
     WORTHY_DCHECK(isReferenceType(type_));
     return data_.ref->get();
 }
 
 
-internal::Variant toVariant(const AbstractValue& value) {
+Variant toVariant(const AbstractValue& value) {
     switch (value.type_) {
     case Type::Null:
-        return internal::Variant();
+        return Variant();
 
 #define WORTHY_TEMP(name, id, type, field)      \
     case Type::name:                            \
-        return internal::Variant(value.data_.field);
+        return Variant(value.data_.field);
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
     default:
         WORTHY_DCHECK(isReferenceType(value.type_));
-        return internal::Variant(value.data_.ref->get());
+        return Variant(value.data_.ref->get());
     }
 }
 

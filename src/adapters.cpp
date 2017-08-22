@@ -1,10 +1,10 @@
-#include "internals.h"
-
-#include "worthy/value.h"
+#include "adapters.h"
 
 #include "internal/check.h"
+#include "internal/heap.h"
 #include "internal/objects.h"
 #include "internal/variant.h"
+#include "worthy/value.h"
 
 
 using worthy::internal::Object;
@@ -15,6 +15,10 @@ using worthy::internal::VariantType;
 
 namespace worthy {
 
+
+Reference* newReference(Object* obj) {
+    return obj->heap()->newReference(obj);
+}
 
 
 Value toValue(const Variant& v) {
@@ -32,17 +36,6 @@ Value toValue(const Variant& v) {
     default:
         WORTHY_UNREACHABLE();
     }
-}
-
-
-bool equals(Reference* lhs, Reference* rhs) {
-    if (lhs == rhs) {
-        return true;
-    }
-    if (!lhs || !rhs) {
-        return false;
-    }
-    return Object::equals(lhs->get(), rhs->get());
 }
 
 
