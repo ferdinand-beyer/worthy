@@ -1,9 +1,11 @@
 #include "internal/heap.h"
 
 #include "internal/check.h"
+#include "internal/hashmap.h"
 #include "internal/object-space.h"
-#include "internal/objects.h"
+#include "internal/object.h"
 #include "internal/reference-space.h"
+#include "internal/reference.h"
 
 
 namespace worthy {

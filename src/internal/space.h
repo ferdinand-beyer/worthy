@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_SPACE_H_
 
 
-#include "internal/macros.h"
+#include "internal/globals.h"
 #include "internal/page.h"
 
 #include <boost/intrusive/list.hpp>

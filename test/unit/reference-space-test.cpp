@@ -1,5 +1,6 @@
 #include "internal/check.h"
-#include "internal/objects.h"
+#include "internal/object.h"
+#include "internal/reference.h"
 #include "internal/reference-space.h"
 
 #include <algorithm>

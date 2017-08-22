@@ -2,7 +2,8 @@
 
 #include "internal/check.h"
 #include "internal/heap.h"
-#include "internal/objects.h"
+#include "internal/object.h"
+#include "internal/reference.h"
 #include "internal/variant.h"
 #include "worthy/value.h"
 

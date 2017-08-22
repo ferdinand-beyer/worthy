@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_HEAP_H_
 
 
-#include "internal/macros.h"
+#include "internal/globals.h"
 #include "internal/object-space.h"
 
 #include <memory>

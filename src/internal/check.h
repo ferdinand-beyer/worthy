@@ -2,7 +2,7 @@
 #define WORTHY_CHECK_INTERNAL_H_
 
 
-#include "internal/macros.h"
+#include "internal/globals.h"
 
 #include <boost/config.hpp>
 

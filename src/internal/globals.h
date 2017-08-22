@@ -10,6 +10,18 @@ namespace worthy {
 namespace internal {
 
 
+#define WORTHY_DISABLE_ASSIGN(T)        \
+    T& operator=(const T&) = delete
+
+
+#define WORTHY_DISABLE_COPY(T)          \
+    T(const T&) = delete;               \
+    WORTHY_DISABLE_ASSIGN(T)
+
+
+#define WORTHY_NOOP ((void) 0)
+
+
 typedef std::uint8_t Byte;
 typedef Byte* Address;
 

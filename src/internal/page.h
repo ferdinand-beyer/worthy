@@ -3,7 +3,6 @@
 
 
 #include "internal/globals.h"
-#include "internal/macros.h"
 
 #include <boost/intrusive/list.hpp>
 

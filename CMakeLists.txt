@@ -17,21 +17,25 @@ set(Worthy_SRCS
     src/internal/check.cpp
     src/internal/check.h
     src/internal/globals.h
-    src/internal/hash.h
     src/internal/hash.cpp
+    src/internal/hash.h
     src/internal/hashmap.cpp
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
+    src/internal/object-decl.h
+    src/internal/object-dispatch.h
     src/internal/object-space.cpp
     src/internal/object-space.h
-    src/internal/objects.cpp
-    src/internal/objects.h
+    src/internal/object-type.h
+    src/internal/object.cpp
+    src/internal/object.h
     src/internal/page.cpp
     src/internal/page.h
     src/internal/reference-space.cpp
     src/internal/reference-space.h
     src/internal/reference.cpp
+    src/internal/reference.h
     src/internal/space.cpp
     src/internal/space.h
     src/internal/variant.cpp

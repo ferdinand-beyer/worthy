@@ -1,6 +1,9 @@
-#include "internal/objects.h"
+#include "internal/object.h"
 
 #include "internal/hash.h"
+#include "internal/hashmap.h"
+#include "internal/object-dispatch.h"
+#include "internal/reference.h"
 #include "internal/space.h"
 
 

@@ -2,7 +2,7 @@
 
 #include "internal/check.h"
 #include "internal/hash.h"
-#include "internal/objects.h"
+#include "internal/object.h"
 
 #include <cstring>
 

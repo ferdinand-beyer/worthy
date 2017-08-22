@@ -1,7 +1,7 @@
 #include "internal/space.h"
 
 #include "internal/check.h"
-#include "internal/objects.h"
+#include "internal/object.h"
 
 #include <boost/align/aligned_alloc.hpp>
 
