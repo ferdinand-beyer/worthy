@@ -1,5 +1,6 @@
 #include "internal/check.h"
 #include "internal/object.h"
+#include "internal/object-header.h"
 #include "internal/reference.h"
 #include "internal/reference-space.h"
 
@@ -8,7 +9,7 @@
 
 
 using worthy::internal::Object;
-using worthy::internal::ObjectType;
+using worthy::internal::ObjectHeader;
 using worthy::internal::Reference;
 using worthy::internal::ReferenceSpace;
 
@@ -18,7 +19,7 @@ namespace {
 
 class MockObject : public Object {
 public:
-    MockObject() : Object{ObjectType::HashMap} {}
+    MockObject() {}
 };
 
 
@@ -34,10 +35,13 @@ TEST_CASE("can allocate Reference objects", "[reference]") {
 
     REQUIRE(ref != nullptr);
     REQUIRE(ref->get() == &obj);
-    REQUIRE(space.refCount(ref) == 1);
+
+    ObjectHeader* header = ObjectHeader::of(ref);
+
+    REQUIRE(header->refCount() == 1);
 
     SECTION("created reference is owned by the space") {
-        REQUIRE(ReferenceSpace::spaceOf(ref) == &space);
+        REQUIRE(header->space() == &space);
     }
 
     SECTION("multiple references are contiguous") {
@@ -45,7 +49,11 @@ TEST_CASE("can allocate Reference objects", "[reference]") {
 
         Reference* ref2 = space.newReference(&obj2);
 
-        REQUIRE((ref + 1) == ref2);
+        // Expect header of next ref directly after the current one.
+        void* addr1 = ref + 1;
+        void* addr2 = ObjectHeader::of(ref2);
+
+        REQUIRE(addr1 == addr2);
     }
 }
 

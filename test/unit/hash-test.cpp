@@ -1,5 +1,4 @@
 #include "internal/hash.h"
-#include "internal/object.h"
 
 #include <string>
 
@@ -7,21 +6,7 @@
 
 
 using worthy::internal::HashCode;
-using worthy::internal::Object;
-using worthy::internal::ObjectType;
 using worthy::internal::hash;
-
-
-namespace {
-
-
-class MockObject : public Object {
-public:
-    MockObject() : Object{ObjectType::Reference} {}
-};
-
-
-} // namespace
 
 
 TEST_CASE("hash code for primitive types", "[hash]") {
@@ -52,11 +37,3 @@ TEST_CASE("hash code of known string", "[hash]") {
     // Gold value taken from http://murmurhash.shorelabs.com/
     REQUIRE(h == 1473193682u);
 }
-
-
-TEST_CASE("hash code of an object", "[hash]") {
-    MockObject object;
-
-    REQUIRE(hash(&object) == object.hashCode());
-}
-

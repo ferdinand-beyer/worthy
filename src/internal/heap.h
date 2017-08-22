@@ -6,6 +6,7 @@
 #include "internal/object-space.h"
 
 #include <memory>
+#include <new>
 
 
 namespace worthy {
@@ -28,15 +29,15 @@ public:
     Reference* newReference(Object* obj);
 
     template<typename T, typename... Args>
-    inline T* newObject(Args&&... args) {
-        return object_space_->newObject<T>(std::forward<Args>(args)...);
+    inline T* make(Args&&... args) {
+        void* memory = object_space_->allocate<T>();
+        return new (memory) T(std::forward<Args>(args)...);
     }
 
     template<typename T, typename... Args>
-    inline T* newDynamicObject(std::size_t extra_size, Args&&... args) {
-        return object_space_->newDynamicObject<T>(
-                extra_size,
-                std::forward<Args>(args)...);
+    inline T* makeExtra(std::size_t extra_size, Args&&... args) {
+        void* memory = object_space_->allocateExtra<T>(extra_size);
+        return new (memory) T(std::forward<Args>(args)...);
     }
 
     HashMap* emptyHashMap() const;

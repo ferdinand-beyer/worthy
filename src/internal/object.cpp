@@ -3,24 +3,21 @@
 #include "internal/hash.h"
 #include "internal/hashmap.h"
 #include "internal/object-dispatch.h"
+#include "internal/object-header.h"
 #include "internal/reference.h"
-#include "internal/space.h"
 
 
 namespace worthy {
 namespace internal {
 
 
-Object::Object(ObjectType type)
-    : type_{type},
-      flags_{0},
-      page_marker_{0},
-      control_{0} {
+ObjectType Object::type() const {
+    return ObjectHeader::of(this)->type();
 }
 
 
 Heap* Object::heap() const {
-    return Space::spaceOf(this)->heap();
+    return ObjectHeader::of(this)->heap();
 }
 
 

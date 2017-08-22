@@ -27,6 +27,8 @@ set(Worthy_SRCS
     src/internal/object-dispatch.h
     src/internal/object-space.cpp
     src/internal/object-space.h
+    src/internal/object-header.cpp
+    src/internal/object-header.h
     src/internal/object-type.h
     src/internal/object.cpp
     src/internal/object.h

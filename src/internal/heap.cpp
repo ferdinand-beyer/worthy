@@ -16,8 +16,8 @@ Heap::Heap()
     : reference_space_{std::make_unique<ReferenceSpace>(this)},
       object_space_{std::make_unique<ObjectSpace>(this)} {
 
-    empty_hash_map_ = newReference(newObject<HashMap>());
-    empty_hash_map_bitmap_node_ = newReference(newObject<HashMapBitmapNode>());
+    empty_hash_map_ = newReference(make<HashMap>());
+    empty_hash_map_bitmap_node_ = newReference(make<HashMapBitmapNode>());
 }
 
 

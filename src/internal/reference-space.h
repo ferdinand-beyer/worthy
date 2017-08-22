@@ -24,11 +24,6 @@ public:
 
     Reference* newReference(Object* obj);
 
-    std::uint32_t refCount(Reference* ref);
-
-    void retain(Reference* ref);
-    void release(Reference* ref);
-
 private:
     Reference* allocateFromPage(Page* page, Object* obj);
     Reference* allocateFromFreeList(Object* obj);

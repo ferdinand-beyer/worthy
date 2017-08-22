@@ -14,10 +14,24 @@ ObjectSpace::~ObjectSpace() {
 }
 
 
-bool ObjectSpace::allocate(std::size_t size,
-                           std::size_t alignment,
-                           void*& memory,
-                           Page*& page) {
+void* ObjectSpace::allocateInternal(ObjectType type,
+                                    std::size_t size,
+                                    std::size_t alignment) {
+    Page* page;
+    void* memory;
+
+    if (!allocateRaw(size + HeaderSize, alignment, page, memory)) {
+        return nullptr;
+    }
+
+    return placeObjectHeader(memory, size, page, type);
+}
+
+
+bool ObjectSpace::allocateRaw(std::size_t size,
+                              std::size_t alignment,
+                              Page*& page,
+                              void*& memory) {
     page = firstPage();
     if (page) {
         memory = page->allocate(size, alignment);

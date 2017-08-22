@@ -21,7 +21,7 @@ public:
                  const Variant& key, const Variant& not_found) const;
 
 protected:
-    HashMapNode(ObjectType type);
+    HashMapNode() = default;
 };
 
 

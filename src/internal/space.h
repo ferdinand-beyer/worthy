@@ -3,6 +3,7 @@
 
 
 #include "internal/globals.h"
+#include "internal/object-header.h"
 #include "internal/page.h"
 
 #include <boost/intrusive/list.hpp>
@@ -20,8 +21,6 @@ class Object;
 
 class Space {
 public:
-    static Space* spaceOf(const Object* obj);
-
     virtual ~Space();
 
     Heap* heap();
@@ -29,18 +28,14 @@ public:
 protected:
     typedef boost::intrusive::list<Page> PageList;
 
-    static Page* pageOf(const Object* obj);
+    static constexpr std::size_t HeaderSize = sizeof(ObjectHeader);
 
     explicit Space(Heap* heap);
 
-    void initialize(Object* obj, Page* page);
+    void* placeObjectHeader(void* memory, std::size_t size,
+                            Page* page, ObjectType type);
 
-    void initRefCount(Object* obj);
-
-    std::uint32_t refCount(Object* obj);
-
-    void retainRef(Object* obj);
-    void releaseRef(Object* obj);
+    void* placeReferenceHeader(void* memory, Page* page);
 
     Page* firstPage();
     Page* addPage(std::size_t data_size);
@@ -56,6 +51,8 @@ private:
     Heap* heap_;
     PageList pages_;
     std::mutex mutex_;
+
+    friend class ObjectHeader;
 };
 
 

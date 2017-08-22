@@ -33,18 +33,11 @@ public:
     bool equals(const Object* other) const;
 
 protected:
-    Object(ObjectType type);
+    Object() = default;
 
 private:
     HashCode _hashCode() const;
     bool _equals(const Object* other) const;
-
-    const ObjectType type_;
-    std::uint8_t flags_;
-    PageMarker page_marker_;
-    std::uint32_t control_;
-
-    friend class Space;
 };
 
 
@@ -55,11 +48,6 @@ inline HashCode hash(const Object* obj) {
 
 inline bool Object::equals(const Object* a, const Object* b) {
     return a ? a->equals(b) : !b;
-}
-
-
-inline ObjectType Object::type() const {
-    return type_;
 }
 
 

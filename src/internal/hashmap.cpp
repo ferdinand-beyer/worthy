@@ -21,14 +21,14 @@ inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
 inline HashMap* newHashMap(const Object* caller, ElementCount count,
                            const HashMapNode* root, bool has_null_key,
                            const Variant& null_value) {
-    return caller->heap()->newObject<HashMap>(
+    return caller->heap()->make<HashMap>(
             count, root, has_null_key, null_value);
 }
 
 
 inline HashMapBitmapNode* newBitmapNode(const Object* caller,
                                         std::uint8_t array_length) {
-    return caller->heap()->newDynamicObject<HashMapBitmapNode>(
+    return caller->heap()->makeExtra<HashMapBitmapNode>(
         VariantArray::sizeFor(array_length));
 }
 
@@ -56,8 +56,7 @@ inline std::uint8_t bitcount(std::uint32_t bitmap) {
 
 
 HashMap::HashMap()
-    : Object(ObjectType::HashMap),
-      root_{nullptr},
+    : root_{nullptr},
       null_value_{},
       has_null_key_{false},
       count_{0} {
@@ -68,8 +67,7 @@ HashMap::HashMap(ElementCount count,
                  const HashMapNode* root,
                  bool has_null_key,
                  const Variant& null_value)
-    : Object{ObjectType::HashMap},
-      root_{root},
+    : root_{root},
       null_value_{null_value},
       has_null_key_{has_null_key},
       count_{count} {
@@ -128,11 +126,6 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
     DISPATCH_CONST(WORTHY_HASHMAPNODE_DERIVED, method, args)
 
 
-HashMapNode::HashMapNode(ObjectType type)
-    : Object{type} {
-}
-
-
 HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
                               const Variant& key, const Variant& value,
                               bool& added_leaf) const {
@@ -174,8 +167,7 @@ Variant HashMapArrayNode::_find(std::uint8_t shift,
 
 
 HashMapBitmapNode::HashMapBitmapNode()
-    : HashMapNode{ObjectType::HashMapBitmapNode},
-      bitmap_{0} {
+    : bitmap_{0} {
 }
 
 

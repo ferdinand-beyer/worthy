@@ -3,10 +3,8 @@
 
 
 #include "internal/globals.h"
+#include "internal/object-type.h"
 #include "internal/space.h"
-
-#include <new>
-#include <type_traits>
 
 
 namespace worthy {
@@ -19,38 +17,31 @@ public:
 
     ~ObjectSpace();
 
-    template<typename T, typename... Args>
-    inline T* newObject(Args&&... args) {
-        return newDynamicObject<T>(0, std::forward<Args>(args)...);
+    template<typename T>
+    inline void* allocate() {
+        return allocateInternal(ObjectTypeOf<T>(),
+                                sizeof(T),
+                                alignof(T));
     }
 
-    template<typename T, typename... Args>
-    T* newDynamicObject(std::size_t extra_size, Args&&... args) {
-        static_assert(std::is_base_of<Object, T>::value,
-            "can only allocate Object-derived instances");
-
-        void* memory;
-        Page* page;
-
-        if (!allocate(sizeof(T) + extra_size, alignof(T), memory, page)) {
-            return nullptr;
-        }
-
-        T* object = new (memory) T(std::forward<Args>(args)...);
-
-        initialize(object, page);
-
-        return object;
+    template<typename T>
+    inline void* allocateExtra(std::size_t extra_size) {
+        return allocateInternal(ObjectTypeOf<T>(),
+                                sizeof(T) + extra_size,
+                                alignof(T));
     }
 
 private:
     WORTHY_DISABLE_COPY(ObjectSpace);
 
-    bool allocate(
-            std::size_t size,
-            std::size_t alignment,
-            void*& memory,
-            Page*& page);
+    void* allocateInternal(ObjectType type,
+                           std::size_t size,
+                           std::size_t alignment);
+
+    bool allocateRaw(std::size_t size,
+                     std::size_t alignment,
+                     Page*& page,
+                     void*& memory);
 };
 
 

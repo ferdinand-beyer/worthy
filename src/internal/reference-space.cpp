@@ -1,6 +1,7 @@
 #include "internal/reference-space.h"
 
 #include "internal/check.h"
+#include "internal/object-header.h"
 #include "internal/reference.h"
 
 #include <new>
@@ -49,33 +50,16 @@ Reference* ReferenceSpace::newReference(Object* obj) {
 }
 
 
-std::uint32_t ReferenceSpace::refCount(Reference* ref) {
-    return Space::refCount(ref);
-}
-
-
-void ReferenceSpace::retain(Reference* ref) {
-    retainRef(ref);
-}
-
-
-void ReferenceSpace::release(Reference* ref) {
-    releaseRef(ref);
-}
-
-
 Reference* ReferenceSpace::allocateFromPage(Page* page, Object* obj) {
-    Address memory = page->allocate(sizeof(Reference), alignof(Reference));
-    if (!memory) {
+    void* block = page->allocate(sizeof(Reference) + HeaderSize,
+                                 alignof(Reference));
+    if (!block) {
         return nullptr;
     }
 
-    Reference* ref = new (memory) Reference(obj);
+    void* memory = placeReferenceHeader(block, page);
 
-    initialize(ref, page);
-    initRefCount(ref);
-
-    return ref;
+    return new (memory) Reference(obj);
 }
 
 
@@ -89,7 +73,7 @@ Reference* ReferenceSpace::allocateFromFreeList(Object* obj) {
     }
 
     if (ref) {
-        WORTHY_DCHECK(refCount(ref) == 0);
+        WORTHY_DCHECK(ObjectHeader::of(ref)->refCount() == 0);
         ref->ptr_ = obj;
     }
 
@@ -116,7 +100,7 @@ Page* ReferenceSpace::addPage() {
 
     // TODO: Check if we need more space for alignment?
 
-    return Space::addPage(page_capacity_ * sizeof(Reference));
+    return Space::addPage(page_capacity_ * (sizeof(Reference) + HeaderSize));
 }
 
 
