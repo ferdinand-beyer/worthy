@@ -38,9 +38,9 @@ We could try to move or merge references with the following idea:
 - Transient tag: per-runtime atomic counter?
 
 ## Heap
-- Make sure that the "data area" of a page is aligned to 16 bytes, by
-  making the Page class size a multiple of 16 or explicitly storing the
-  data start address.
+- Make sure that the "data area" of a page is propertly aligned for all
+  objects (8 or 16 bytes), by making the Page class size a multiple of
+  16 or explicitly storing the data start address.
 - Align pages to 4KB (OS page size)
 - Ideally make page sizes a multiple of the OS page size
 - Use runtime limits to allow user-tuning of the heap
@@ -55,15 +55,12 @@ We could try to move or merge references with the following idea:
 - Prevent mixing values from different runtimes!
 - Make sure that all Objects are 8- or 16-bit aligned.  Round all
   allocations up to 8 or 16.
+  *NOTE:* It might be easier to chose 8, since that's the size of
+  ObjectHeader
 - Store the allocated size in the Object header, because it may be
   padded for alignment.
-
-
-## Object layout
-- -8: size
-- -4
-- +0: type
-- +4: ref-count
+- Store the allocated size in words, not in bytes!
+- Decide what to do in 32-bit builds!
 
 ## Abstract/Final
 - Check that all assignable classes are either abstract or final
@@ -77,11 +74,11 @@ Check out:
 ## Arrays
 - Use a base class for Arrays:
 
-struct Array {
-  ObjectHeader header; //< Encode type in here somehow
-  uint32 size;
-  Byte[] data
-};
+    class ArrayObject : public Object {
+      VariantType type;
+      uint32 size;
+      Byte[] data
+    };
 
 ## Inline
 - Don't inline anything but the most trivial functions
@@ -94,15 +91,4 @@ struct Array {
 ## Debug logging
 - Add debug logging to the library, for example to track allocations.
 - Add warnings if Objects are not aligned nicely.
-
-## Interfaces
-- If we make sizeof(Object) zero (by externalizing the object header),
-  we could use multiple inheritance for interfaces without penalty.
-- But: Leaving the type in Object might be a good idea for cache lines,
-  assuming that 64 bytes are read when accessing an Object through the
-  pointer, we should grab as much as needed.  For normal code, this
-  certainly includes the type, because we will use it for casting,
-  dispatching and checks.  The header on the other hand is mainly used
-  during allocation and garbage collection.
-- What about the page marker?
 
