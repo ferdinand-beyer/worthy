@@ -123,7 +123,7 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
 
 
 #define NODE_DISPATCH(method, args) \
-    DISPATCH_CONST(WORTHY_HASHMAPNODE_DERIVED, method, args)
+    DISPATCH_CONST(WORTHY_HASHMAPNODE_DERIVED_TYPES, method, args)
 
 
 HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
