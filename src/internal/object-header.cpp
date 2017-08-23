@@ -67,7 +67,7 @@ void ObjectHeader::retain() {
 void ObjectHeader::release() {
     if (ref_count_.fetch_sub(1, std::memory_order_release) == 1) {
         std::atomic_thread_fence(std::memory_order_acquire);
-        space()->reclaim(object());
+        SpaceReclaimAccess::reclaim(space(), object());
     }
 }
 

@@ -52,6 +52,16 @@ private:
     PageList pages_;
     std::mutex mutex_;
 
+    friend class SpaceReclaimAccess;
+};
+
+
+class SpaceReclaimAccess {
+private:
+    static inline void reclaim(Space* space, Object* obj) {
+        space->reclaim(obj);
+    }
+
     friend class ObjectHeader;
 };
 
