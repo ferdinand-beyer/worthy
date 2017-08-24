@@ -133,3 +133,18 @@ TEST_CASE("hash collision", "[map]") {
         REQUIRE(map.get(key2) == key2);
     }
 }
+
+
+TEST_CASE("add many values", "[map]") {
+    Runtime rt;
+
+    Map map = rt.map();
+
+    SECTION("10 values") {
+        for (int i = 0; i < 10; ++i) {
+            map = map.add(i, i);
+        }
+
+        REQUIRE(map.size() == 10);
+    }
+}

@@ -227,15 +227,21 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
             // Null key means the value is a node.
             WORTHY_DCHECK(val_or_node.isObject());
 
-            auto node = static_cast<HashMapNode*>(val_or_node.toObject());
-            auto new_node = node->add(shift + 5, hash, key, value, added_leaf);
+            auto child = static_cast<HashMapNode*>(val_or_node.toObject());
+            auto new_child = child->add(shift + 5, hash, key, value, added_leaf);
 
-            if (node == new_node) {
+            if (child == new_child) {
                 return const_cast<HashMapBitmapNode*>(this);
             }
 
-            // TODO: Replace value with new_node
-            WORTHY_UNIMPLEMENTED();
+            auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+            auto new_array = new_node->array();
+
+            // Replace with new node.
+            new_array.copy(arr);
+            new_array.set(2*idx + 1, new_child);
+
+            return new_node;
         }
 
         if (key_or_null == key) {
