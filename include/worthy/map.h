@@ -28,11 +28,15 @@ public:
 
     void swap(Map& other);
 
+    bool isEmpty() const;
+
     std::size_t size() const;
 
     bool containsKey(const Value& key) const;
 
     Value get(const Value& key) const;
+
+    Value get(const Value& key, const Value& not_found) const;
 
     Map add(const Value& key, const Value& value) const;
 

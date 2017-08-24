@@ -22,6 +22,11 @@ HashMap* Map::map() const {
 }
 
 
+bool Map::isEmpty() const {
+    return size() == 0;
+}
+
+
 std::size_t Map::size() const {
     return map()->count();
 }
@@ -34,6 +39,11 @@ bool Map::containsKey(const Value& key) const {
 
 Value Map::get(const Value& key) const {
     return toValue(map()->get(toVariant(key)));
+}
+
+
+Value Map::get(const Value& key, const Value& not_found) const {
+    return toValue(map()->get(toVariant(key), toVariant(not_found)));
 }
 
 
