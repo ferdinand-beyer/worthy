@@ -52,6 +52,20 @@ TEST_CASE("add values", "[map]") {
         REQUIRE(!map2.containsKey(43));
         REQUIRE(map2.get(43).isNull());
     }
+
+    SECTION("add same entry again") {
+        Map map3 = map2.add(42, 1337);
+
+        REQUIRE(map3.size() == 1);
+        REQUIRE(map3.get(42) == 1337);
+    }
+
+    SECTION("overwrite key") {
+        Map map3 = map2.add(42, false);
+
+        REQUIRE(map3.size() == 1);
+        REQUIRE(map3.get(42) == false);
+    }
 }
 
 

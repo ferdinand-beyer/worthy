@@ -13,6 +13,21 @@ namespace internal {
 namespace {
 
 
+inline std::uint8_t mask(HashCode hash, std::uint8_t shift) {
+    return (hash >> shift) & 0x1f;
+}
+
+
+inline std::uint8_t bitpos(HashCode hash, std::uint8_t shift) {
+    return 1 << mask(hash, shift);
+}
+
+
+inline std::uint8_t bitcount(std::uint32_t bitmap) {
+    return std::bitset<32>(bitmap).count();
+}
+
+
 inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
     return caller->heap()->emptyHashMapBitmapNode();
 }
@@ -27,24 +42,26 @@ inline HashMap* newHashMap(const Object* caller, ElementCount count,
 
 
 inline HashMapBitmapNode* newBitmapNode(const Object* caller,
-                                        std::uint8_t array_length) {
+                                        std::uint8_t array_length,
+                                        std::uint32_t bitmap) {
     return caller->heap()->makeExtra<HashMapBitmapNode>(
-        VariantArray::sizeFor(array_length));
+        VariantArray::sizeFor(array_length), bitmap);
 }
 
 
-inline std::uint8_t mask(HashCode hash, std::uint8_t shift) {
-    return (hash >> shift) & 0x1f;
-}
-
-
-inline std::uint8_t bitpos(HashCode hash, std::uint8_t shift) {
-    return 1 << mask(hash, shift);
-}
-
-
-inline std::uint8_t bitcount(std::uint32_t bitmap) {
-    return std::bitset<32>(bitmap).count();
+HashMapNode* createNode(const Object* caller, std::uint8_t shift,
+                        const Variant& key1, const Variant& val1,
+                        HashCode hash2,
+                        const Variant& key2, const Variant& val2) {
+    const auto hash1 = hash(key1);
+    if (hash1 == hash2) {
+        // TODO: new HashMapCollisionNode
+        WORTHY_UNIMPLEMENTED();
+    }
+    bool added_leaf = false;
+    return emptyBitmapNode(caller)
+        ->_add(shift, hash1, key1, val1, added_leaf)
+        ->add(shift, hash2, key2, val2, added_leaf);
 }
 
 
@@ -171,6 +188,11 @@ HashMapBitmapNode::HashMapBitmapNode()
 }
 
 
+HashMapBitmapNode::HashMapBitmapNode(std::uint32_t bitmap)
+    : bitmap_{bitmap} {
+}
+
+
 std::uint8_t HashMapBitmapNode::count() const {
     return bitcount(bitmap_);
 }
@@ -216,9 +238,36 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
             WORTHY_UNIMPLEMENTED();
         }
 
-        // TODO: Equal keys?
-        // TODO: Create a new node.
+        if (key_or_null == key) {
+            if (val_or_node == value) {
+                // Entry is already present.
+                return const_cast<HashMapBitmapNode*>(this);
+            }
+
+            auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+            auto new_array = new_node->array();
+
+            // Replace with new value.
+            new_array.copy(arr);
+            new_array.set(2*idx + 1, value);
+
+            return new_node;
+        }
+
+        added_leaf = true;
+
+        auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+        auto new_array = new_node->array();
+
+        new_array.copy(arr);
+        new_array.set(2*idx, nullptr);
+        new_array.set(2*idx + 1, createNode(this, shift + 5,
+                                            key_or_null, val_or_node,
+                                            hash, key, value));
+
+        // TODO: Write test first
         WORTHY_UNIMPLEMENTED();
+        //return new_node;
     }
 
     const auto n = count();
@@ -228,10 +277,7 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
         WORTHY_UNIMPLEMENTED();
     }
 
-    auto new_node = newBitmapNode(this, 2 * (n+1));
-
-    new_node->bitmap_ = bitmap_ | bit;
-
+    auto new_node = newBitmapNode(this, 2 * (n+1), bitmap_ | bit);
     auto new_array = new_node->array();
 
     new_array.copy(0, arr, 0, 2*idx);

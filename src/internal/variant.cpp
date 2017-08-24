@@ -4,6 +4,7 @@
 #include "internal/hash.h"
 #include "internal/object.h"
 
+#include <algorithm>
 #include <cstring>
 
 
@@ -41,23 +42,28 @@ bool Variant::operator==(const Variant& other) const {
 }
 
 
-void VariantArray::copy(std::size_t dstIndex, const VariantArray& src,
-                        std::size_t srcIndex, std::size_t length) {
+void VariantArray::copy(const VariantArray& src) {
+    copy(0, src, 0, std::min(length_, src.length_));
+}
+
+
+void VariantArray::copy(std::size_t dst_index, const VariantArray& src,
+                        std::size_t src_index, std::size_t length) {
     WORTHY_DCHECK(&src != this);
 
     if (length == 0) {
         return;
     }
 
-    WORTHY_CHECK(srcIndex + length <= src.length_);
-    WORTHY_CHECK(dstIndex + length <= length_);
+    WORTHY_CHECK(src_index + length <= src.length_);
+    WORTHY_CHECK(dst_index + length <= length_);
 
-    std::memcpy(data_array_ + dstIndex,
-                src.data_array_ + srcIndex,
+    std::memcpy(data_array_ + dst_index,
+                src.data_array_ + src_index,
                 length * sizeof(VariantData));
 
-    std::memcpy(type_array_ + dstIndex,
-                src.type_array_ + srcIndex,
+    std::memcpy(type_array_ + dst_index,
+                src.type_array_ + src_index,
                 length * sizeof(VariantType));
 }
 

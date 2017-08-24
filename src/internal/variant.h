@@ -151,12 +151,17 @@ public:
 
     VariantArray(Address start, std::size_t length);
 
+    std::size_t length() const;
+
     Variant get(std::size_t index) const;
+
     void set(std::size_t index, const Variant& value);
 
-    void copy(std::size_t dstIndex,
+    void copy(const VariantArray& src);
+
+    void copy(std::size_t dst_index,
               const VariantArray& src,
-              std::size_t srcIndex,
+              std::size_t src_index,
               std::size_t length);
 
 private:
@@ -175,6 +180,11 @@ inline VariantArray::VariantArray(Address start, std::size_t length)
     : length_{length},
       data_array_{reinterpret_cast<VariantData*>(start)},
       type_array_{reinterpret_cast<VariantType*>(data_array_ + length)} {}
+
+
+inline std::size_t VariantArray::length() const {
+    return length_;
+}
 
 
 inline Variant VariantArray::get(std::size_t index) const {

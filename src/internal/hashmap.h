@@ -48,6 +48,7 @@ public:
     DECL_CAST(HashMapBitmapNode)
 
     HashMapBitmapNode();
+    explicit HashMapBitmapNode(std::uint32_t bitmap);
 
     HashMapNode* _add(std::uint8_t shift, HashCode hash,
                       const Variant& key, const Variant& value,
