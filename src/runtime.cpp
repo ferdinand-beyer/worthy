@@ -2,6 +2,7 @@
 
 #include "worthy/map.h"
 
+#include "internal/hashmap.h"
 #include "internal/heap.h"
 
 
@@ -18,7 +19,7 @@ Runtime::~Runtime() {
 
 
 Map Runtime::map() {
-    return heap_->emptyHashMapReference();
+    return heap_->emptyHashMap();
 }
 
 

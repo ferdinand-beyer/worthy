@@ -4,7 +4,6 @@
 #include "internal/hashmap.h"
 #include "internal/object-dispatch.h"
 #include "internal/object-header.h"
-#include "internal/reference.h"
 
 
 namespace worthy {
@@ -38,6 +37,16 @@ bool Object::equals(const Object* other) const {
 
 bool Object::_equals(const Object* other) const {
     return this == other;
+}
+
+
+void intrusive_ptr_add_ref(Object* obj) {
+    ObjectHeader::of(obj)->retain();
+}
+
+
+void intrusive_ptr_release(Object* obj) {
+    ObjectHeader::of(obj)->release();
 }
 
 

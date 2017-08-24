@@ -4,7 +4,6 @@
 #include "internal/check.h"
 #include "internal/heap.h"
 #include "internal/object.h"
-#include "internal/reference.h"
 #include "internal/variant.h"
 
 #include <ostream>
@@ -12,7 +11,6 @@
 
 
 using worthy::internal::Object;
-using worthy::internal::Reference;
 using worthy::internal::Variant;
 
 
@@ -27,25 +25,16 @@ inline bool isReferenceType(Type t) {
 }
 
 
-bool equals(Reference* lhs, Reference* rhs) {
-    if (lhs == rhs) {
-        return true;
-    }
-    if (!lhs || !rhs) {
-        return false;
-    }
-    return Object::equals(lhs->get(), rhs->get());
-}
-
-
 } // namespace
 
 
-AbstractValue::AbstractValue(Type t, Reference* ref)
-    : data_{ref},
+AbstractValue::AbstractValue(Type t, Object* obj)
+    : data_{obj},
       type_{t} {
     WORTHY_DCHECK(isReferenceType(t));
-    WORTHY_DCHECK(ref);
+    WORTHY_DCHECK(obj);
+
+    intrusive_ptr_add_ref(obj);
 }
 
 
@@ -64,19 +53,23 @@ AbstractValue::AbstractValue(AbstractValue&& other)
 
 
 AbstractValue& AbstractValue::operator=(const AbstractValue& other) {
-    release();
-    data_ = other.data_;
-    type_ = other.type_;
-    retain();
+    if (this != &other) {
+        release();
+        data_ = other.data_;
+        type_ = other.type_;
+        retain();
+    }
     return *this;
 }
 
 
 AbstractValue& AbstractValue::operator=(AbstractValue&& other) {
-    release();
-    data_ = other.data_;
-    type_ = other.type_;
-    other.reset();
+    if (this != &other) {
+        release();
+        data_ = other.data_;
+        type_ = other.type_;
+        other.reset();
+    }
     return *this;
 }
 
@@ -109,34 +102,34 @@ bool AbstractValue::equals(const AbstractValue& other) const {
 
     default:
         WORTHY_DCHECK(isReferenceType(type_));
-        return worthy::equals(data_.ref, other.data_.ref);
+        return Object::equals(data_.obj, other.data_.obj);
     }
 }
 
 
 void AbstractValue::reset() {
-    data_.ref = nullptr;
+    data_.obj = nullptr;
     type_ = Type::Null;
 }
 
 
 void AbstractValue::retain() {
     if (isReferenceType(type_)) {
-        data_.ref->retain();
+        intrusive_ptr_add_ref(data_.obj);
     }
 }
 
 
 void AbstractValue::release() {
     if (isReferenceType(type_)) {
-        data_.ref->release();
+        intrusive_ptr_release(data_.obj);
     }
 }
 
 
 Object* AbstractValue::object() const {
     WORTHY_DCHECK(isReferenceType(type_));
-    return data_.ref->get();
+    return data_.obj;
 }
 
 
@@ -153,7 +146,7 @@ Variant toVariant(const AbstractValue& value) {
 
     default:
         WORTHY_DCHECK(isReferenceType(value.type_));
-        return Variant(value.data_.ref->get());
+        return Variant(value.data_.obj);
     }
 }
 
@@ -173,7 +166,7 @@ std::ostream& operator<<(std::ostream& os, const AbstractValue& value) {
     default:
         WORTHY_DCHECK(isReferenceType(value.type_));
         // TODO: Delegate to Object!
-        os << value.data_.ref->get();
+        os << value.data_.obj;
         break;
     }
     return os;

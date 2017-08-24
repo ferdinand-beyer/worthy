@@ -6,16 +6,11 @@ namespace worthy {
 
 
 namespace internal {
-class Object;
-class Reference;
 class Variant;
 }
 
 
 class Value;
-
-
-internal::Reference* newReference(internal::Object* obj);
 
 
 Value toValue(const internal::Variant& v);

@@ -32,7 +32,7 @@ public:
     Map add(const Value& key, const Value& value) const;
 
 private:
-    Map(internal::Reference* ref);
+    Map(internal::Object* obj);
 
     friend class Runtime;
 };

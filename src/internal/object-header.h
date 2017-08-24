@@ -30,22 +30,18 @@ public:
     Space* space() const;
     Heap* heap() const;
 
-    std::uint32_t refCount() const;
-
     void retain();
     void release();
 
 private:
-    ObjectHeader(ObjectType type, std::uint8_t flags, std::uint32_t size);
-    ObjectHeader(ObjectType type, std::uint8_t flags);
+    ObjectHeader(std::uint32_t size, ObjectType type);
 
+    std::uint32_t size_;
+    PageMarker page_marker_;
     ObjectType type_;
     std::uint8_t flags_;
-    PageMarker page_marker_;
-    union {
-        std::uint32_t size_;
-        std::atomic<std::uint32_t> ref_count_;
-    };
+    std::atomic<std::uint32_t> ref_count_;
+    std::uint32_t reserved_;
 
     friend class Space;
 };

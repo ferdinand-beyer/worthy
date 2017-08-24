@@ -6,7 +6,6 @@
 
 #include <boost/align/aligned_alloc.hpp>
 
-#include <atomic>
 #include <new>
 
 
@@ -16,15 +15,6 @@ using boost::alignment::aligned_free;
 
 namespace worthy {
 namespace internal {
-
-
-namespace {
-
-
-typedef std::atomic<std::uint32_t> AtomicRefCount;
-
-
-} // namespace
 
 
 Space::Space(Heap* heap) : heap_{heap} {
@@ -38,20 +28,14 @@ Space::~Space() {
 
 void* Space::placeObjectHeader(void* memory, std::size_t size,
                                Page* page, ObjectType type) {
-    ObjectHeader* header = new (memory) ObjectHeader(type, 0, size);
-    page->setMarker(&header->page_marker_);
-    return header + 1;
-}
-
-
-void* Space::placeReferenceHeader(void* memory, Page* page) {
-    ObjectHeader* header = new (memory) ObjectHeader(ObjectType::Reference, 0);
+    ObjectHeader* header = new (memory) ObjectHeader(size, type);
     page->setMarker(&header->page_marker_);
     return header + 1;
 }
 
 
 void Space::reclaim(Object* obj) {
+    // TODO: obj is no longer a root.
 }
 
 

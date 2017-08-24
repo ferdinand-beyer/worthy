@@ -13,7 +13,6 @@ namespace worthy {
 
 namespace internal {
 class Object;
-class Reference;
 class Variant;
 }
 
@@ -30,7 +29,7 @@ protected:
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
-    AbstractValue(Type t, internal::Reference* ref);
+    AbstractValue(Type t, internal::Object* obj);
 
     AbstractValue(const AbstractValue& other);
     AbstractValue(AbstractValue&& other);
@@ -61,14 +60,14 @@ protected:
 
 private:
     union Data {
-        internal::Reference* ref;
+        internal::Object* obj;
 #define WORTHY_TEMP(name, id, type, field) \
         type field;
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
-        Data() : ref{nullptr} {}
-        explicit Data(internal::Reference* ref_) : ref{ref_} {}
+        Data() : obj{nullptr} {}
+        explicit Data(internal::Object* obj_) : obj{obj_} {}
 #define WORTHY_TEMP(name, id, type, field) \
         explicit Data(type field##_) : field{field##_} {}
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)

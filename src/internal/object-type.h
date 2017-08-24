@@ -15,7 +15,6 @@ namespace internal {
 
 
 #define WORTHY_OBJECT_DERIVED_TYPES \
-    (Reference)                     \
     (HashMap)                       \
     (TransientHashMap)
 

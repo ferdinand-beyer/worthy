@@ -34,10 +34,6 @@ set(Worthy_SRCS
     src/internal/object.h
     src/internal/page.cpp
     src/internal/page.h
-    src/internal/reference-space.cpp
-    src/internal/reference-space.h
-    src/internal/reference.cpp
-    src/internal/reference.h
     src/internal/space.cpp
     src/internal/space.h
     src/internal/variant.cpp
@@ -54,7 +50,6 @@ set(Worthy_SRCS
 set(UnitTests_SRCS
     test/unit/hash-test.cpp
     test/unit/map-test.cpp
-    test/unit/reference-space-test.cpp
     test/unit/variant-test.cpp
     test/unit/value-test.cpp
     test/main.cpp

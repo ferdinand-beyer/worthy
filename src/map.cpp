@@ -6,15 +6,15 @@
 
 
 using worthy::internal::HashMap;
-using worthy::internal::Reference;
+using worthy::internal::Object;
 using worthy::internal::Variant;
 
 
 namespace worthy {
 
 
-Map::Map(Reference* ref)
-    : AbstractValue{Type::Map, ref} {
+Map::Map(Object* obj)
+    : AbstractValue{Type::Map, obj} {
 }
 
 
@@ -42,7 +42,7 @@ Map Map::add(const Value& key, const Value& value) const {
     if (result == map) {
         return *this;
     }
-    return newReference(result);
+    return result;
 }
 
 

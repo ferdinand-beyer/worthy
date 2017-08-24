@@ -35,8 +35,6 @@ protected:
     void* placeObjectHeader(void* memory, std::size_t size,
                             Page* page, ObjectType type);
 
-    void* placeReferenceHeader(void* memory, Page* page);
-
     Page* firstPage();
     Page* addPage(std::size_t data_size);
 

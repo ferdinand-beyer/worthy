@@ -5,6 +5,8 @@
 #include "internal/globals.h"
 #include "internal/object-space.h"
 
+#include <boost/intrusive_ptr.hpp>
+
 #include <memory>
 #include <new>
 
@@ -16,8 +18,6 @@ namespace internal {
 class HashMap;
 class HashMapBitmapNode;
 class Object;
-class Reference;
-class ReferenceSpace;
 
 
 class Heap final {
@@ -25,8 +25,6 @@ public:
     Heap();
 
     ~Heap();
-
-    Reference* newReference(Object* obj);
 
     template<typename T, typename... Args>
     inline T* make(Args&&... args) {
@@ -43,16 +41,13 @@ public:
     HashMap* emptyHashMap() const;
     HashMapBitmapNode* emptyHashMapBitmapNode() const;
 
-    Reference* emptyHashMapReference() const;
-
 private:
     WORTHY_DISABLE_COPY(Heap);
 
-    std::unique_ptr<ReferenceSpace> reference_space_;
     std::unique_ptr<ObjectSpace> object_space_;
 
-    Reference* empty_hash_map_;
-    Reference* empty_hash_map_bitmap_node_;
+    boost::intrusive_ptr<HashMap> empty_hash_map_;
+    boost::intrusive_ptr<HashMapBitmapNode> empty_hash_map_bitmap_node_;
 };
 
 

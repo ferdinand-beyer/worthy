@@ -8,24 +8,20 @@ namespace worthy {
 namespace internal {
 
 
+static_assert(sizeof(ObjectHeader) == 16, "expected header size");
+
+
 ObjectHeader* ObjectHeader::of(const Object* obj) {
     return reinterpret_cast<ObjectHeader*>(const_cast<Object*>(obj)) - 1;
 }
 
 
-ObjectHeader::ObjectHeader(ObjectType type,
-                           std::uint8_t flags,
-                           std::uint32_t size)
-    : type_{type},
-      flags_{flags},
-      size_{size} {
-}
-
-
-ObjectHeader::ObjectHeader(ObjectType type, std::uint8_t flags)
-    : type_{type},
-      flags_{flags},
-      ref_count_{1} {
+ObjectHeader::ObjectHeader(std::uint32_t size,
+                           ObjectType type)
+    : size_{size},
+      type_{type},
+      flags_{0},
+      ref_count_{0} {
 }
 
 
@@ -51,11 +47,6 @@ Space* ObjectHeader::space() const {
 
 Heap* ObjectHeader::heap() const {
     return space()->heap();
-}
-
-
-std::uint32_t ObjectHeader::refCount() const {
-    return ref_count_.load(std::memory_order_relaxed);
 }
 
 
