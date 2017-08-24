@@ -20,7 +20,7 @@ namespace worthy {
 namespace {
 
 
-inline bool isReferenceType(Type t) {
+inline constexpr bool isObjectType(Type t) noexcept {
     return (t >= Type::FirstReferenceType);
 }
 
@@ -31,7 +31,7 @@ inline bool isReferenceType(Type t) {
 AbstractValue::AbstractValue(Type t, Object* obj)
     : data_{obj},
       type_{t} {
-    WORTHY_DCHECK(isReferenceType(t));
+    WORTHY_DCHECK(isObjectType(t));
     WORTHY_DCHECK(obj);
 
     intrusive_ptr_add_ref(obj);
@@ -45,10 +45,15 @@ AbstractValue::AbstractValue(const AbstractValue& other)
 }
 
 
-AbstractValue::AbstractValue(AbstractValue&& other)
+AbstractValue::AbstractValue(AbstractValue&& other) noexcept
     : data_{other.data_},
       type_{other.type_} {
     other.reset();
+}
+
+
+AbstractValue::~AbstractValue() {
+    release();
 }
 
 
@@ -74,12 +79,7 @@ AbstractValue& AbstractValue::operator=(AbstractValue&& other) {
 }
 
 
-AbstractValue::~AbstractValue() {
-    release();
-}
-
-
-void AbstractValue::swap(AbstractValue& other) {
+void AbstractValue::swap(AbstractValue& other) noexcept {
     using std::swap;
     swap(data_, other.data_);
     swap(type_, other.type_);
@@ -101,39 +101,39 @@ bool AbstractValue::equals(const AbstractValue& other) const {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isReferenceType(type_));
+        WORTHY_DCHECK(isObjectType(type_));
         return Object::equals(data_.obj, other.data_.obj);
     }
 }
 
 
-void AbstractValue::reset() {
+void AbstractValue::reset() noexcept {
     data_.obj = nullptr;
     type_ = Type::Null;
 }
 
 
 void AbstractValue::retain() {
-    if (isReferenceType(type_)) {
+    if (isObjectType(type_)) {
         intrusive_ptr_add_ref(data_.obj);
     }
 }
 
 
 void AbstractValue::release() {
-    if (isReferenceType(type_)) {
+    if (isObjectType(type_)) {
         intrusive_ptr_release(data_.obj);
     }
 }
 
 
 Object* AbstractValue::object() const {
-    WORTHY_DCHECK(isReferenceType(type_));
+    WORTHY_DCHECK(isObjectType(type_));
     return data_.obj;
 }
 
 
-Variant toVariant(const AbstractValue& value) {
+Variant toVariant(const AbstractValue& value) noexcept {
     switch (value.type_) {
     case Type::Null:
         return Variant();
@@ -145,7 +145,7 @@ Variant toVariant(const AbstractValue& value) {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isReferenceType(value.type_));
+        WORTHY_DCHECK(isObjectType(value.type_));
         return Variant(value.data_.obj);
     }
 }
@@ -164,7 +164,7 @@ std::ostream& operator<<(std::ostream& os, const AbstractValue& value) {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isReferenceType(value.type_));
+        WORTHY_DCHECK(isObjectType(value.type_));
         // TODO: Delegate to Object!
         os << value.data_.obj;
         break;

@@ -22,31 +22,31 @@ public:
     bool equals(const AbstractValue& other) const;
 
 protected:
-    AbstractValue();
+    AbstractValue() noexcept;
 
 #define WORTHY_TEMP(name, id, type, field) \
-    explicit AbstractValue(type field##_);
+    explicit AbstractValue(type field##_) noexcept;
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
     AbstractValue(Type t, internal::Object* obj);
 
     AbstractValue(const AbstractValue& other);
-    AbstractValue(AbstractValue&& other);
+    AbstractValue(AbstractValue&& other) noexcept;
 
     AbstractValue& operator=(const AbstractValue& other);
     AbstractValue& operator=(AbstractValue&& other);
 
     ~AbstractValue();
 
-    void swap(AbstractValue& other);
+    void swap(AbstractValue& other) noexcept;
 
-    Type type() const;
+    Type type() const noexcept;
 
     internal::Object* object() const;
 
     template <typename T>
-    inline T toPrimitive() const {
+    inline T toPrimitive() const noexcept {
         switch (type_) {
 #define WORTHY_TEMP(name, id, type, field)  \
         case Type::name:                    \
@@ -66,22 +66,23 @@ private:
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
-        Data() : obj{nullptr} {}
-        explicit Data(internal::Object* obj_) : obj{obj_} {}
+        Data() noexcept : obj{nullptr} {}
+        explicit Data(internal::Object* obj_) noexcept : obj{obj_} {}
 #define WORTHY_TEMP(name, id, type, field) \
-        explicit Data(type field##_) : field{field##_} {}
+        explicit Data(type field##_) noexcept : field{field##_} {}
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
     };
 
-    void reset();
+    void reset() noexcept;
+
     void retain();
     void release();
 
     Data data_;
     Type type_;
 
-    friend internal::Variant toVariant(const AbstractValue& value);
+    friend internal::Variant toVariant(const AbstractValue& value) noexcept;
     friend std::ostream& operator<<(std::ostream& os, const AbstractValue& value);
 };
 
@@ -96,18 +97,18 @@ inline bool operator!=(const AbstractValue& lhs, const AbstractValue& rhs) {
 }
 
 
-inline AbstractValue::AbstractValue()
+inline AbstractValue::AbstractValue() noexcept
     : type_{Type::Null} {}
 
 
-#define WORTHY_TEMP(name, id, type, field) \
-inline AbstractValue::AbstractValue(type field##_) \
+#define WORTHY_TEMP(name, id, type, field)                  \
+inline AbstractValue::AbstractValue(type field##_) noexcept \
     : data_{field##_}, type_{Type::name} {}
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
 
-inline Type AbstractValue::type() const {
+inline Type AbstractValue::type() const noexcept {
     return type_;
 }
 
