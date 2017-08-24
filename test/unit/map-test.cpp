@@ -101,4 +101,13 @@ TEST_CASE("value with null key", "[map]") {
 
         REQUIRE(map.size() == 1);
     }
+
+    SECTION("add null and non-null") {
+        map = map.add(nullptr, 1);
+        map = map.add(0, 2);
+
+        REQUIRE(map.size() == 2);
+        REQUIRE(map.get(nullptr) == 1);
+        REQUIRE(map.get(0) == 2);
+    }
 }

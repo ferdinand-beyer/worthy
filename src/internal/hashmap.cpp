@@ -18,7 +18,7 @@ inline std::uint8_t mask(HashCode hash, std::uint8_t shift) {
 }
 
 
-inline std::uint8_t bitpos(HashCode hash, std::uint8_t shift) {
+inline std::uint32_t bitpos(HashCode hash, std::uint8_t shift) {
     return 1 << mask(hash, shift);
 }
 
