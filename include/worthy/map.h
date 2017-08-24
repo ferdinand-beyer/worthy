@@ -10,6 +10,11 @@
 namespace worthy {
 
 
+namespace internal {
+class HashMap;
+}
+
+
 class Value;
 
 
@@ -32,7 +37,9 @@ public:
     Map add(const Value& key, const Value& value) const;
 
 private:
-    Map(internal::Object* obj);
+    Map(internal::HashMap* obj);
+
+    internal::HashMap* map() const;
 
     friend class Runtime;
 };

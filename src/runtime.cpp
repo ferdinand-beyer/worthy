@@ -2,7 +2,6 @@
 
 #include "worthy/map.h"
 
-#include "internal/hashmap.h"
 #include "internal/heap.h"
 
 
