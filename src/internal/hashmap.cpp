@@ -265,9 +265,7 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
                                             key_or_null, val_or_node,
                                             hash, key, value));
 
-        // TODO: Write test first
-        WORTHY_UNIMPLEMENTED();
-        //return new_node;
+        return new_node;
     }
 
     const auto n = count();
