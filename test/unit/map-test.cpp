@@ -158,13 +158,13 @@ TEST_CASE("add many values", "[map]") {
         const int n = 50;
 
         for (int i = 0; i < n; ++i) {
-            map = map.add(i, i);
+            map = map.add(i, i + 1);
         }
 
         REQUIRE(map.size() == n);
 
         for (int i = 0; i < n; ++i) {
-            REQUIRE(map.get(i) == i);
+            REQUIRE(map.get(i, i) == i + 1);
         }
     }
 

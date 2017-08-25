@@ -6,6 +6,8 @@
 #include "internal/object-decl.h"
 #include "internal/variant.h"
 
+#include <array>
+
 
 namespace worthy {
 namespace internal {
@@ -22,24 +24,6 @@ public:
 
 protected:
     HashMapNode() = default;
-};
-
-
-class HashMapArrayNode final : public HashMapNode {
-public:
-    DECL_CAST(HashMapArrayNode)
-
-    HashMapNode* _add(uint shift, HashCode hash,
-                      const Variant& key, const Variant& value,
-                      bool& added_leaf) const;
-
-    Variant _find(uint shift, HashCode hash,
-                  const Variant& key, const Variant& not_found) const;
-
-private:
-    //uint8_t count_;
-    //TransientTag tag_;
-    //HashMapNode* nodes_[32];
 };
 
 
@@ -68,6 +52,32 @@ private:
 };
 
 
+class HashMapArrayNode final : public HashMapNode {
+public:
+    typedef std::array<HashMapNode*, 32> NodeArray;
+
+    DECL_CAST(HashMapArrayNode)
+
+    explicit HashMapArrayNode(uint32_t count);
+
+    HashMapArrayNode(uint32_t count, const NodeArray& nodes);
+
+    HashMapNode* _add(uint shift, HashCode hash,
+                      const Variant& key, const Variant& value,
+                      bool& added_leaf) const;
+
+    Variant _find(uint shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
+
+private:
+    NodeArray nodes_;
+    uint32_t count_;
+    //TransientTag tag_;
+
+    friend class HashMapBitmapNode;
+};
+
+
 class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
@@ -82,7 +92,7 @@ public:
 private:
     //HashCode hash_;
     //TransientTag tag_;
-    //ElementCount count_;
+    //uint32_t count_;
 };
 
 
@@ -92,10 +102,10 @@ public:
 
     HashMap();
 
-    HashMap(ElementCount count, const HashMapNode* root,
+    HashMap(uint32_t count, const HashMapNode* root,
             bool has_null_key, const Variant& null_value);
 
-    ElementCount count() const;
+    uint32_t count() const;
 
     bool containsKey(const Variant& key) const;
 
@@ -107,7 +117,7 @@ private:
     const HashMapNode* const root_;
     const Variant null_value_;
     const bool has_null_key_;
-    const ElementCount count_;
+    const uint32_t count_;
 };
 
 
@@ -120,7 +130,7 @@ private:
 };
 
 
-inline ElementCount HashMap::count() const {
+inline uint32_t HashMap::count() const {
     return count_;
 }
 
