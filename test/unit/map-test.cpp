@@ -141,10 +141,44 @@ TEST_CASE("add many values", "[map]") {
     Map map = rt.map();
 
     SECTION("10 values") {
-        for (int i = 0; i < 10; ++i) {
+        const int n = 10;
+
+        for (int i = 0; i < n; ++i) {
             map = map.add(i, i);
         }
 
-        REQUIRE(map.size() == 10);
+        REQUIRE(map.size() == n);
+
+        for (int i = 0; i < n; ++i) {
+            REQUIRE(map.get(i) == i);
+        }
+    }
+
+    SECTION("50 values") {
+        const int n = 50;
+
+        for (int i = 0; i < n; ++i) {
+            map = map.add(i, i);
+        }
+
+        REQUIRE(map.size() == n);
+
+        for (int i = 0; i < n; ++i) {
+            REQUIRE(map.get(i) == i);
+        }
+    }
+
+    SECTION("10,000 values") {
+        const int n = 10000;
+
+        for (int i = 0; i < n; ++i) {
+            map = map.add(i, i);
+        }
+
+        REQUIRE(map.size() == n);
+
+        for (int i = 0; i < n; ++i) {
+            REQUIRE(map.get(i) == i);
+        }
     }
 }

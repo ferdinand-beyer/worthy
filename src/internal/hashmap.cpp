@@ -278,7 +278,7 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
 
     if (n >= 16) {
         // TODO: Switch to ArrayNode
-        WORTHY_UNIMPLEMENTED();
+        //WORTHY_UNIMPLEMENTED();
     }
 
     auto new_node = newBitmapNode(this, 2 * (n+1), bitmap_ | bit);
