@@ -22,8 +22,22 @@ namespace internal {
 #define WORTHY_NOOP ((void) 0)
 
 
-typedef std::uint8_t Byte;
-typedef Byte* Address;
+using std::size_t;
+using std::uintptr_t;
+
+using std::int8_t;
+using std::int16_t;
+using std::int32_t;
+using std::int64_t;
+
+using std::uint8_t;
+using std::uint16_t;
+using std::uint32_t;
+using std::uint64_t;
+
+
+typedef uint8_t byte;
+typedef unsigned int uint;
 
 typedef std::uint32_t HashCode;
 
@@ -35,8 +49,14 @@ typedef std::uint32_t ElementCount;
 typedef std::intptr_t TransientTag;
 
 
-const std::size_t PointerSize = sizeof(void*);
-const std::size_t WordSize = PointerSize;
+constexpr std::size_t PointerSize = sizeof(void*);
+constexpr std::size_t WordSize = PointerSize;
+
+
+template<typename T>
+inline constexpr uintptr_t addressOf(const T* ptr) {
+    return reinterpret_cast<uintptr_t>(ptr);
+}
 
 
 } } // namespace worthy::internal

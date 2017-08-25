@@ -24,7 +24,7 @@ TEST_CASE("compact array of variant types", "[variant]") {
     }
 
     SECTION("access elements") {
-        std::vector<Byte> buffer;
+        std::vector<byte> buffer;
         buffer.resize(VariantArray::sizeFor(10));
 
         VariantArray array(buffer.data(), 10);
@@ -39,7 +39,7 @@ TEST_CASE("compact array of variant types", "[variant]") {
     }
 
     SECTION("copy arrays") {
-        std::vector<Byte> buffer;
+        std::vector<byte> buffer;
         buffer.resize(VariantArray::sizeFor(20));
 
         VariantArray array1(buffer.data(), 10);

@@ -204,9 +204,8 @@ std::uint8_t HashMapBitmapNode::index(std::uint32_t bit) const {
 
 
 VariantArray HashMapBitmapNode::array() const {
-    return {reinterpret_cast<Address>(
-                const_cast<HashMapBitmapNode*>(this + 1)),
-            static_cast<std::size_t>(2 * count())};
+    return {const_cast<HashMapBitmapNode*>(this + 1),
+            static_cast<size_t>(2 * count())};
 }
 
 

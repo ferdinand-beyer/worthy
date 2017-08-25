@@ -1,13 +1,7 @@
 #include "internal/page.h"
 
+#include "internal/align.h"
 #include "internal/check.h"
-
-#include <boost/align/align_down.hpp>
-#include <boost/align/align_up.hpp>
-
-
-using boost::alignment::align_down;
-using boost::alignment::align_up;
 
 
 namespace worthy {
@@ -18,13 +12,12 @@ Page* Page::fromMarker(const PageMarker* marker) {
     WORTHY_CHECK(marker);
 
     return reinterpret_cast<Page*>(
-        static_cast<Address>(align_down(const_cast<PageMarker*>(marker),
-                                        Alignment))
-        - *marker * Alignment);
+            alignDown(addressOf(marker), Alignment)
+            - *marker * Alignment);
 }
 
 
-Page::Page(Space* space, std::size_t data_size)
+Page::Page(Space* space, size_t data_size)
     : space_{space},
       data_size_{data_size},
       top_{begin()} {
@@ -35,23 +28,22 @@ Page::Page(Space* space, std::size_t data_size)
 
 
 void Page::setMarker(PageMarker* marker) const {
-    const Address markerAddress = reinterpret_cast<Address>(marker);
-    WORTHY_CHECK(contains(markerAddress));
+    WORTHY_CHECK(contains(marker));
 
-    *marker = (static_cast<Address>(align_down(markerAddress, Alignment))
-                    - address()) / Alignment;
+    *marker = (alignDown(addressOf(marker), Alignment)
+                - addressOf(this)) / Alignment;
 }
 
 
-Address Page::allocate(std::size_t size, std::size_t alignment) {
+void* Page::allocate(size_t size, size_t alignment) {
     WORTHY_CHECK(size > 0);
 
-    Address top = top_.load(std::memory_order_relaxed);
-    Address result;
-    Address new_top;
+    uintptr_t top = top_.load(std::memory_order_relaxed);
+    uintptr_t result;
+    uintptr_t new_top;
 
     do {
-        result = static_cast<Address>(align_up(top, alignment));
+        result = alignUp(top, alignment);
         new_top = result + size;
 
         if (new_top > end()) {
@@ -62,7 +54,13 @@ Address Page::allocate(std::size_t size, std::size_t alignment) {
                                          std::memory_order_release,
                                          std::memory_order_relaxed));
 
-    return result;
+    return reinterpret_cast<void*>(result);
+}
+
+
+bool Page::contains(void* ptr) const {
+    const auto addr = addressOf(ptr);
+    return (addr >= begin()) && (addr < end());
 }
 
 

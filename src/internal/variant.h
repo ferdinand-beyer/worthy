@@ -22,7 +22,7 @@ class Object;
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(F)
 
 
-enum class VariantType : std::uint8_t {
+enum class VariantType : uint8_t {
 #define WORTHY_TEMP(name, id, type, field) (name = id)
     BOOST_PP_SEQ_ENUM(WORTHY_FOR_EACH_VARIANT_TYPE(WORTHY_TEMP))
 #undef WORTHY_TEMP
@@ -147,53 +147,53 @@ inline Object* Variant::toObject() const {
  */
 class VariantArray {
 public:
-    static std::size_t sizeFor(std::size_t length);
+    static size_t sizeFor(size_t length);
 
-    VariantArray(Address start, std::size_t length);
+    VariantArray(void* start, size_t length);
 
-    std::size_t length() const;
+    size_t length() const;
 
-    Variant get(std::size_t index) const;
+    Variant get(size_t index) const;
 
-    void set(std::size_t index, const Variant& value);
+    void set(size_t index, const Variant& value);
 
     void copy(const VariantArray& src);
 
-    void copy(std::size_t dst_index,
+    void copy(size_t dst_index,
               const VariantArray& src,
-              std::size_t src_index,
-              std::size_t length);
+              size_t src_index,
+              size_t length);
 
 private:
-    const std::size_t length_;
+    const size_t length_;
     VariantData* const data_array_;
     VariantType* const type_array_;
 };
 
 
-inline std::size_t VariantArray::sizeFor(std::size_t length) {
+inline size_t VariantArray::sizeFor(size_t length) {
     return length * (sizeof(VariantData) + sizeof(VariantType));
 }
 
 
-inline VariantArray::VariantArray(Address start, std::size_t length)
+inline VariantArray::VariantArray(void* start, size_t length)
     : length_{length},
       data_array_{reinterpret_cast<VariantData*>(start)},
       type_array_{reinterpret_cast<VariantType*>(data_array_ + length)} {}
 
 
-inline std::size_t VariantArray::length() const {
+inline size_t VariantArray::length() const {
     return length_;
 }
 
 
-inline Variant VariantArray::get(std::size_t index) const {
+inline Variant VariantArray::get(size_t index) const {
     WORTHY_DCHECK(index < length_);
     return {type_array_[index], data_array_[index]};
 }
 
 
-inline void VariantArray::set(std::size_t index, const Variant& value) {
+inline void VariantArray::set(size_t index, const Variant& value) {
     WORTHY_DCHECK(index < length_);
     data_array_[index] = value.data();
     type_array_[index] = value.type();

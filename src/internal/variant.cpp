@@ -47,8 +47,8 @@ void VariantArray::copy(const VariantArray& src) {
 }
 
 
-void VariantArray::copy(std::size_t dst_index, const VariantArray& src,
-                        std::size_t src_index, std::size_t length) {
+void VariantArray::copy(size_t dst_index, const VariantArray& src,
+                        size_t src_index, size_t length) {
     WORTHY_DCHECK(&src != this);
 
     if (length == 0) {
