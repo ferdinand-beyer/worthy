@@ -208,9 +208,6 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
         auto val_or_node = arr.get(2*idx + 1);
 
         if (key_or_null.isNull()) {
-            // Null key means the value is a node.
-            WORTHY_DCHECK(val_or_node.isObject());
-
             auto child = static_cast<HashMapNode*>(val_or_node.toObject());
             auto new_child = child->add(shift + 5, hash, key, value, added_leaf);
 
@@ -261,35 +258,10 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
     const auto n = count();
 
     if (n >= 16) {
-        const auto empty = emptyBitmapNode(this);
-        const auto jdx = mask(hash, shift);
-
-        auto new_node = newArrayNode(this, n + 1);
-
-        new_node->nodes_[jdx] = empty->_add(shift + 5, hash, key, value,
-                                            added_leaf);
-        uint j = 0;
-
-        for (uint i = 0; i < 32; ++i) {
-            if (((bitmap_ >> i) & 0x01) == 0) {
-                continue;
-            }
-
-            const auto key_or_null = arr.get(j);
-            const auto val_or_node = arr.get(j+1);
-
-            if (key_or_null.isNull()) {
-                new_node->nodes_[i] = static_cast<HashMapNode*>(
-                        val_or_node.toObject());
-            } else {
-                new_node->nodes_[i] = empty->_add(shift + 5,
-                        worthy::internal::hash(key_or_null),
-                        key_or_null, val_or_node, added_leaf);
-            }
-
-            j += 2;
-        }
-
+        auto new_node = toArrayNode(shift, n + 1);
+        const auto k = mask(hash, shift);
+        new_node->nodes_[k] = emptyBitmapNode(this)
+            ->_add(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
 
@@ -304,6 +276,38 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
     added_leaf = true;
 
     return new_node;
+}
+
+
+HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
+                                                 uint32_t count) const {
+    const auto arr = array();
+    const auto empty = emptyBitmapNode(this);
+
+    auto node = newArrayNode(this, count);
+
+    uint k = 0;
+    bool added_leaf = true;
+
+    for (uint i = 0; i < 32; ++i) {
+        if (((bitmap_ >> i) & 0x01) == 0) {
+            continue;
+        }
+
+        const auto key = arr.get(k);
+        const auto val = arr.get(k + 1);
+
+        if (key.isNull()) {
+            node->nodes_[i] = static_cast<HashMapNode*>(val.toObject());
+        } else {
+            node->nodes_[i] = empty->_add(shift + 5, hash(key),
+                                          key, val, added_leaf);
+        }
+
+        k += 2;
+    }
+
+    return node;
 }
 
 

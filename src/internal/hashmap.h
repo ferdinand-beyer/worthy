@@ -47,6 +47,8 @@ private:
 
     VariantArray array() const;
 
+    HashMapArrayNode* toArrayNode(uint shift, uint32_t count) const;
+
     uint32_t bitmap_;
     //TransientTag tag_;
 };
