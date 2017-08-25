@@ -167,18 +167,4 @@ TEST_CASE("add many values", "[map]") {
             REQUIRE(map.get(i, i) == i + 1);
         }
     }
-
-    SECTION("10,000 values") {
-        const int n = 10000;
-
-        for (int i = 0; i < n; ++i) {
-            map = map.add(i, i);
-        }
-
-        REQUIRE(map.size() == n);
-
-        for (int i = 0; i < n; ++i) {
-            REQUIRE(map.get(i) == i);
-        }
-    }
 }
