@@ -13,11 +13,11 @@ namespace internal {
 
 class HashMapNode : public Object {
 public:
-    HashMapNode* add(std::uint8_t shift, HashCode hash,
+    HashMapNode* add(uint shift, HashCode hash,
                      const Variant& key, const Variant& value,
                      bool& added_leaf) const;
 
-    Variant find(std::uint8_t shift, HashCode hash,
+    Variant find(uint shift, HashCode hash,
                  const Variant& key, const Variant& not_found) const;
 
 protected:
@@ -29,15 +29,15 @@ class HashMapArrayNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapArrayNode)
 
-    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+    HashMapNode* _add(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(std::uint8_t shift, HashCode hash,
+    Variant _find(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:
-    //std::uint8_t count_;
+    //uint8_t count_;
     //TransientTag tag_;
     //HashMapNode* nodes_[32];
 };
@@ -48,22 +48,22 @@ public:
     DECL_CAST(HashMapBitmapNode)
 
     HashMapBitmapNode();
-    explicit HashMapBitmapNode(std::uint32_t bitmap);
+    explicit HashMapBitmapNode(uint32_t bitmap);
 
-    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+    HashMapNode* _add(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(std::uint8_t shift, HashCode hash,
+    Variant _find(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:
-    std::uint8_t count() const;
-    std::uint8_t index(std::uint32_t bit) const;
+    uint count() const;
+    uint index(uint32_t bit) const;
 
     VariantArray array() const;
 
-    std::uint32_t bitmap_;
+    uint32_t bitmap_;
     //TransientTag tag_;
 };
 
@@ -72,11 +72,11 @@ class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
 
-    HashMapNode* _add(std::uint8_t shift, HashCode hash,
+    HashMapNode* _add(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(std::uint8_t shift, HashCode hash,
+    Variant _find(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:

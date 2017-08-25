@@ -13,17 +13,17 @@ namespace internal {
 namespace {
 
 
-inline std::uint8_t mask(HashCode hash, std::uint8_t shift) {
+inline uint mask(HashCode hash, uint shift) {
     return (hash >> shift) & 0x1f;
 }
 
 
-inline std::uint32_t bitpos(HashCode hash, std::uint8_t shift) {
+inline uint32_t bitpos(HashCode hash, uint shift) {
     return 1 << mask(hash, shift);
 }
 
 
-inline std::uint8_t bitcount(std::uint32_t bitmap) {
+inline uint bitcount(uint32_t bitmap) {
     return std::bitset<32>(bitmap).count();
 }
 
@@ -42,14 +42,14 @@ inline HashMap* newHashMap(const Object* caller, ElementCount count,
 
 
 inline HashMapBitmapNode* newBitmapNode(const Object* caller,
-                                        std::uint8_t array_length,
-                                        std::uint32_t bitmap) {
+                                        size_t array_length,
+                                        uint32_t bitmap) {
     return caller->heap()->makeExtra<HashMapBitmapNode>(
         VariantArray::sizeFor(array_length), bitmap);
 }
 
 
-HashMapNode* createNode(const Object* caller, std::uint8_t shift,
+HashMapNode* createNode(const Object* caller, uint shift,
                         const Variant& key1, const Variant& val1,
                         HashCode hash2,
                         const Variant& key2, const Variant& val2) {
@@ -143,14 +143,14 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
     DISPATCH_CONST(WORTHY_HASHMAPNODE_DERIVED_TYPES, method, args)
 
 
-HashMapNode* HashMapNode::add(std::uint8_t shift, HashCode hash,
+HashMapNode* HashMapNode::add(uint shift, HashCode hash,
                               const Variant& key, const Variant& value,
                               bool& added_leaf) const {
     NODE_DISPATCH(_add, (shift, hash, key, value, added_leaf));
 }
 
 
-Variant HashMapNode::find(std::uint8_t shift,
+Variant HashMapNode::find(uint shift,
                           HashCode hash,
                           const Variant& key,
                           const Variant& not_found) const {
@@ -162,7 +162,7 @@ Variant HashMapNode::find(std::uint8_t shift,
 // HashMapArrayNode
 
 
-HashMapNode* HashMapArrayNode::_add(std::uint8_t shift, HashCode hash,
+HashMapNode* HashMapArrayNode::_add(uint shift, HashCode hash,
                                     const Variant& key, const Variant& value,
                                     bool& added_leaf) const {
     // TODO
@@ -170,7 +170,7 @@ HashMapNode* HashMapArrayNode::_add(std::uint8_t shift, HashCode hash,
 }
 
 
-Variant HashMapArrayNode::_find(std::uint8_t shift,
+Variant HashMapArrayNode::_find(uint shift,
                                 HashCode hash,
                                 const Variant& key,
                                 const Variant& not_found) const {
@@ -188,17 +188,17 @@ HashMapBitmapNode::HashMapBitmapNode()
 }
 
 
-HashMapBitmapNode::HashMapBitmapNode(std::uint32_t bitmap)
+HashMapBitmapNode::HashMapBitmapNode(uint32_t bitmap)
     : bitmap_{bitmap} {
 }
 
 
-std::uint8_t HashMapBitmapNode::count() const {
+uint HashMapBitmapNode::count() const {
     return bitcount(bitmap_);
 }
 
 
-std::uint8_t HashMapBitmapNode::index(std::uint32_t bit) const {
+uint HashMapBitmapNode::index(uint32_t bit) const {
     return bitcount(bitmap_ & (bit - 1));
 }
 
@@ -209,7 +209,7 @@ VariantArray HashMapBitmapNode::array() const {
 }
 
 
-HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
+HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
                                      const Variant& key, const Variant& value,
                                      bool& added_leaf) const {
     const auto bit = bitpos(hash, shift);
@@ -294,7 +294,7 @@ HashMapNode* HashMapBitmapNode::_add(std::uint8_t shift, HashCode hash,
 }
 
 
-Variant HashMapBitmapNode::_find(std::uint8_t shift,
+Variant HashMapBitmapNode::_find(uint shift,
                                  HashCode hash,
                                  const Variant& key,
                                  const Variant& not_found) const {
@@ -326,7 +326,7 @@ Variant HashMapBitmapNode::_find(std::uint8_t shift,
 // HashMapCollisionNode
 
 
-HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift,
+HashMapNode* HashMapCollisionNode::_add(uint shift,
                                         HashCode hash,
                                         const Variant& key,
                                         const Variant& value,
@@ -336,7 +336,7 @@ HashMapNode* HashMapCollisionNode::_add(std::uint8_t shift,
 }
 
 
-Variant HashMapCollisionNode::_find(std::uint8_t shift,
+Variant HashMapCollisionNode::_find(uint shift,
                                     HashCode hash,
                                     const Variant& key,
                                     const Variant& not_found) const {
