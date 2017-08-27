@@ -200,43 +200,8 @@ HashMapNode* HashMapBitmapNode::add_(uint shift, HashCode hash,
     const auto bit = bitpos(hash, shift);
     const auto idx = index(bit);
 
-    const auto arr = array();
-
     if (bitmap_ & bit) {
-        // We already have an element at this position.
-        auto key_or_null = arr.get(2*idx);
-        auto val_or_node = arr.get(2*idx + 1);
-
-        if (key_or_null.isNull()) {
-            auto child = static_cast<HashMapNode*>(val_or_node.toObject());
-            auto new_child = child->add(shift + 5, hash, key, value, added_leaf);
-
-            if (child == new_child) {
-                return const_cast<HashMapBitmapNode*>(this);
-            }
-
-            return copyAndSet(2*idx + 1, new_child);
-        }
-
-        if (key_or_null == key) {
-            if (val_or_node == value) {
-                return const_cast<HashMapBitmapNode*>(this);
-            }
-            return copyAndSet(2*idx + 1, value);
-        }
-
-        auto new_node = newBitmapNode(this, arr.length(), bitmap_);
-        auto new_array = new_node->array();
-
-        new_array.copy(arr);
-        new_array.set(2*idx, nullptr);
-        new_array.set(2*idx + 1, newNode(this, shift + 5,
-                                         key_or_null, val_or_node,
-                                         hash, key, value));
-
-        added_leaf = true;
-
-        return new_node;
+        return update(idx, shift, hash, key, value, added_leaf);
     }
 
     const auto n = count();
@@ -248,6 +213,8 @@ HashMapNode* HashMapBitmapNode::add_(uint shift, HashCode hash,
             ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
+
+    const auto arr = array();
 
     auto new_node = newBitmapNode(this, 2 * (n+1), bitmap_ | bit);
     auto new_array = new_node->array();
@@ -263,7 +230,48 @@ HashMapNode* HashMapBitmapNode::add_(uint shift, HashCode hash,
 }
 
 
-HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint index,
+HashMapNode* HashMapBitmapNode::update(uint index, uint shift, HashCode hash,
+                                       const Variant& key, const Variant& value,
+                                       bool& added_leaf) const {
+    const auto arr = array();
+
+    const auto current_key = arr.get(2*index);
+    const auto current_value = arr.get(2*index + 1);
+
+    if (current_key.isNull()) {
+        auto child = static_cast<HashMapNode*>(current_value.toObject());
+        auto new_child = child->add(shift + 5, hash, key, value, added_leaf);
+
+        if (child == new_child) {
+            return const_cast<HashMapBitmapNode*>(this);
+        }
+
+        return copyAndSet(2*index + 1, new_child);
+    }
+
+    if (current_key == key) {
+        if (current_value == value) {
+            return const_cast<HashMapBitmapNode*>(this);
+        }
+        return copyAndSet(2*index + 1, value);
+    }
+
+    auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+    auto new_array = new_node->array();
+
+    new_array.copy(arr);
+    new_array.set(2*index, nullptr);
+    new_array.set(2*index + 1, newNode(this, shift + 5,
+                                       current_key, current_value,
+                                       hash, key, value));
+
+    added_leaf = true;
+
+    return new_node;
+}
+
+
+HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint array_index,
                                                  const Variant& value) const {
     const auto arr = array();
 
@@ -271,7 +279,7 @@ HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint index,
     auto new_array = new_node->array();
 
     new_array.copy(arr);
-    new_array.set(index, value);
+    new_array.set(array_index, value);
 
     return new_node;
 }
@@ -293,13 +301,13 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
         }
 
         const auto key = arr.get(k);
-        const auto val = arr.get(k + 1);
+        const auto value = arr.get(k + 1);
 
         if (key.isNull()) {
-            node->nodes_[i] = static_cast<HashMapNode*>(val.toObject());
+            node->nodes_[i] = static_cast<HashMapNode*>(value.toObject());
         } else {
             node->nodes_[i] = empty->add_(shift + 5, hash(key),
-                                          key, val, added_leaf);
+                                          key, value, added_leaf);
         }
 
         k += 2;
@@ -321,16 +329,16 @@ Variant HashMapBitmapNode::find_(uint shift,
     const auto arr = array();
     const auto idx = index(bit);
 
-    const auto key_or_null = arr.get(2*idx);
-    const auto val_or_node = arr.get(2*idx+1);
+    const auto found_key = arr.get(2*idx);
+    const auto value = arr.get(2*idx + 1);
 
-    if (key_or_null.isNull()) {
-        const auto node = static_cast<HashMapNode*>(val_or_node.toObject());
+    if (found_key.isNull()) {
+        const auto node = static_cast<HashMapNode*>(value.toObject());
         return node->find(shift + 5, hash, key, not_found);
     }
 
-    if (key_or_null == key) {
-        return val_or_node;
+    if (found_key == key) {
+        return value;
     }
 
     return not_found;

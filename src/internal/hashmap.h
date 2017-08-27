@@ -47,7 +47,11 @@ private:
 
     VariantArray array() const;
 
-    HashMapBitmapNode* copyAndSet(uint index, const Variant& value) const;
+    HashMapNode* update(uint index, uint shift, HashCode hash,
+                        const Variant& key, const Variant& value,
+                        bool& added_leaf) const;
+
+    HashMapBitmapNode* copyAndSet(uint array_index, const Variant& value) const;
 
     HashMapArrayNode* toArrayNode(uint shift, uint32_t count) const;
 
