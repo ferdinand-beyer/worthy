@@ -215,30 +215,14 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
                 return const_cast<HashMapBitmapNode*>(this);
             }
 
-            auto new_node = newBitmapNode(this, arr.length(), bitmap_);
-            auto new_array = new_node->array();
-
-            // Replace with new node.
-            new_array.copy(arr);
-            new_array.set(2*idx + 1, new_child);
-
-            return new_node;
+            return copyAndSet(2*idx + 1, new_child);
         }
 
         if (key_or_null == key) {
             if (val_or_node == value) {
-                // Entry is already present.
                 return const_cast<HashMapBitmapNode*>(this);
             }
-
-            auto new_node = newBitmapNode(this, arr.length(), bitmap_);
-            auto new_array = new_node->array();
-
-            // Replace with new value.
-            new_array.copy(arr);
-            new_array.set(2*idx + 1, value);
-
-            return new_node;
+            return copyAndSet(2*idx + 1, value);
         }
 
         added_leaf = true;
@@ -274,6 +258,20 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
     new_array.copy(2*(idx+1), arr, 2*idx, 2*(n-idx));
 
     added_leaf = true;
+
+    return new_node;
+}
+
+
+HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint index,
+                                                 const Variant& value) const {
+    const auto arr = array();
+
+    auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+    auto new_array = new_node->array();
+
+    new_array.copy(arr);
+    new_array.set(index, value);
 
     return new_node;
 }
