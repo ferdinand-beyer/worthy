@@ -1,7 +1,6 @@
 #include "worthy/map.h"
 #include "worthy/runtime.h"
 #include "worthy/value.h"
-#include "internal/hash.h"
 
 #include <catch.hpp>
 
@@ -10,7 +9,6 @@ using worthy::Map;
 using worthy::Runtime;
 using worthy::Type;
 using worthy::Value;
-using worthy::internal::hash;
 
 
 TEST_CASE("construct empty map", "[map]") {
@@ -111,26 +109,6 @@ TEST_CASE("value with null key", "[map]") {
         REQUIRE(map.size() == 2);
         REQUIRE(map.get(nullptr) == 1);
         REQUIRE(map.get(0) == 2);
-    }
-}
-
-
-TEST_CASE("hash collision", "[map]") {
-    Runtime rt;
-
-    Map map = rt.map();
-
-    SECTION("first shift") {
-        const std::uint32_t key1 = 0;
-        const std::uint32_t key2 = 5;
-
-        REQUIRE((hash(key1) & 0x1f) == (hash(key2) & 0x1f));
-
-        map = map.add(key1, key1).add(key2, key2);
-
-        REQUIRE(map.size() == 2);
-        REQUIRE(map.get(key1) == key1);
-        REQUIRE(map.get(key2) == key2);
     }
 }
 

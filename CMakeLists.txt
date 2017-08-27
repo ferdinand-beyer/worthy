@@ -49,16 +49,19 @@ set(Worthy_SRCS
 
 set(UnitTests_SRCS
     test/unit/hash-test.cpp
-    test/unit/map-test.cpp
-    test/unit/variant-test.cpp
+    test/unit/hashmap-test.cpp
     test/unit/value-test.cpp
+    test/unit/variant-test.cpp
+    test/main.cpp
+    )
+
+set(IntegrationTests_SRCS
+    test/integration/map-test.cpp
     test/main.cpp
     )
 
 
 find_package(Boost 1.54.0 REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
 find_package(Doxygen)
 
 
@@ -79,6 +82,10 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/src-gen/internal/version.h")
 
 
+add_library(boost INTERFACE)
+target_include_directories(boost INTERFACE ${Boost_INCLUDE_DIRS})
+
+
 add_library(murmur3 STATIC
     third-party/murmur3/MurmurHash3.h
     third-party/murmur3/MurmurHash3.cpp)
@@ -93,20 +100,27 @@ add_library(worthy SHARED ${Worthy_SRCS})
 target_include_directories(worthy INTERFACE include)
 target_include_directories(worthy PRIVATE
     include src ${CMAKE_CURRENT_BINARY_DIR}/src-gen)
-target_link_libraries(worthy murmur3)
+target_link_libraries(worthy boost murmur3)
 #set_target_properties(worthy PROPERTIES
 #    VERSION ${Worthy_VERSION}
 #    SOVERSION ${Worthy_API_VERSION})
 
 
 add_executable(unit-tests ${UnitTests_SRCS})
-target_include_directories(unit-tests PRIVATE test src)
-target_link_libraries(unit-tests worthy catch)
 target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
+target_include_directories(unit-tests PRIVATE test src)
+target_link_libraries(unit-tests worthy boost catch)
+
+
+add_executable(integration-tests ${IntegrationTests_SRCS})
+target_compile_definitions(integration-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
+target_include_directories(integration-tests PRIVATE test)
+target_link_libraries(integration-tests worthy catch)
 
 
 enable_testing()
 add_test(NAME unit-tests COMMAND unit-tests)
+add_test(NAME integration-tests COMMAND integration-tests)
 
 
 if(DOXYGEN_FOUND)
