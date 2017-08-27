@@ -66,3 +66,6 @@ Check out:
 - Add debug logging to the library, for example to track allocations.
 - Add warnings if Objects are not aligned nicely.
 
+## Variant
+- Reuse more of Variant in AbstractValue
+
