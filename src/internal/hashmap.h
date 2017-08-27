@@ -34,11 +34,11 @@ public:
     HashMapBitmapNode();
     explicit HashMapBitmapNode(uint32_t bitmap);
 
-    HashMapNode* _add(uint shift, HashCode hash,
+    HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(uint shift, HashCode hash,
+    Variant find_(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:
@@ -66,11 +66,11 @@ public:
 
     HashMapArrayNode(uint32_t count, const NodeArray& nodes);
 
-    HashMapNode* _add(uint shift, HashCode hash,
+    HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(uint shift, HashCode hash,
+    Variant find_(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:
@@ -86,11 +86,11 @@ class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
 
-    HashMapNode* _add(uint shift, HashCode hash,
+    HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant _find(uint shift, HashCode hash,
+    Variant find_(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
 
 private:

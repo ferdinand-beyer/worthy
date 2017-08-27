@@ -55,10 +55,10 @@ inline HashMapArrayNode* newArrayNode(const Object* caller, Args&&... args) {
 }
 
 
-HashMapNode* createNode(const Object* caller, uint shift,
-                        const Variant& key1, const Variant& val1,
-                        HashCode hash2,
-                        const Variant& key2, const Variant& val2) {
+HashMapNode* newNode(const Object* caller, uint shift,
+                     const Variant& key1, const Variant& val1,
+                     HashCode hash2,
+                     const Variant& key2, const Variant& val2) {
     const auto hash1 = hash(key1);
     if (hash1 == hash2) {
         // TODO: new HashMapCollisionNode
@@ -66,7 +66,7 @@ HashMapNode* createNode(const Object* caller, uint shift,
     }
     bool added_leaf = false;
     return emptyBitmapNode(caller)
-        ->_add(shift, hash1, key1, val1, added_leaf)
+        ->add_(shift, hash1, key1, val1, added_leaf)
         ->add(shift, hash2, key2, val2, added_leaf);
 }
 
@@ -152,7 +152,7 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
 HashMapNode* HashMapNode::add(uint shift, HashCode hash,
                               const Variant& key, const Variant& value,
                               bool& added_leaf) const {
-    NODE_DISPATCH(_add, (shift, hash, key, value, added_leaf));
+    NODE_DISPATCH(add_, (shift, hash, key, value, added_leaf));
 }
 
 
@@ -160,7 +160,7 @@ Variant HashMapNode::find(uint shift,
                           HashCode hash,
                           const Variant& key,
                           const Variant& not_found) const {
-    NODE_DISPATCH(_find, (shift, hash, key, not_found));
+    NODE_DISPATCH(find_, (shift, hash, key, not_found));
 }
 
 
@@ -194,7 +194,7 @@ VariantArray HashMapBitmapNode::array() const {
 }
 
 
-HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
+HashMapNode* HashMapBitmapNode::add_(uint shift, HashCode hash,
                                      const Variant& key, const Variant& value,
                                      bool& added_leaf) const {
     const auto bit = bitpos(hash, shift);
@@ -225,16 +225,16 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
             return copyAndSet(2*idx + 1, value);
         }
 
-        added_leaf = true;
-
         auto new_node = newBitmapNode(this, arr.length(), bitmap_);
         auto new_array = new_node->array();
 
         new_array.copy(arr);
         new_array.set(2*idx, nullptr);
-        new_array.set(2*idx + 1, createNode(this, shift + 5,
-                                            key_or_null, val_or_node,
-                                            hash, key, value));
+        new_array.set(2*idx + 1, newNode(this, shift + 5,
+                                         key_or_null, val_or_node,
+                                         hash, key, value));
+
+        added_leaf = true;
 
         return new_node;
     }
@@ -245,7 +245,7 @@ HashMapNode* HashMapBitmapNode::_add(uint shift, HashCode hash,
         auto new_node = toArrayNode(shift, n + 1);
         const auto k = mask(hash, shift);
         new_node->nodes_[k] = emptyBitmapNode(this)
-            ->_add(shift + 5, hash, key, value, added_leaf);
+            ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
 
@@ -298,7 +298,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
         if (key.isNull()) {
             node->nodes_[i] = static_cast<HashMapNode*>(val.toObject());
         } else {
-            node->nodes_[i] = empty->_add(shift + 5, hash(key),
+            node->nodes_[i] = empty->add_(shift + 5, hash(key),
                                           key, val, added_leaf);
         }
 
@@ -309,7 +309,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 }
 
 
-Variant HashMapBitmapNode::_find(uint shift,
+Variant HashMapBitmapNode::find_(uint shift,
                                  HashCode hash,
                                  const Variant& key,
                                  const Variant& not_found) const {
@@ -353,7 +353,7 @@ HashMapArrayNode::HashMapArrayNode(uint32_t count, const NodeArray& nodes)
 }
 
 
-HashMapNode* HashMapArrayNode::_add(uint shift, HashCode hash,
+HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
                                     const Variant& key, const Variant& value,
                                     bool& added_leaf) const {
     const auto idx = mask(hash, shift);
@@ -362,7 +362,7 @@ HashMapNode* HashMapArrayNode::_add(uint shift, HashCode hash,
     if (!child) {
         auto new_node = newArrayNode(this, count_ + 1, nodes_);
         new_node->nodes_[idx] = emptyBitmapNode(this)
-            ->_add(shift + 5, hash, key, value, added_leaf);
+            ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
 
@@ -378,7 +378,7 @@ HashMapNode* HashMapArrayNode::_add(uint shift, HashCode hash,
 }
 
 
-Variant HashMapArrayNode::_find(uint shift,
+Variant HashMapArrayNode::find_(uint shift,
                                 HashCode hash,
                                 const Variant& key,
                                 const Variant& not_found) const {
@@ -395,7 +395,7 @@ Variant HashMapArrayNode::_find(uint shift,
 // HashMapCollisionNode
 
 
-HashMapNode* HashMapCollisionNode::_add(uint shift,
+HashMapNode* HashMapCollisionNode::add_(uint shift,
                                         HashCode hash,
                                         const Variant& key,
                                         const Variant& value,
@@ -405,7 +405,7 @@ HashMapNode* HashMapCollisionNode::_add(uint shift,
 }
 
 
-Variant HashMapCollisionNode::_find(uint shift,
+Variant HashMapCollisionNode::find_(uint shift,
                                     HashCode hash,
                                     const Variant& key,
                                     const Variant& not_found) const {
