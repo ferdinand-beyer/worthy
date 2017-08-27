@@ -26,6 +26,8 @@ public:
 
     template<typename T>
     inline void* allocateExtra(std::size_t extra_size) {
+        // TODO: sizeof(T) should be a multiple of 8 for alignment of the
+        // extra space!
         return allocateInternal(ObjectTypeOf<T>(),
                                 sizeof(T) + extra_size,
                                 alignof(T));

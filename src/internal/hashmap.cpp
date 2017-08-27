@@ -229,6 +229,8 @@ uint HashMapBitmapNode::index(uint32_t bit) const {
 
 
 VariantArray HashMapBitmapNode::array() const {
+    // TODO: Make sure that HashMapBitmapNode has a size multiple of 8, otherwise
+    // the VariantArray won't ne properly aligned!
     return {const_cast<HashMapBitmapNode*>(this + 1),
             static_cast<size_t>(2 * count())};
 }
