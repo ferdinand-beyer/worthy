@@ -272,4 +272,15 @@ TEST_CASE("remove values", "[hashmap]") {
             REQUIRE(result->count() == 1);
         }
     }
+
+    SECTION("remove from larger map") {
+        for (int i = 0; i < 50; ++i) {
+            map = map->add(i, i + 1);
+        }
+
+        HashMap* result = map->remove(25);
+
+        REQUIRE(result->count() == 49);
+        REQUIRE(!result->containsKey(25));
+    }
 }

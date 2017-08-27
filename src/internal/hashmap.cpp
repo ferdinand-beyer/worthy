@@ -445,14 +445,16 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 
 
 HashMapArrayNode::HashMapArrayNode(uint32_t count)
-    : count_{count} {
+        : count_{count} {
+    WORTHY_DCHECK(count_ < 32);
     nodes_.fill(nullptr);
 }
 
 
 HashMapArrayNode::HashMapArrayNode(uint32_t count, const NodeArray& nodes)
-    : nodes_{nodes},
-      count_{count} {
+        : nodes_{nodes},
+          count_{count} {
+    WORTHY_DCHECK(count_ < 32);
 }
 
 
@@ -496,7 +498,32 @@ HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
 
 HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
                                        const Variant& key) const {
-    WORTHY_UNIMPLEMENTED();
+    const auto idx = mask(hash, shift);
+    const auto child = nodes_[idx];
+
+    if (!child) {
+        return const_cast<HashMapArrayNode*>(this);
+    }
+
+    auto new_child = child->remove(shift + 5, hash, key);
+
+    if (new_child == child) {
+        return const_cast<HashMapArrayNode*>(this);
+    }
+
+    if (new_child) {
+        auto new_node = newArrayNode(this, count_, nodes_);
+        new_node->nodes_[idx] = new_child;
+        return new_node;
+    }
+
+    // TODO: Shrink
+    //if (count_ <= 8) {
+    //}
+
+    auto new_node = newArrayNode(this, count_ - 1, nodes_);
+    new_node->nodes_[idx] = nullptr;
+    return new_node;
 }
 
 
