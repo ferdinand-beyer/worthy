@@ -11,6 +11,23 @@ using worthy::internal::Heap;
 using worthy::internal::hash;
 
 
+constexpr std::uint32_t shift0_colliding_key_1 = 0;
+constexpr std::uint32_t shift0_colliding_key_2 = 5;
+constexpr std::uint32_t shift0_colliding_key_3 = 24;
+
+
+TEST_CASE("peconditions") {
+    SECTION("shift0 colliding keys") {
+        const auto hash1 = hash(shift0_colliding_key_1);
+        const auto hash2 = hash(shift0_colliding_key_2);
+        const auto hash3 = hash(shift0_colliding_key_3);
+
+        REQUIRE((hash1 & 0x1f) == (hash2 & 0x1f));
+        REQUIRE((hash1 & 0x1f) == (hash3 & 0x1f));
+    }
+}
+
+
 TEST_CASE("construct empty hashmap", "[hashmap]") {
     Heap heap;
     HashMap* map = heap.emptyHashMap();
@@ -113,11 +130,9 @@ TEST_CASE("hash collision", "[hashmap]") {
     Heap heap;
     HashMap* map = heap.emptyHashMap();
 
-    SECTION("first shift") {
-        const std::uint32_t key1 = 0;
-        const std::uint32_t key2 = 5;
-
-        REQUIRE((hash(key1) & 0x1f) == (hash(key2) & 0x1f));
+    SECTION("first level") {
+        constexpr auto key1 = shift0_colliding_key_1;
+        constexpr auto key2 = shift0_colliding_key_2;
 
         map = map->add(key1, key1)->add(key2, key2);
 
@@ -157,6 +172,104 @@ TEST_CASE("add many values", "[hashmap]") {
 
         for (int i = 0; i < n; ++i) {
             REQUIRE(map->get(i, i) == i + 1);
+        }
+    }
+}
+
+
+TEST_CASE("remove values", "[hashmap]") {
+    Heap heap;
+    HashMap* map = heap.emptyHashMap();
+
+    SECTION("remove non-existing null key") {
+        HashMap* result = map->remove(nullptr);
+
+        REQUIRE(result == map);
+    }
+
+    SECTION("remove existing null key") {
+        map = map->add(nullptr, 42);
+
+        HashMap* result = map->remove(nullptr);
+
+        REQUIRE(result->count() == 0);
+    }
+
+    SECTION("remove non-null key from empty map") {
+        HashMap* result = map->remove(17);
+
+        REQUIRE(result == map);
+    }
+
+    SECTION("remove non-existing non-null key") {
+        map = map->add(8, 15);
+
+        HashMap* result = map->remove(17);
+
+        REQUIRE(result == map);
+    }
+
+    SECTION("remove only key") {
+        map = map->add(8, 15);
+
+        HashMap* result = map->remove(8);
+
+        REQUIRE(result->count() == 0);
+    }
+
+    SECTION("remove existing non-null key") {
+        map = map->add(17, 25)->add(23, 32);
+
+        HashMap* result = map->remove(17);
+
+        REQUIRE(result->count() == 1);
+        REQUIRE(result->get(23) == 32);
+        REQUIRE(!result->containsKey(17));
+    }
+
+    SECTION("remove non-existing key with colliding first-level hash") {
+        constexpr auto key1 = shift0_colliding_key_1;
+        constexpr auto key2 = shift0_colliding_key_2;
+
+        map = map->add(key1, 1);
+
+        HashMap* result = map->remove(key2);
+
+        REQUIRE(result == map);
+
+        SECTION("multiple keys") {
+            constexpr auto key3 = shift0_colliding_key_3;
+
+            map = map->add(key2, 2);
+
+            result = map->remove(key3);
+
+            REQUIRE(result == map);
+        }
+    }
+
+    SECTION("remove key with colliding first-level hashes") {
+        constexpr auto key1 = shift0_colliding_key_1;
+        constexpr auto key2 = shift0_colliding_key_2;
+
+        map = map->add(key1, 1)->add(key2, 2);
+
+        HashMap* result = map->remove(key1);
+
+        REQUIRE(result->count() == 1);
+        REQUIRE(result->get(key2) == 2);
+        REQUIRE(!result->containsKey(key1));
+
+        SECTION("remove all keys") {
+            result = result->remove(key2);
+
+            REQUIRE(result->count() == 0);
+        }
+
+        SECTION("remove all colliding keys") {
+            result = result->add(1, 17)->remove(key2);
+
+            REQUIRE(result->count() == 1);
         }
     }
 }

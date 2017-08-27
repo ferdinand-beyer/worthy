@@ -15,12 +15,14 @@ namespace internal {
 
 class HashMapNode : public Object {
 public:
+    Variant find(uint shift, HashCode hash,
+                 const Variant& key, const Variant& not_found) const;
+
     HashMapNode* add(uint shift, HashCode hash,
                      const Variant& key, const Variant& value,
                      bool& added_leaf) const;
 
-    Variant find(uint shift, HashCode hash,
-                 const Variant& key, const Variant& not_found) const;
+    HashMapNode* remove(uint shift, HashCode hash, const Variant& key) const;
 
 protected:
     HashMapNode() = default;
@@ -34,12 +36,14 @@ public:
     HashMapBitmapNode();
     explicit HashMapBitmapNode(uint32_t bitmap);
 
+    Variant find_(uint shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
+
     HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant find_(uint shift, HashCode hash,
-                  const Variant& key, const Variant& not_found) const;
+    HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
 private:
     uint count() const;
@@ -47,9 +51,11 @@ private:
 
     VariantArray array() const;
 
-    HashMapNode* update(uint index, uint shift, HashCode hash,
-                        const Variant& key, const Variant& value,
-                        bool& added_leaf) const;
+    HashMapNode* updateAt(uint index, uint shift, HashCode hash,
+                          const Variant& key, const Variant& value,
+                          bool& added_leaf) const;
+
+    HashMapNode* removeAt(uint index, uint bit) const;
 
     HashMapBitmapNode* copyAndSet(uint array_index, const Variant& value) const;
 
@@ -70,12 +76,14 @@ public:
 
     HashMapArrayNode(uint32_t count, const NodeArray& nodes);
 
+    Variant find_(uint shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
+
     HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant find_(uint shift, HashCode hash,
-                  const Variant& key, const Variant& not_found) const;
+    HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
 private:
     NodeArray nodes_;
@@ -90,12 +98,14 @@ class HashMapCollisionNode final : public HashMapNode {
 public:
     DECL_CAST(HashMapCollisionNode)
 
+    Variant find_(uint shift, HashCode hash,
+                  const Variant& key, const Variant& not_found) const;
+
     HashMapNode* add_(uint shift, HashCode hash,
                       const Variant& key, const Variant& value,
                       bool& added_leaf) const;
 
-    Variant find_(uint shift, HashCode hash,
-                  const Variant& key, const Variant& not_found) const;
+    HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
 private:
     //HashCode hash_;
@@ -120,6 +130,8 @@ public:
     Variant get(const Variant& key, const Variant& not_found = Variant()) const;
 
     HashMap* add(const Variant& key, const Variant& value) const;
+
+    HashMap* remove(const Variant& key) const;
 
 private:
     const HashMapNode* const root_;
