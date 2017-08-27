@@ -63,6 +63,8 @@ private:
 
     uint32_t bitmap_;
     //TransientTag tag_;
+
+    friend class HashMapArrayNode;
 };
 
 
@@ -72,9 +74,9 @@ public:
 
     DECL_CAST(HashMapArrayNode)
 
-    explicit HashMapArrayNode(uint32_t count);
+    explicit HashMapArrayNode(uint8_t count);
 
-    HashMapArrayNode(uint32_t count, const NodeArray& nodes);
+    HashMapArrayNode(uint8_t count, const NodeArray& nodes);
 
     Variant find_(uint shift, HashCode hash,
                   const Variant& key, const Variant& not_found) const;
@@ -86,8 +88,10 @@ public:
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
 private:
+    HashMapBitmapNode* toBitmapNode(uint remove_index) const;
+
     NodeArray nodes_;
-    uint32_t count_;
+    uint8_t count_;
     //TransientTag tag_;
 
     friend class HashMapBitmapNode;

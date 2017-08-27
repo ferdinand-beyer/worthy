@@ -42,8 +42,15 @@ bool Variant::operator==(const Variant& other) const {
 }
 
 
+void VariantArray::clear() {
+    std::memset(data_array_, 0, sizeFor(length_));
+}
+
+
 void VariantArray::copy(const VariantArray& src) {
-    copy(0, src, 0, std::min(length_, src.length_));
+    WORTHY_DCHECK(length_ == src.length_);
+
+    std::memcpy(data_array_, src.data_array_, sizeFor(length_));
 }
 
 

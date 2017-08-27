@@ -38,7 +38,38 @@ TEST_CASE("compact array of variant types", "[variant]") {
         REQUIRE(array.get(9) == 109);
     }
 
+    SECTION("clear array") {
+        std::vector<byte> buffer(VariantArray::sizeFor(10), 0xff);
+
+        VariantArray array(buffer.data(), 10);
+
+        array.clear();
+
+        for (int i = 0; i < 10; ++i) {
+            // Zero is expected to be VariantType::Object here!
+            REQUIRE(array.get(i) == nullptr);
+        }
+    }
+
     SECTION("copy arrays") {
+        std::vector<byte> buffer1(VariantArray::sizeFor(10));
+        std::vector<byte> buffer2(VariantArray::sizeFor(10));
+
+        VariantArray array1(buffer1.data(), 10);
+
+        for (int i = 0; i < 10; ++i) {
+            array1.set(i, 100 + i);
+        }
+
+        VariantArray array2(buffer2.data(), 10);
+        array2.copy(array1);
+
+        for (int i = 0; i < 10; ++i) {
+            REQUIRE(array2.get(i) == array1.get(i));
+        }
+    }
+
+    SECTION("copy array slices") {
         std::vector<byte> buffer;
         buffer.resize(VariantArray::sizeFor(20));
 

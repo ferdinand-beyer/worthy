@@ -23,6 +23,8 @@ namespace internal {
 
 
 using std::size_t;
+
+using std::intptr_t;
 using std::uintptr_t;
 
 using std::int8_t;
@@ -37,18 +39,18 @@ using std::uint64_t;
 
 
 typedef uint8_t byte;
-typedef unsigned int uint;
+typedef std::uint_fast32_t uint;
 
-typedef std::uint32_t HashCode;
+typedef uint32_t HashCode;
 
-typedef std::uint16_t PageMarker;
+typedef uint16_t PageMarker;
 
 // TODO: Transients are TBD
-typedef std::intptr_t TransientTag;
+typedef intptr_t TransientTag;
 
 
-constexpr std::size_t PointerSize = sizeof(void*);
-constexpr std::size_t WordSize = PointerSize;
+constexpr size_t PointerSize = sizeof(void*);
+constexpr size_t WordSize = PointerSize;
 
 
 template<typename T>

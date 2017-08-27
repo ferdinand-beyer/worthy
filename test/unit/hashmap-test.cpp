@@ -282,5 +282,12 @@ TEST_CASE("remove values", "[hashmap]") {
 
         REQUIRE(result->count() == 49);
         REQUIRE(!result->containsKey(25));
+
+        for (int i = 0; i < 25; ++i) {
+            REQUIRE(result->get(i) == i + 1);
+        }
+        for (int i = 26; i < 50; ++i) {
+            REQUIRE(result->get(i) == i + 1);
+        }
     }
 }

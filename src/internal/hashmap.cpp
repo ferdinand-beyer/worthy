@@ -419,7 +419,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
     bool added_leaf = true;
 
     for (uint i = 0; i < 32; ++i) {
-        if (((bitmap_ >> i) & 0x01) == 0) {
+        if (((bitmap_ >> i) & 1) == 0) {
             continue;
         }
 
@@ -444,14 +444,14 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 // HashMapArrayNode
 
 
-HashMapArrayNode::HashMapArrayNode(uint32_t count)
+HashMapArrayNode::HashMapArrayNode(uint8_t count)
         : count_{count} {
     WORTHY_DCHECK(count_ < 32);
     nodes_.fill(nullptr);
 }
 
 
-HashMapArrayNode::HashMapArrayNode(uint32_t count, const NodeArray& nodes)
+HashMapArrayNode::HashMapArrayNode(uint8_t count, const NodeArray& nodes)
         : nodes_{nodes},
           count_{count} {
     WORTHY_DCHECK(count_ < 32);
@@ -517,13 +517,42 @@ HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
         return new_node;
     }
 
-    // TODO: Shrink
-    //if (count_ <= 8) {
-    //}
+    if (count_ <= 8) {
+        return toBitmapNode(idx);
+    }
 
     auto new_node = newArrayNode(this, count_ - 1, nodes_);
     new_node->nodes_[idx] = nullptr;
     return new_node;
+}
+
+
+HashMapBitmapNode* HashMapArrayNode::toBitmapNode(uint remove_index) const {
+    auto node = newBitmapNode(this, 2 * (count_ - 1), 0);
+    auto array = node->array();
+
+    // We only fill the values (initial k = 1), zero the memory to treat
+    // all keys as null pointers.
+    array.clear();
+    uint k = 1;
+
+    for (uint i = 0; i < remove_index; ++i) {
+        if (nodes_[i]) {
+            array.set(k, nodes_[i]);
+            node->bitmap_ |= 1 << i;
+            k += 2;
+        }
+    }
+
+    for (uint i = remove_index + 1; i < 32; ++i) {
+        if (nodes_[i]) {
+            array.set(k, nodes_[i]);
+            node->bitmap_ |= 1 << i;
+            k += 2;
+        }
+    }
+
+    return node;
 }
 
 

@@ -157,6 +157,8 @@ public:
 
     void set(size_t index, const Variant& value);
 
+    void clear();
+
     void copy(const VariantArray& src);
 
     void copy(size_t dst_index,
