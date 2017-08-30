@@ -448,7 +448,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 
 HashMapArrayNode::HashMapArrayNode(uint8_t count)
         : count_{count} {
-    WORTHY_DCHECK(count_ < 32);
+    WORTHY_DCHECK(count_ <= 32);
     nodes_.fill(nullptr);
 }
 
@@ -456,7 +456,7 @@ HashMapArrayNode::HashMapArrayNode(uint8_t count)
 HashMapArrayNode::HashMapArrayNode(uint8_t count, const NodeArray& nodes)
         : nodes_{nodes},
           count_{count} {
-    WORTHY_DCHECK(count_ < 32);
+    WORTHY_DCHECK(count_ <= 32);
 }
 
 
