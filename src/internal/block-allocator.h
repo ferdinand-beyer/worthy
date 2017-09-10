@@ -40,7 +40,7 @@ private:
     static void setupGroup(Block* block, size_t block_count);
 
     Block* allocateFromFreeList(size_t block_count);
-    Block* splitFreeBlock(Block* block, size_t block_count);
+    Block* allocateFromFreeBlock(Block* block, size_t block_count);
 
     void addToFreeList(Block* block);
     void removeFromFreeList(Block* block);

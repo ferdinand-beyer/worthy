@@ -179,7 +179,7 @@ Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
     free_blocks_[index].pop_front();
 
     if (b->block_count_ != block_count) {
-        b = splitFreeBlock(b, block_count);
+        return allocateFromFreeBlock(b, block_count);
     }
 
     b->init();
@@ -187,7 +187,7 @@ Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
 }
 
 
-Block* BlockAllocator::splitFreeBlock(Block* block, size_t block_count) {
+Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     // The block must be free but not on the free list.
     WORTHY_DCHECK(block->isFree());
     WORTHY_DCHECK(block->block_count_ > block_count);
@@ -199,6 +199,7 @@ Block* BlockAllocator::splitFreeBlock(Block* block, size_t block_count) {
     setupGroup(block, block->block_count_ - block_count);
     addToFreeList(block);
 
+    b->init();
     return b;
 }
 
