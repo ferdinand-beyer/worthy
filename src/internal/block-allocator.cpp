@@ -1,5 +1,7 @@
 #include "internal/block-allocator.h"
 
+#include "internal/check.h"
+
 #include <boost/align/aligned_alloc.hpp>
 
 #include <new>
@@ -13,53 +15,150 @@ namespace worthy {
 namespace internal {
 
 
-namespace {
-
-
-uint log2(uint n, uint limit) {
-    uint x = n;
-    for (uint i = 0; i < limit; ++i) {
-        x = x >> 1;
-        if (x == 0) {
-            return i;
-        }
-    }
-    return limit;
+BlockAllocator::BlockAllocator() {
 }
 
 
-uint log2_ceil(uint n, uint limit) {
-    uint x = 1;
-    for (uint i = 0; i < limit; ++i) {
-        if (x >= n) {
-            return i;
-        }
-        x = x << 1;
+BlockAllocator::~BlockAllocator() {
+    for (auto ptr : allocated_chunks_) {
+        aligned_free(ptr);
     }
-    return limit;
 }
 
 
-} // namespace
+size_t BlockAllocator::chunksAllocated() const {
+    return allocated_chunks_.size();
+}
 
 
 Block* BlockAllocator::allocateBlock() {
-    // TODO: Look at free list first.
-    return allocateChunk();
+    return allocateBlockGroup(1);
 }
 
 
-Block* BlockAllocator::allocateChunk() {
-    void* memory = aligned_alloc(ChunkSize, ChunkSize);
+void BlockAllocator::deallocate(Block* block) {
+    WORTHY_CHECK(block);
+    WORTHY_UNIMPLEMENTED();
+}
 
-    if (!memory) {
+
+Block* BlockAllocator::allocateBlockGroup(size_t block_count) {
+    WORTHY_CHECK(block_count > 0);
+
+    if (block_count >= BlocksPerChunk) {
+        // TODO: Fresh chunk(s)
+        WORTHY_UNIMPLEMENTED();
+    }
+
+    if (Block* b = allocateFromFreeList(block_count)) {
+        return b;
+    }
+
+    return allocateFromFreshChunk(block_count);
+}
+
+
+Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
+    size_t index = sourceFreeListIndex(block_count);
+    while (index < FreeListCount && free_blocks_[index].empty()) {
+        index++;
+    }
+
+    if (index == FreeListCount) {
+        return nullptr;
+    }
+
+    WORTHY_DCHECK(index < FreeListCount);
+
+    Block* b = &free_blocks_[index].front();
+    free_blocks_[index].pop_front();
+
+    if (b->blockCount() != block_count) {
+        b = splitFreeBlock(b, block_count);
+    }
+
+    b->init(block_count); // TODO: block_count already set
+    return b;
+}
+
+
+Block* BlockAllocator::splitFreeBlock(Block* block, size_t block_count) {
+    WORTHY_DCHECK(block->blockCount() > block_count);
+
+    Block* b = block + block->blockCount() - block_count;
+    b->block_count_ = block_count; // TODO: Private...
+
+    block->block_count_ -= block_count; // TODO: Private...
+    addToFreeList(block);
+
+    return b;
+}
+
+
+void BlockAllocator::addToFreeList(Block* block) {
+    WORTHY_DCHECK(block->isFree());
+    const auto index = targetFreeListIndex(block->blockCount());
+    WORTHY_DCHECK(index < FreeListCount);
+    free_blocks_[index].push_back(*block);
+}
+
+
+size_t BlockAllocator::sourceFreeListIndex(size_t block_count) {
+    // Calculate (ceil) log2.
+    size_t n = 1;
+    for (size_t i = 0; i < FreeListCount; ++i) {
+        if (n >= block_count) {
+            return i;
+        }
+        n <<= 1;
+    }
+    return FreeListCount;
+}
+
+
+size_t BlockAllocator::targetFreeListIndex(size_t block_count) {
+    // Calculate (floor) log2.
+    size_t n = block_count;
+    for (size_t i = 0; i < FreeListCount; i++) {
+        n >>= 1;
+        if (n == 0) {
+            return i;
+        }
+    }
+    return FreeListCount;
+}
+
+
+Block* BlockAllocator::allocateFromFreshChunk(size_t block_count) {
+    WORTHY_DCHECK(block_count < BlocksPerChunk);
+
+    Block* b = allocateChunkGroup(1);
+    b->init(block_count);
+
+    Block* rest = b + block_count;
+    rest->block_count_ = BlocksPerChunk - block_count; // TODO: Private...
+    addToFreeList(rest);
+
+    return b;
+}
+
+
+Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
+    // TODO: For later...
+    if (chunk_count != 1) {
+        WORTHY_UNIMPLEMENTED();
+    }
+
+    void* chunk = aligned_alloc(ChunkSize, ChunkSize);
+
+    if (!chunk) {
         // TODO: Exception?
         return nullptr;
     }
 
-    // TODO: Remember (owned!) memory so that we can free it later!
+    allocated_chunks_.push_front(chunk);
 
-    byte* const chunk_addr = reinterpret_cast<byte*>(memory);
+    byte* const chunk_addr = reinterpret_cast<byte*>(chunk);
 
     byte* descr_addr = chunk_addr + DescriptorOffset;
     byte* block_addr = chunk_addr + BlockOffset;
