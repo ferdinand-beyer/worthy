@@ -13,9 +13,6 @@ namespace worthy {
 namespace internal {
 
 
-class Block;
-
-
 class BlockAllocator final {
 public:
     BlockAllocator();
@@ -51,7 +48,7 @@ private:
     std::list<void*> allocated_chunks_;
 
     BlockList free_blocks_[FreeListCount];
-    BlockList free_chunks_;
+    //BlockList free_chunks_;
 };
 
 

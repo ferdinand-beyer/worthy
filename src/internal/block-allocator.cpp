@@ -150,7 +150,7 @@ void BlockAllocator::deallocate(Block* block) {
         if (prev->isFree()) {
             removeFromFreeList(prev);
             const auto count = prev->block_count_ + block->block_count_;
-            if (count == BlocksPerChunk) {
+            if (count >= BlocksPerChunk) {
                 // TODO: Free chunk
                 WORTHY_UNIMPLEMENTED();
             }
