@@ -2,6 +2,7 @@
 #define WORTHY_INTERNAL_BLOCK_H_
 
 
+#include "internal/block-constants.h"
 #include "internal/globals.h"
 
 #include <boost/intrusive/list.hpp>
@@ -29,22 +30,33 @@ public:
 private:
     explicit Block(byte* start);
 
-    size_t blockCount() const;
-
     bool isFree() const;
+    void setFree();
 
-    void init(size_t block_count);
+    void init();
 
     byte* const start_;
     byte* free_;
 
     size_t block_count_;
 
+    static constexpr size_t PaddingSize =
+        DescriptorSize
+        - sizeof(boost::intrusive::list_base_hook<>)
+        - sizeof(start_)
+        - sizeof(free_)
+        - sizeof(block_count_);
+
+    byte padding_[PaddingSize];
+
     friend class BlockAllocator;
 };
 
 
 typedef boost::intrusive::list<Block> BlockList;
+
+
+static_assert(sizeof(Block) == DescriptorSize, "invalid block descriptor size");
 
 
 } } // namespace worthy::internal

@@ -27,20 +27,23 @@ public:
     size_t chunksAllocated() const;
 
     Block* allocateBlock();
+    Block* allocateBlockGroup(size_t block_count);
 
     void deallocate(Block* block);
 
 private:
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
 
-    Block* allocateBlockGroup(size_t block_count);
+    static size_t freeListIndex(size_t block_count);
+    static size_t freeListIndex(Block* block);
+
+    static void setupGroup(Block* block, size_t block_count);
 
     Block* allocateFromFreeList(size_t block_count);
     Block* splitFreeBlock(Block* block, size_t block_count);
-    void addToFreeList(Block* block);
 
-    size_t sourceFreeListIndex(size_t block_count);
-    size_t targetFreeListIndex(size_t block_count);
+    void addToFreeList(Block* block);
+    void removeFromFreeList(Block* block);
 
     Block* allocateFromFreshChunk(size_t block_count);
     Block* allocateChunkGroup(size_t chunk_count);

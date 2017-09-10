@@ -8,10 +8,6 @@ namespace worthy {
 namespace internal {
 
 
-static_assert(sizeof(Block) <= DescriptorSize,
-        "not enough bits for block descriptor");
-
-
 Block* Block::of(void* ptr) {
     const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
     return reinterpret_cast<Block*>(
@@ -44,18 +40,17 @@ size_t Block::bytesAvailable() const {
 }
 
 
-size_t Block::blockCount() const {
-    return block_count_;
-}
-
-
 bool Block::isFree() const {
     return free_ == nullptr;
 }
 
 
-void Block::init(size_t block_count) {
-    block_count_ = block_count;
+void Block::setFree() {
+    free_ = nullptr;
+}
+
+
+void Block::init() {
     free_ = start_;
 }
 
