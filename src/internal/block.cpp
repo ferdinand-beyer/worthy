@@ -40,19 +40,4 @@ size_t Block::bytesAvailable() const {
 }
 
 
-bool Block::isFree() const {
-    return free_ == nullptr;
-}
-
-
-void Block::setFree() {
-    free_ = nullptr;
-}
-
-
-void Block::init() {
-    free_ = start_;
-}
-
-
 } } // namespace worthy::internal

@@ -71,9 +71,9 @@ Block* BlockAllocator::allocateBlockGroup(size_t block_count) {
 
 
 void BlockAllocator::deallocate(Block* block) {
-    WORTHY_CHECK(block && !block->isFree());
+    WORTHY_CHECK(block && !isFree(block));
 
-    block->setFree();
+    markFree(block);
 
     WORTHY_DCHECK(block->block_count_ > 0);
 
@@ -109,45 +109,6 @@ void BlockAllocator::deallocate(Block* block) {
 }
 
 
-Block* BlockAllocator::nextFreeBlock(Block* block) {
-    Block* next = block + block->block_count_;
-    if (next < chunkEnd(block) && next->isFree()) {
-        return next;
-    }
-    return nullptr;
-}
-
-
-Block* BlockAllocator::previousFreeBlock(Block* block) {
-    if (block > chunkStart(block)) {
-        Block* prev = block - 1;
-        if (prev->block_count_ > 1) {
-            // This is the last block in a group, get to the first block
-            // of the group.
-            prev = block - prev->block_count_;
-        }
-
-        WORTHY_DCHECK(block == (prev + prev->block_count_));
-
-        if (prev->isFree()) {
-            return prev;
-        }
-    }
-    return nullptr;
-}
-
-
-void BlockAllocator::setupGroup(Block* block, size_t block_count) {
-    block->block_count_ = block_count;
-    // Save the count also in the last block of a group, so that we can get
-    // back to the head of the group when merging blocks.
-    if (block_count > 1 && block_count <= BlocksPerChunk) {
-        Block* last = block + block_count - 1;
-        last->block_count_ = block_count;
-    }
-}
-
-
 size_t BlockAllocator::freeListIndex(Block* block) {
     const auto block_count = block->block_count_;
     WORTHY_DCHECK(block_count > 0 && block_count < (1 << FreeListCount));
@@ -180,6 +141,60 @@ size_t BlockAllocator::freeListIndexForAllocation(size_t block_count) {
 }
 
 
+Block* BlockAllocator::nextFreeBlock(Block* block) {
+    Block* next = block + block->block_count_;
+    if (next < chunkEnd(block) && isFree(next)) {
+        return next;
+    }
+    return nullptr;
+}
+
+
+Block* BlockAllocator::previousFreeBlock(Block* block) {
+    if (block > chunkStart(block)) {
+        Block* prev = block - 1;
+        if (prev->block_count_ > 1) {
+            // This is the last block in a group, get to the first block
+            // of the group.
+            prev = block - prev->block_count_;
+        }
+
+        WORTHY_DCHECK(block == (prev + prev->block_count_));
+
+        if (isFree(prev)) {
+            return prev;
+        }
+    }
+    return nullptr;
+}
+
+
+void BlockAllocator::setupGroup(Block* block, size_t block_count) {
+    block->block_count_ = block_count;
+    // Save the count also in the last block of a group, so that we can get
+    // back to the head of the group when merging blocks.
+    if (block_count > 1 && block_count <= BlocksPerChunk) {
+        Block* last = block + block_count - 1;
+        last->block_count_ = block_count;
+    }
+}
+
+
+bool BlockAllocator::isFree(Block* block) {
+    return block->free_ == nullptr;
+}
+
+
+void BlockAllocator::markFree(Block* block) {
+    block->free_ = nullptr;
+}
+
+
+void BlockAllocator::initBlock(Block* block) {
+    block->free_ = block->start_;
+}
+
+
 Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
     auto free_list = freeListForAllocation(block_count);
     if (!free_list) {
@@ -187,21 +202,21 @@ Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
         return nullptr;
     }
 
-    Block* b = &free_list->front();
+    Block* block = &free_list->front();
     free_list->pop_front();
 
-    if (b->block_count_ == block_count) {
-        b->init();
-        return b;
+    if (block->block_count_ == block_count) {
+        initBlock(block);
+        return block;
     }
 
-    return allocateFromFreeBlock(b, block_count);
+    return allocateFromFreeBlock(block, block_count);
 }
 
 
 Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     // The block must be free but not on the free list.
-    WORTHY_DCHECK(block->isFree());
+    WORTHY_DCHECK(isFree(block));
     WORTHY_DCHECK(block->block_count_ > block_count);
 
     // Cut from the end of the free block.
@@ -211,7 +226,7 @@ Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     setupGroup(block, block->block_count_ - block_count);
     addToFreeList(block);
 
-    b->init();
+    initBlock(b);
     return b;
 }
 
@@ -226,14 +241,14 @@ BlockList* BlockAllocator::freeListForAllocation(size_t block_count) {
 
 
 void BlockAllocator::addToFreeList(Block* block) {
-    WORTHY_DCHECK(block->isFree());
+    WORTHY_DCHECK(isFree(block));
     const auto index = freeListIndex(block);
     free_blocks_[index].push_front(*block);
 }
 
 
 void BlockAllocator::removeFromFreeList(Block* block) {
-    WORTHY_DCHECK(block->isFree());
+    WORTHY_DCHECK(isFree(block));
     const auto index = freeListIndex(block);
     auto& list = free_blocks_[index];
     list.erase(list.iterator_to(*block));
@@ -253,7 +268,7 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
     setupGroup(rest, BlocksPerChunk - block_count);
     addToFreeList(rest);
 
-    b->init();
+    initBlock(b);
     return b;
 }
 

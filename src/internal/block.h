@@ -30,11 +30,6 @@ public:
 private:
     explicit Block(byte* start);
 
-    bool isFree() const;
-    void setFree();
-
-    void init();
-
     byte* const start_;
     byte* free_;
 
