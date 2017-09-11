@@ -51,6 +51,13 @@ TEST_CASE("Allocate block groups", "[block]") {
 
         REQUIRE((10 * BlockSize) == block->bytesAvailable());
     }
+
+    SECTION("exactly one chunk") {
+        Block* block = allocator.allocateBlockGroup(BlocksPerChunk);
+
+        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE((BlocksPerChunk * BlockSize) == block->bytesAvailable());
+    }
 }
 
 

@@ -2,11 +2,13 @@
 
 #include "internal/check.h"
 
+#include <boost/align/align_up.hpp>
 #include <boost/align/aligned_alloc.hpp>
 
 #include <new>
 
 
+using boost::alignment::align_up;
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;
 
@@ -16,6 +18,12 @@ namespace internal {
 
 
 namespace {
+
+
+inline size_t chunksForBlocks(size_t block_count) {
+    return 1 + align_up((block_count - BlocksPerChunk) * BlockSize, ChunkSize)
+        / ChunkSize;
+}
 
 
 inline Block* chunkStart(Block* block) {
@@ -58,8 +66,10 @@ Block* BlockAllocator::allocateBlockGroup(size_t block_count) {
     WORTHY_CHECK(block_count > 0);
 
     if (block_count >= BlocksPerChunk) {
-        // TODO: Fresh chunk(s)
-        WORTHY_UNIMPLEMENTED();
+        Block* b = allocateChunkGroup(chunksForBlocks(block_count));
+        setupGroup(b, block_count);
+        initBlock(b);
+        return b;
     }
 
     if (Block* b = allocateFromFreeList(block_count)) {
