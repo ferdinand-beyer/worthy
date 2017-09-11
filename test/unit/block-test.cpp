@@ -1,5 +1,5 @@
 #include "internal/block.h"
-#include "internal/block-constants.h"
+#include "internal/block-layout.h"
 
 #include <catch.hpp>
 
@@ -16,8 +16,8 @@ constexpr uintptr_t chunkAddress(int chunk_no) {
 
 
 constexpr uintptr_t descriptorAddress(int chunk_no, int block_no) {
-    return chunkAddress(chunk_no) + DescriptorOffset
-        + (block_no * DescriptorSize);
+    return chunkAddress(chunk_no) + BlockDescriptorOffset
+        + (block_no * BlockDescriptorSize);
 }
 
 

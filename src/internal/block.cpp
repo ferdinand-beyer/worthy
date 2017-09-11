@@ -1,6 +1,6 @@
 #include "internal/block.h"
 
-#include "internal/block-constants.h"
+#include "internal/block-layout.h"
 #include "internal/check.h"
 
 
@@ -11,7 +11,7 @@ namespace internal {
 Block* Block::of(void* ptr) {
     const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
     return reinterpret_cast<Block*>(
-            ((addr & ChunkMask & ~BlockMask) >> (BlockBits - DescriptorBits))
+            ((addr & ChunkMask & ~BlockMask) >> (BlockBits - BlockDescriptorBits))
             | (addr & ~ChunkMask));
 }
 

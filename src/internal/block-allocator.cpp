@@ -21,7 +21,7 @@ namespace {
 inline Block* chunkStart(Block* block) {
     return reinterpret_cast<Block*>(
             (reinterpret_cast<uintptr_t>(block) & ~ChunkMask)
-            + DescriptorOffset);
+            + BlockDescriptorOffset);
 }
 
 
@@ -273,7 +273,7 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
 
     byte* const chunk_addr = reinterpret_cast<byte*>(chunk);
 
-    byte* descr_addr = chunk_addr + DescriptorOffset;
+    byte* descr_addr = chunk_addr + BlockDescriptorOffset;
     byte* block_addr = chunk_addr + BlockOffset;
 
     Block* const first_descr = reinterpret_cast<Block*>(descr_addr);
@@ -282,7 +282,7 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
     for (uint i = 0; i < BlocksPerChunk; i++) {
         new (descr_addr) Block(block_addr);
 
-        descr_addr += DescriptorSize;
+        descr_addr += BlockDescriptorSize;
         block_addr += BlockSize;
     }
 

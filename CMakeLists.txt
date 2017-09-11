@@ -17,7 +17,7 @@ set(Worthy_SRCS
     src/internal/align.h
     src/internal/block-allocator.cpp
     src/internal/block-allocator.h
-    src/internal/block-constants.h
+    src/internal/block-layout.h
     src/internal/block.cpp
     src/internal/block.h
     src/internal/check.cpp

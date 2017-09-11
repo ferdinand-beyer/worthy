@@ -1,5 +1,5 @@
 #include "internal/block-allocator.h"
-#include "internal/block-constants.h"
+#include "internal/block-layout.h"
 
 #include <catch.hpp>
 

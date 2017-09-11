@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_BLOCK_H_
 
 
-#include "internal/block-constants.h"
+#include "internal/block-layout.h"
 #include "internal/globals.h"
 
 #include <boost/intrusive/list.hpp>
@@ -41,7 +41,7 @@ private:
     size_t block_count_;
 
     static constexpr size_t PaddingSize =
-        DescriptorSize
+        BlockDescriptorSize
         - sizeof(boost::intrusive::list_base_hook<>)
         - sizeof(start_)
         - sizeof(free_)
@@ -56,7 +56,8 @@ private:
 typedef boost::intrusive::list<Block> BlockList;
 
 
-static_assert(sizeof(Block) == DescriptorSize, "invalid block descriptor size");
+static_assert(sizeof(Block) == BlockDescriptorSize,
+              "invalid block descriptor size");
 
 
 } } // namespace worthy::internal
