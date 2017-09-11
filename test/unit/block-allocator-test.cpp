@@ -61,12 +61,17 @@ TEST_CASE("Allocate block groups", "[block]") {
 
     SECTION("multiple chunks") {
         const auto nchunks = 7;
-        const auto nblocks = nchunks * BlocksPerChunk;
+        const auto nblocks_requested = nchunks * BlocksPerChunk;
 
-        Block* block = allocator.allocateBlockGroup(nblocks);
+        // We will get more because consequent chunks don't have block
+        // descriptors and can therefore hold more blocks.
+        const auto nblocks_expected = BlocksPerChunk
+            + (nchunks - 1) * (ChunkSize / BlockSize);
+
+        Block* block = allocator.allocateBlockGroup(nblocks_requested);
 
         REQUIRE(nchunks == allocator.chunksAllocated());
-        REQUIRE((nblocks * BlockSize) == block->bytesAvailable());
+        REQUIRE((nblocks_expected * BlockSize) == block->bytesAvailable());
     }
 }
 
@@ -74,21 +79,52 @@ TEST_CASE("Allocate block groups", "[block]") {
 TEST_CASE("Deallocate blocks", "[block]") {
     BlockAllocator allocator;
 
-    Block* first = allocator.allocateBlock();
+    SECTION("within one chunk") {
+        Block* first = allocator.allocateBlock();
 
-    // Exhaust the first chunk.
-    for (int i = 1; i < BlocksPerChunk; i++) {
-        allocator.allocateBlock();
+        // Exhaust the first chunk.
+        for (int i = 1; i < BlocksPerChunk; i++) {
+            allocator.allocateBlock();
+        }
+
+        REQUIRE(1 == allocator.chunksAllocated());
+
+        allocator.deallocate(first);
+
+        Block* reused = allocator.allocateBlock();
+
+        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(first == reused);
     }
 
-    REQUIRE(1 == allocator.chunksAllocated());
+    SECTION("free all blocks") {
+        Block* b = allocator.allocateBlock();
+        allocator.deallocate(b);
 
-    allocator.deallocate(first);
+        REQUIRE(1 == allocator.chunksAllocated());
 
-    Block* reused = allocator.allocateBlock();
+        for (int i = 0; i < BlocksPerChunk; i++) {
+            allocator.allocateBlock();
+        }
 
-    REQUIRE(1 == allocator.chunksAllocated());
-    REQUIRE(first == reused);
+        REQUIRE(1 == allocator.chunksAllocated());
+    }
+
+    SECTION("free all blocks in order") {
+        Block* b1 = allocator.allocateBlock();
+        Block* b2 = allocator.allocateBlock();
+
+        allocator.deallocate(b1);
+        allocator.deallocate(b2);
+
+        REQUIRE(1 == allocator.chunksAllocated());
+
+        for (int i = 0; i < BlocksPerChunk; i++) {
+            allocator.allocateBlock();
+        }
+
+        REQUIRE(1 == allocator.chunksAllocated());
+    }
 }
 
 
@@ -114,3 +150,24 @@ TEST_CASE("Merge blocks", "[block]") {
     REQUIRE(large);
     REQUIRE(1 == allocator.chunksAllocated());
 }
+
+
+TEST_CASE("Deallocate block groups", "[block]") {
+    BlockAllocator allocator;
+
+    Block* block = allocator.allocateBlockGroup(3 * BlocksPerChunk);
+    REQUIRE(3 == allocator.chunksAllocated());
+
+    allocator.deallocate(block);
+
+    // This should reuse space from the deallocated chunks.
+    block = allocator.allocateBlockGroup(BlocksPerChunk);
+
+    REQUIRE(3 == allocator.chunksAllocated());
+
+    // There are still two chunks available.
+    Block* remaining = allocator.allocateBlockGroup(2 * BlocksPerChunk);
+
+    REQUIRE(3 == allocator.chunksAllocated());
+}
+
