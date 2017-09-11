@@ -18,19 +18,24 @@ public:
     BlockAllocator();
     ~BlockAllocator();
 
+    WORTHY_DISABLE_COPY(BlockAllocator);
+
     /**
      * Return the number of chunks allocated from the OS.
      */
     size_t chunksAllocated() const;
 
-    Block* allocateBlock();
-    Block* allocateBlockGroup(size_t block_count);
+    /**
+     * Allocate a group of block_count blocks.
+     */
+    Block* allocate(size_t block_count = 1);
 
+    /**
+     * Deallocate a block.
+     */
     void deallocate(Block* block);
 
 private:
-    WORTHY_DISABLE_COPY(BlockAllocator);
-
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
 
     static bool isFree(Block* block);

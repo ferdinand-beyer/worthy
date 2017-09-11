@@ -71,12 +71,7 @@ size_t BlockAllocator::chunksAllocated() const {
 }
 
 
-Block* BlockAllocator::allocateBlock() {
-    return allocateBlockGroup(1);
-}
-
-
-Block* BlockAllocator::allocateBlockGroup(size_t block_count) {
+Block* BlockAllocator::allocate(size_t block_count) {
     WORTHY_CHECK(block_count > 0);
 
     if (block_count >= BlocksPerChunk) {
@@ -303,15 +298,15 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
     const size_t block_count = chunkGroupBlocks(chunk_count);
     Block* best = nullptr;
 
-    for (auto it = free_chunks_.begin(), end = free_chunks_.end();
-            it != end; ++it) {
-        if (it->block_count_ == block_count) {
-            free_chunks_.erase(it);
-            return &(*it);
+    for (auto block = free_chunks_.begin(), end = free_chunks_.end();
+         block != end; ++block) {
+        if (block->block_count_ == block_count) {
+            free_chunks_.erase(block);
+            return &(*block);
         }
-        if (it->block_count_ > block_count &&
-                (!best || (it->block_count_ < best->block_count_))) {
-            best = &(*it);
+        if (block->block_count_ > block_count &&
+                (!best || (block->block_count_ < best->block_count_))) {
+            best = &(*block);
         }
     }
 

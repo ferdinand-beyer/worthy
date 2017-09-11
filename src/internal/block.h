@@ -12,12 +12,14 @@ namespace worthy {
 namespace internal {
 
 
-class Block : public boost::intrusive::list_base_hook<> {
+class Block final : public boost::intrusive::list_base_hook<> {
 public:
     /**
      * Returns the block that contains the given ptr.
      */
     static Block* of(void* ptr);
+
+    WORTHY_DISABLE_COPY(Block);
 
     byte* begin() const;
     byte* end() const;

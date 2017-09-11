@@ -13,7 +13,7 @@ TEST_CASE("Allocate single blocks", "[block]") {
     BlockAllocator allocator;
 
     SECTION("just one") {
-        Block* block = allocator.allocateBlock();
+        Block* block = allocator.allocate();
 
         REQUIRE(block);
     }
@@ -22,7 +22,7 @@ TEST_CASE("Allocate single blocks", "[block]") {
         std::set<Block*> blocks;
 
         for (int i = 0; i < BlocksPerChunk; i++) {
-            Block* b = allocator.allocateBlock();
+            Block* b = allocator.allocate();
 
             auto inserted = blocks.insert(b);
             REQUIRE(inserted.second);
@@ -35,7 +35,7 @@ TEST_CASE("Allocate single blocks", "[block]") {
 
     SECTION("more than fit in one chunk") {
         for (int i = 0; i < (BlocksPerChunk + 1); i++) {
-            allocator.allocateBlock();
+            allocator.allocate();
         }
 
         REQUIRE(2 == allocator.chunksAllocated());
@@ -47,13 +47,13 @@ TEST_CASE("Allocate block groups", "[block]") {
     BlockAllocator allocator;
 
     SECTION("smaller than one chunk") {
-        Block* block = allocator.allocateBlockGroup(10);
+        Block* block = allocator.allocate(10);
 
         REQUIRE((10 * BlockSize) == block->bytesAvailable());
     }
 
     SECTION("exactly one chunk") {
-        Block* block = allocator.allocateBlockGroup(BlocksPerChunk);
+        Block* block = allocator.allocate(BlocksPerChunk);
 
         REQUIRE(1 == allocator.chunksAllocated());
         REQUIRE((BlocksPerChunk * BlockSize) == block->bytesAvailable());
@@ -68,7 +68,7 @@ TEST_CASE("Allocate block groups", "[block]") {
         const auto nblocks_expected = BlocksPerChunk
             + (nchunks - 1) * (ChunkSize / BlockSize);
 
-        Block* block = allocator.allocateBlockGroup(nblocks_requested);
+        Block* block = allocator.allocate(nblocks_requested);
 
         REQUIRE(nchunks == allocator.chunksAllocated());
         REQUIRE((nblocks_expected * BlockSize) == block->bytesAvailable());
@@ -80,39 +80,39 @@ TEST_CASE("Deallocate blocks", "[block]") {
     BlockAllocator allocator;
 
     SECTION("within one chunk") {
-        Block* first = allocator.allocateBlock();
+        Block* first = allocator.allocate();
 
         // Exhaust the first chunk.
         for (int i = 1; i < BlocksPerChunk; i++) {
-            allocator.allocateBlock();
+            allocator.allocate();
         }
 
         REQUIRE(1 == allocator.chunksAllocated());
 
         allocator.deallocate(first);
 
-        Block* reused = allocator.allocateBlock();
+        Block* reused = allocator.allocate();
 
         REQUIRE(1 == allocator.chunksAllocated());
         REQUIRE(first == reused);
     }
 
     SECTION("free all blocks") {
-        Block* b = allocator.allocateBlock();
+        Block* b = allocator.allocate();
         allocator.deallocate(b);
 
         REQUIRE(1 == allocator.chunksAllocated());
 
         for (int i = 0; i < BlocksPerChunk; i++) {
-            allocator.allocateBlock();
+            allocator.allocate();
         }
 
         REQUIRE(1 == allocator.chunksAllocated());
     }
 
     SECTION("free all blocks in order") {
-        Block* b1 = allocator.allocateBlock();
-        Block* b2 = allocator.allocateBlock();
+        Block* b1 = allocator.allocate();
+        Block* b2 = allocator.allocate();
 
         allocator.deallocate(b1);
         allocator.deallocate(b2);
@@ -120,7 +120,7 @@ TEST_CASE("Deallocate blocks", "[block]") {
         REQUIRE(1 == allocator.chunksAllocated());
 
         for (int i = 0; i < BlocksPerChunk; i++) {
-            allocator.allocateBlock();
+            allocator.allocate();
         }
 
         REQUIRE(1 == allocator.chunksAllocated());
@@ -134,7 +134,7 @@ TEST_CASE("Merge blocks", "[block]") {
     Block* blocks[BlocksPerChunk];
 
     for (int i = 0; i < BlocksPerChunk; i++) {
-        blocks[i] = allocator.allocateBlock();
+        blocks[i] = allocator.allocate();
     }
 
     // Deallocate in zig-zag to trigger forward and backward merging.
@@ -145,7 +145,7 @@ TEST_CASE("Merge blocks", "[block]") {
 
     // We have deallocated 16 continous blocks.  Since free lists are indexed
     // with powers of two, we should be able to allocate these again.
-    Block* large = allocator.allocateBlockGroup(16);
+    Block* large = allocator.allocate(16);
 
     REQUIRE(large);
     REQUIRE(1 == allocator.chunksAllocated());
@@ -155,18 +155,18 @@ TEST_CASE("Merge blocks", "[block]") {
 TEST_CASE("Deallocate block groups", "[block]") {
     BlockAllocator allocator;
 
-    Block* block = allocator.allocateBlockGroup(3 * BlocksPerChunk);
+    Block* block = allocator.allocate(3 * BlocksPerChunk);
     REQUIRE(3 == allocator.chunksAllocated());
 
     allocator.deallocate(block);
 
     // This should reuse space from the deallocated chunks.
-    block = allocator.allocateBlockGroup(BlocksPerChunk);
+    block = allocator.allocate(BlocksPerChunk);
 
     REQUIRE(3 == allocator.chunksAllocated());
 
     // There are still two chunks available.
-    Block* remaining = allocator.allocateBlockGroup(2 * BlocksPerChunk);
+    Block* remaining = allocator.allocate(2 * BlocksPerChunk);
 
     REQUIRE(3 == allocator.chunksAllocated());
 }
