@@ -21,8 +21,15 @@ namespace {
 
 
 inline size_t chunksForBlocks(size_t block_count) {
+    WORTHY_DCHECK(block_count > 0);
     return 1 + align_up((block_count - BlocksPerChunk) * BlockSize, ChunkSize)
         / ChunkSize;
+}
+
+
+inline size_t chunkGroupBlocks(size_t chunk_count) {
+    WORTHY_DCHECK(chunk_count > 0);
+    return BlocksPerChunk + (chunk_count - 1) * (ChunkSize / BlockSize);
 }
 
 
@@ -41,7 +48,9 @@ inline Block* chunkEnd(Block* block) {
 } // namespace
 
 
-BlockAllocator::BlockAllocator() {
+BlockAllocator::BlockAllocator() :
+    chunks_allocated_{0}
+{
 }
 
 
@@ -53,7 +62,7 @@ BlockAllocator::~BlockAllocator() {
 
 
 size_t BlockAllocator::chunksAllocated() const {
-    return allocated_chunks_.size();
+    return chunks_allocated_;
 }
 
 
@@ -284,16 +293,36 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
 
 
 Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
-    // TODO: For later...
-    if (chunk_count != 1) {
-        WORTHY_UNIMPLEMENTED();
+    WORTHY_DCHECK(chunk_count > 0);
+
+    /*
+    const size_t block_count = chunkGroupBlocks(chunk_count);
+
+    Block* best = nullptr;
+    Block* prev = nullptr;
+    for (auto it = free_chunks_.begin(), end = free_chunks_.end();
+            it != end; ++it) {
+        if (it->block_count_ == block_count) {
+            free_chunks_.erase(it);
+            return &(*it);
+        }
+        if (it->block_count_ > block_count &&
+                (!best || (it->block_count_ < best->block_count_))) {
+            best = &(*it);
+        }
     }
 
-    void* chunk = aligned_alloc(ChunkSize, ChunkSize);
+    if (best) {
+        WORTHY_UNIMPLEMENTED();
+    }
+    */
+
+    void* chunk = aligned_alloc(ChunkSize, chunk_count * ChunkSize);
     if (!chunk) {
         return nullptr; // TODO: Should we throw?
     }
 
+    chunks_allocated_ += chunk_count;
     allocated_chunks_.push_front(chunk);
 
     byte* const chunk_addr = reinterpret_cast<byte*>(chunk);

@@ -56,10 +56,12 @@ private:
     Block* allocateFromNewChunk(size_t block_count);
     Block* allocateChunkGroup(size_t chunk_count);
 
+    size_t chunks_allocated_;
+
     std::list<void*> allocated_chunks_;
 
     BlockList free_blocks_[FreeListCount];
-    //BlockList free_chunks_;
+    BlockList free_chunks_;
 };
 
 

@@ -58,6 +58,16 @@ TEST_CASE("Allocate block groups", "[block]") {
         REQUIRE(1 == allocator.chunksAllocated());
         REQUIRE((BlocksPerChunk * BlockSize) == block->bytesAvailable());
     }
+
+    SECTION("multiple chunks") {
+        const auto nchunks = 7;
+        const auto nblocks = nchunks * BlocksPerChunk;
+
+        Block* block = allocator.allocateBlockGroup(nblocks);
+
+        REQUIRE(nchunks == allocator.chunksAllocated());
+        REQUIRE((nblocks * BlockSize) == block->bytesAvailable());
+    }
 }
 
 
