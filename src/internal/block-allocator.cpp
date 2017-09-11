@@ -91,10 +91,9 @@ Block* BlockAllocator::allocate(size_t block_count) {
 
 void BlockAllocator::deallocate(Block* block) {
     WORTHY_CHECK(block && !isFree(block));
+    WORTHY_DCHECK(block->block_count_ > 0);
 
     markFree(block);
-
-    WORTHY_DCHECK(block->block_count_ > 0);
 
     if (block->block_count_ >= BlocksPerChunk) {
         const auto chunk_count = chunksForBlocks(block->block_count_);
@@ -103,28 +102,22 @@ void BlockAllocator::deallocate(Block* block) {
         return;
     }
 
-    // Merge with next free block.
     if (Block* next = nextFreeBlock(block)) {
         removeFromFreeList(next);
         setupGroup(block, block->block_count_ + next->block_count_);
-        if (block->block_count_ == BlocksPerChunk) {
-            freeChunkGroup(block);
-            return;
-        }
     }
 
-    // Merge with previous free block.
     if (Block* prev = previousFreeBlock(block)) {
         removeFromFreeList(prev);
         setupGroup(prev, prev->block_count_ + block->block_count_);
-        if (prev->block_count_ >= BlocksPerChunk) {
-            freeChunkGroup(prev);
-            return;
-        }
         block = prev;
     }
 
-    addToFreeList(block);
+    if (block->block_count_ >= BlocksPerChunk) {
+        freeChunkGroup(block);
+    } else {
+        addToFreeList(block);
+    }
 }
 
 
