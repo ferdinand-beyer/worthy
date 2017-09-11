@@ -29,24 +29,28 @@ public:
     void deallocate(Block* block);
 
 private:
+    WORTHY_DISABLE_COPY(BlockAllocator);
+
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
-
-    Block* allocateFromFreeList(size_t block_count);
-    Block* allocateFromFreeBlock(Block* block, size_t block_count);
-
-    void addToFreeList(Block* block);
-    void removeFromFreeList(Block* block);
-
-    Block* allocateFromFreshChunk(size_t block_count);
-    Block* allocateChunkGroup(size_t chunk_count);
 
     static Block* nextFreeBlock(Block* block);
     static Block* previousFreeBlock(Block* block);
 
     static void setupGroup(Block* block, size_t block_count);
 
-    static size_t freeListIndex(size_t block_count);
     static size_t freeListIndex(Block* block);
+    static size_t freeListIndexForAllocation(size_t block_count);
+
+    Block* allocateFromFreeList(size_t block_count);
+    Block* allocateFromFreeBlock(Block* block, size_t block_count);
+
+    BlockList* freeListForAllocation(size_t block_count);
+
+    void addToFreeList(Block* block);
+    void removeFromFreeList(Block* block);
+
+    Block* allocateFromNewChunk(size_t block_count);
+    Block* allocateChunkGroup(size_t chunk_count);
 
     std::list<void*> allocated_chunks_;
 

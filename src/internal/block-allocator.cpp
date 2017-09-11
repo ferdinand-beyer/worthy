@@ -66,7 +66,7 @@ Block* BlockAllocator::allocateBlockGroup(size_t block_count) {
         return b;
     }
 
-    return allocateFromFreshChunk(block_count);
+    return allocateFromNewChunk(block_count);
 }
 
 
@@ -82,6 +82,7 @@ void BlockAllocator::deallocate(Block* block) {
         WORTHY_UNIMPLEMENTED();
     }
 
+    // Merge with next free block.
     if (Block* next = nextFreeBlock(block)) {
         removeFromFreeList(next);
         const auto count = block->block_count_ + next->block_count_;
@@ -92,6 +93,7 @@ void BlockAllocator::deallocate(Block* block) {
         setupGroup(block, count);
     }
 
+    // Merge with previous free block.
     if (Block* prev = previousFreeBlock(block)) {
         removeFromFreeList(prev);
         const auto count = prev->block_count_ + block->block_count_;
@@ -104,113 +106,6 @@ void BlockAllocator::deallocate(Block* block) {
     }
 
     addToFreeList(block);
-}
-
-
-Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
-    size_t index = freeListIndex(block_count);
-    while (index < FreeListCount && free_blocks_[index].empty()) {
-        index++;
-    }
-
-    if (index == FreeListCount) {
-        return nullptr;
-    }
-
-    WORTHY_DCHECK(index < FreeListCount);
-
-    Block* b = &free_blocks_[index].front();
-    free_blocks_[index].pop_front();
-
-    if (b->block_count_ != block_count) {
-        return allocateFromFreeBlock(b, block_count);
-    }
-
-    b->init();
-    return b;
-}
-
-
-Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
-    // The block must be free but not on the free list.
-    WORTHY_DCHECK(block->isFree());
-    WORTHY_DCHECK(block->block_count_ > block_count);
-
-    // Cut from the end of the free block.
-    Block* b = block + block->block_count_ - block_count;
-    setupGroup(b, block_count);
-
-    setupGroup(block, block->block_count_ - block_count);
-    addToFreeList(block);
-
-    b->init();
-    return b;
-}
-
-
-void BlockAllocator::addToFreeList(Block* block) {
-    WORTHY_DCHECK(block->isFree());
-    const auto index = freeListIndex(block);
-    WORTHY_DCHECK(index < FreeListCount);
-    free_blocks_[index].push_front(*block);
-}
-
-
-void BlockAllocator::removeFromFreeList(Block* block) {
-    WORTHY_DCHECK(block->isFree());
-    const auto index = freeListIndex(block);
-    WORTHY_DCHECK(index < FreeListCount);
-    auto& list = free_blocks_[index];
-    list.erase(list.iterator_to(*block));
-}
-
-
-Block* BlockAllocator::allocateFromFreshChunk(size_t block_count) {
-    WORTHY_DCHECK(block_count < BlocksPerChunk);
-
-    Block* b = allocateChunkGroup(1);
-    setupGroup(b, block_count);
-
-    Block* rest = b + block_count;
-    setupGroup(rest, BlocksPerChunk - block_count);
-    addToFreeList(rest);
-
-    b->init();
-    return b;
-}
-
-
-Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
-    // TODO: For later...
-    if (chunk_count != 1) {
-        WORTHY_UNIMPLEMENTED();
-    }
-
-    void* chunk = aligned_alloc(ChunkSize, ChunkSize);
-
-    if (!chunk) {
-        // TODO: Exception?
-        return nullptr;
-    }
-
-    allocated_chunks_.push_front(chunk);
-
-    byte* const chunk_addr = reinterpret_cast<byte*>(chunk);
-
-    byte* descr_addr = chunk_addr + DescriptorOffset;
-    byte* block_addr = chunk_addr + BlockOffset;
-
-    Block* const first_descr = reinterpret_cast<Block*>(descr_addr);
-
-    // Initialize all block descriptors.
-    for (uint i = 0; i < BlocksPerChunk; i++) {
-        new (descr_addr) Block(block_addr);
-
-        descr_addr += DescriptorSize;
-        block_addr += BlockSize;
-    }
-
-    return first_descr;
 }
 
 
@@ -227,7 +122,8 @@ Block* BlockAllocator::previousFreeBlock(Block* block) {
     if (block > chunkStart(block)) {
         Block* prev = block - 1;
         if (prev->block_count_ > 1) {
-            // This is the last block in a group.
+            // This is the last block in a group, get to the first block
+            // of the group.
             prev = block - prev->block_count_;
         }
 
@@ -252,9 +148,7 @@ void BlockAllocator::setupGroup(Block* block, size_t block_count) {
 }
 
 
-
 size_t BlockAllocator::freeListIndex(Block* block) {
-    // Correct free list to place/locate blocks.
     const auto block_count = block->block_count_;
     WORTHY_DCHECK(block_count > 0 && block_count < (1 << FreeListCount));
 
@@ -266,12 +160,12 @@ size_t BlockAllocator::freeListIndex(Block* block) {
             return i;
         }
     }
-    return FreeListCount;
+
+    WORTHY_UNREACHABLE();
 }
 
 
-size_t BlockAllocator::freeListIndex(size_t block_count) {
-    // Correct free list to look for large enough blocks.
+size_t BlockAllocator::freeListIndexForAllocation(size_t block_count) {
     WORTHY_DCHECK(block_count > 0 && block_count < (1 << FreeListCount));
 
     // Calculate log2, rounded up.
@@ -283,6 +177,116 @@ size_t BlockAllocator::freeListIndex(size_t block_count) {
         n <<= 1;
     }
     return FreeListCount;
+}
+
+
+Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
+    auto free_list = freeListForAllocation(block_count);
+    if (!free_list) {
+        // No suitable free block.
+        return nullptr;
+    }
+
+    Block* b = &free_list->front();
+    free_list->pop_front();
+
+    if (b->block_count_ == block_count) {
+        b->init();
+        return b;
+    }
+
+    return allocateFromFreeBlock(b, block_count);
+}
+
+
+Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
+    // The block must be free but not on the free list.
+    WORTHY_DCHECK(block->isFree());
+    WORTHY_DCHECK(block->block_count_ > block_count);
+
+    // Cut from the end of the free block.
+    Block* b = block + block->block_count_ - block_count;
+    setupGroup(b, block_count);
+
+    setupGroup(block, block->block_count_ - block_count);
+    addToFreeList(block);
+
+    b->init();
+    return b;
+}
+
+
+BlockList* BlockAllocator::freeListForAllocation(size_t block_count) {
+    size_t index = freeListIndexForAllocation(block_count);
+    while (index < FreeListCount && free_blocks_[index].empty()) {
+        index++;
+    }
+    return (index < FreeListCount) ? &free_blocks_[index] : nullptr;
+}
+
+
+void BlockAllocator::addToFreeList(Block* block) {
+    WORTHY_DCHECK(block->isFree());
+    const auto index = freeListIndex(block);
+    free_blocks_[index].push_front(*block);
+}
+
+
+void BlockAllocator::removeFromFreeList(Block* block) {
+    WORTHY_DCHECK(block->isFree());
+    const auto index = freeListIndex(block);
+    auto& list = free_blocks_[index];
+    list.erase(list.iterator_to(*block));
+}
+
+
+Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
+    WORTHY_DCHECK(block_count < BlocksPerChunk);
+
+    Block* b = allocateChunkGroup(1);
+    if (!b) {
+        return nullptr; // TODO: Should allocateChunkGroup() throw?
+    }
+    setupGroup(b, block_count);
+
+    Block* rest = b + block_count;
+    setupGroup(rest, BlocksPerChunk - block_count);
+    addToFreeList(rest);
+
+    b->init();
+    return b;
+}
+
+
+Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
+    // TODO: For later...
+    if (chunk_count != 1) {
+        WORTHY_UNIMPLEMENTED();
+    }
+
+    void* chunk = aligned_alloc(ChunkSize, ChunkSize);
+    if (!chunk) {
+        return nullptr; // TODO: Should we throw?
+    }
+
+    allocated_chunks_.push_front(chunk);
+
+    byte* const chunk_addr = reinterpret_cast<byte*>(chunk);
+
+    byte* descr_addr = chunk_addr + DescriptorOffset;
+    byte* block_addr = chunk_addr + BlockOffset;
+
+    Block* const first_descr = reinterpret_cast<Block*>(descr_addr);
+
+    // Initialize all block descriptors.
+    for (uint i = 0; i < BlocksPerChunk; i++) {
+        new (descr_addr) Block(block_addr);
+
+        descr_addr += DescriptorSize;
+        block_addr += BlockSize;
+    }
+
+    return first_descr;
 }
 
 
