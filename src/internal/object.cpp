@@ -26,7 +26,7 @@ HashCode Object::hashCode() const {
 
 
 HashCode Object::_hashCode() const {
-    return hash(reinterpret_cast<std::size_t>(this));
+    return hash(reinterpret_cast<uintptr_t>(this));
 }
 
 

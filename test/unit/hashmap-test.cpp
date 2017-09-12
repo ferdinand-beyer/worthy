@@ -11,9 +11,20 @@ using worthy::internal::Heap;
 using worthy::internal::hash;
 
 
-constexpr std::uint32_t shift0_colliding_key_1 = 0;
-constexpr std::uint32_t shift0_colliding_key_2 = 5;
-constexpr std::uint32_t shift0_colliding_key_3 = 24;
+constexpr std::uint32_t shift0_colliding_key_1 = 62;
+constexpr std::uint32_t shift0_colliding_key_2 = 65;
+constexpr std::uint32_t shift0_colliding_key_3 = 70;
+
+
+#if 0
+TEST_CASE("find colliding keys") {
+    for (std::uint32_t i = 0; i < 256; i++) {
+        if ((hash(i) & 0x1f) == 1) {
+            CHECK(i != i);
+        }
+    }
+}
+#endif
 
 
 TEST_CASE("peconditions") {
