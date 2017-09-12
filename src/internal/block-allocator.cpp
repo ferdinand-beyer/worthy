@@ -20,16 +20,16 @@ namespace internal {
 namespace {
 
 
-inline size_t chunksForBlocks(size_t block_count) {
-    WORTHY_DCHECK(block_count > 0);
-    return 1 + align_up((block_count - BlocksPerChunk) * BlockSize, ChunkSize)
-        / ChunkSize;
+inline size_t blocksForChunks(size_t chunk_count) {
+    WORTHY_DCHECK(chunk_count > 0);
+    return BlocksPerChunk + (chunk_count - 1) * (ChunkSize / BlockSize);
 }
 
 
-inline size_t chunkGroupBlocks(size_t chunk_count) {
-    WORTHY_DCHECK(chunk_count > 0);
-    return BlocksPerChunk + (chunk_count - 1) * (ChunkSize / BlockSize);
+inline size_t chunksForBlocks(size_t block_count) {
+    WORTHY_DCHECK(block_count > 0);
+    return 1 + align_up((block_count - BlocksPerChunk) * BlockSize,
+            ChunkSize) / ChunkSize;
 }
 
 
@@ -76,13 +76,13 @@ Block* BlockAllocator::allocate(size_t block_count) {
 
     if (block_count >= BlocksPerChunk) {
         // Might allocate more as requested (whole chunks).
-        Block* b = allocateChunkGroup(chunksForBlocks(block_count));
-        initBlock(b);
-        return b;
+        Block* block = allocateChunkGroup(chunksForBlocks(block_count));
+        initBlock(block);
+        return block;
     }
 
-    if (Block* b = allocateFromFreeList(block_count)) {
-        return b;
+    if (Block* block = allocateFromFreeList(block_count)) {
+        return block;
     }
 
     return allocateFromNewChunk(block_count);
@@ -97,7 +97,7 @@ void BlockAllocator::deallocate(Block* block) {
 
     if (block->block_count_ >= BlocksPerChunk) {
         const auto chunk_count = chunksForBlocks(block->block_count_);
-        WORTHY_DCHECK(block->block_count_ == chunkGroupBlocks(chunk_count));
+        WORTHY_DCHECK(block->block_count_ == blocksForChunks(chunk_count));
         freeChunkGroup(block);
         return;
     }
@@ -288,27 +288,28 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
 Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
     WORTHY_DCHECK(chunk_count > 0);
 
-    const size_t block_count = chunkGroupBlocks(chunk_count);
+    const size_t block_count = blocksForChunks(chunk_count);
     Block* best = nullptr;
 
-    for (auto block = free_chunks_.begin(), end = free_chunks_.end();
-         block != end; ++block) {
-        if (block->block_count_ == block_count) {
-            free_chunks_.erase(block);
-            return &(*block);
+    for (auto group = free_chunks_.begin(), end = free_chunks_.end();
+         group != end; ++group) {
+        if (group->block_count_ == block_count) {
+            free_chunks_.erase(group);
+            return &(*group);
         }
-        if (block->block_count_ > block_count &&
-                (!best || (block->block_count_ < best->block_count_))) {
-            best = &(*block);
+        if ((group->block_count_ > block_count) &&
+                (!best || (group->block_count_ < best->block_count_))) {
+            best = &(*group);
         }
     }
 
     byte* chunk_addr;
 
     if (best) {
-        const auto delta = chunksForBlocks(best->block_count_) - chunk_count;
-        setupGroup(best, chunkGroupBlocks(delta));
-        chunk_addr = chunkAddress(best) + delta * ChunkSize;
+        const auto chunks_left =
+            chunksForBlocks(best->block_count_) - chunk_count;
+        setupGroup(best, blocksForChunks(chunks_left));
+        chunk_addr = chunkAddress(best) + chunks_left * ChunkSize;
     } else {
         void* memory = aligned_alloc(ChunkSize, chunk_count * ChunkSize);
         if (!memory) {
@@ -321,10 +322,10 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
 
     initChunkBlocks(chunk_addr);
 
-    Block* block = chunkBegin(chunk_addr);
-    setupGroup(block, chunkGroupBlocks(chunk_count));
+    Block* group = chunkBegin(chunk_addr);
+    setupGroup(group, blocksForChunks(chunk_count));
 
-    return block;
+    return group;
 }
 
 
@@ -345,8 +346,7 @@ void BlockAllocator::freeChunkGroup(Block* block) {
     WORTHY_DCHECK(block->block_count_ >= BlocksPerChunk);
 
     // The free_chunks_ list is sorted by address, to identify adjacent chunks
-    // that are candidates for merging.  Find position to insert the free
-    // chunk.
+    // that are candidates for merging.
     Block* prev = nullptr;
     auto pos = free_chunks_.begin();
     const auto end = free_chunks_.end();
@@ -372,7 +372,7 @@ bool BlockAllocator::mergeChunkGroups(Block* block, Block* next) {
     const auto next_chunk = chunkAddress(block) + chunk_count * ChunkSize;
     if (next_chunk == chunkAddress(next)) {
         chunk_count += chunksForBlocks(next->block_count_);
-        setupGroup(block, chunkGroupBlocks(chunk_count));
+        setupGroup(block, blocksForChunks(chunk_count));
         return true;
     }
     return false;
