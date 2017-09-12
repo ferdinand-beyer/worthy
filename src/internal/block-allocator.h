@@ -31,7 +31,7 @@ public:
     Block* allocate(size_t block_count = 1);
 
     /**
-     * Deallocate a block.
+     * Deallocate a block group.
      */
     void deallocate(Block* block);
 
@@ -65,7 +65,7 @@ private:
 
     void freeChunkGroup(Block* block);
 
-    static bool mergeFreeChunks(Block* block, Block* next);
+    static bool mergeChunkGroups(Block* block, Block* next);
 
     BlockList free_blocks_[FreeListCount];
     BlockList free_chunks_;

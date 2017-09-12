@@ -344,29 +344,30 @@ void BlockAllocator::initChunkBlocks(byte* chunk_addr) {
 void BlockAllocator::freeChunkGroup(Block* block) {
     WORTHY_DCHECK(block->block_count_ >= BlocksPerChunk);
 
-    const auto begin = free_chunks_.begin();
+    // The free_chunks_ list is sorted by address, to identify adjacent chunks
+    // that are candidates for merging.  Find position to insert the free
+    // chunk.
+    Block* prev = nullptr;
+    auto pos = free_chunks_.begin();
     const auto end = free_chunks_.end();
-
-    auto prev = end;
-    auto next = begin;
-
-    while ((next != end) && (&(*next) < block)) {
-        prev = next++;
+    while ((pos != end) && (&(*pos) < block)) {
+        prev = &(*pos);
+        ++pos;
     }
 
-    auto pos = free_chunks_.insert(next, *block);
+    if (prev && mergeChunkGroups(prev, block)) {
+        block = prev;
+    } else {
+        free_chunks_.insert(pos, *block);
+    }
 
-    if ((prev != end) && mergeFreeChunks(&(*prev), &(*pos))) {
+    if ((pos != end) && mergeChunkGroups(block, &(*pos))) {
         free_chunks_.erase(pos);
-        pos = prev;
-    }
-    if ((next != end) && mergeFreeChunks(&(*pos), &(*next))) {
-        free_chunks_.erase(next);
     }
 }
 
 
-bool BlockAllocator::mergeFreeChunks(Block* block, Block* next) {
+bool BlockAllocator::mergeChunkGroups(Block* block, Block* next) {
     size_t chunk_count = chunksForBlocks(block->block_count_);
     const auto next_chunk = chunkAddress(block) + chunk_count * ChunkSize;
     if (next_chunk == chunkAddress(next)) {
