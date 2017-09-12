@@ -160,14 +160,48 @@ TEST_CASE("Deallocate block groups", "[block]") {
 
     allocator.deallocate(block);
 
-    // This should reuse space from the deallocated chunks.
-    block = allocator.allocate(BlocksPerChunk);
+    SECTION("reuse deallocated chunks") {
+        // This should reuse space from the deallocated chunks.
+        block = allocator.allocate(BlocksPerChunk);
 
-    REQUIRE(3 == allocator.chunksAllocated());
+        REQUIRE(3 == allocator.chunksAllocated());
 
-    // There are still two chunks available.
-    Block* remaining = allocator.allocate(2 * BlocksPerChunk);
+        // There are still two chunks available.
+        Block* remaining = allocator.allocate(2 * BlocksPerChunk);
 
-    REQUIRE(3 == allocator.chunksAllocated());
+        REQUIRE(3 == allocator.chunksAllocated());
+    }
+
+    SECTION("merge deallocated chunks") {
+        Block* a = allocator.allocate(BlocksPerChunk);
+        Block* b = allocator.allocate(BlocksPerChunk);
+        Block* c = allocator.allocate(BlocksPerChunk);
+
+        REQUIRE(3 == allocator.chunksAllocated());
+
+        allocator.deallocate(b);
+
+        SECTION("merge in one direction") {
+            allocator.deallocate(a);
+
+            block = allocator.allocate(2 * BlocksPerChunk);
+            REQUIRE(3 == allocator.chunksAllocated());
+        }
+
+        SECTION("merge in other direction") {
+            allocator.deallocate(c);
+
+            block = allocator.allocate(2 * BlocksPerChunk);
+            REQUIRE(3 == allocator.chunksAllocated());
+        }
+
+        SECTION("merge in both direction") {
+            allocator.deallocate(a);
+            allocator.deallocate(c);
+
+            block = allocator.allocate(3 * BlocksPerChunk);
+            REQUIRE(3 == allocator.chunksAllocated());
+        }
+    }
 }
 

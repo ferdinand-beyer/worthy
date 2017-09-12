@@ -344,8 +344,37 @@ void BlockAllocator::initChunkBlocks(byte* chunk_addr) {
 void BlockAllocator::freeChunkGroup(Block* block) {
     WORTHY_DCHECK(block->block_count_ >= BlocksPerChunk);
 
-    // TODO: Merge neighboring chunks.
-    free_chunks_.push_front(*block);
+    const auto begin = free_chunks_.begin();
+    const auto end = free_chunks_.end();
+
+    auto prev = end;
+    auto next = begin;
+
+    while ((next != end) && (&(*next) < block)) {
+        prev = next++;
+    }
+
+    auto pos = free_chunks_.insert(next, *block);
+
+    if ((prev != end) && mergeFreeChunks(&(*prev), &(*pos))) {
+        free_chunks_.erase(pos);
+        pos = prev;
+    }
+    if ((next != end) && mergeFreeChunks(&(*pos), &(*next))) {
+        free_chunks_.erase(next);
+    }
+}
+
+
+bool BlockAllocator::mergeFreeChunks(Block* block, Block* next) {
+    size_t chunk_count = chunksForBlocks(block->block_count_);
+    const auto next_chunk = chunkAddress(block) + chunk_count * ChunkSize;
+    if (next_chunk == chunkAddress(next)) {
+        chunk_count += chunksForBlocks(next->block_count_);
+        setupGroup(block, chunkGroupBlocks(chunk_count));
+        return true;
+    }
+    return false;
 }
 
 

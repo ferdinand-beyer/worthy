@@ -65,6 +65,8 @@ private:
 
     void freeChunkGroup(Block* block);
 
+    static bool mergeFreeChunks(Block* block, Block* next);
+
     BlockList free_blocks_[FreeListCount];
     BlockList free_chunks_;
 
