@@ -1,4 +1,4 @@
-#include "internal/object-header.h"
+#include "internal/object_header.h"
 
 #include "internal/page.h"
 #include "internal/space.h"

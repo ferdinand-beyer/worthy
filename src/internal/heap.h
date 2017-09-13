@@ -3,7 +3,7 @@
 
 
 #include "internal/globals.h"
-#include "internal/object-space.h"
+#include "internal/object_space.h"
 
 #include <boost/intrusive_ptr.hpp>
 

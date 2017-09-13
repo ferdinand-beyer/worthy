@@ -1,7 +1,7 @@
 #include "internal/hashmap.h"
 
 #include "internal/heap.h"
-#include "internal/object-dispatch.h"
+#include "internal/object_dispatch.h"
 
 #include <bitset>
 

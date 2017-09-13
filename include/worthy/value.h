@@ -2,7 +2,7 @@
 #define WORTHY_VALUE_H
 
 
-#include "worthy/abstract-value.h"
+#include "worthy/abstract_value.h"
 
 #include <cstddef>
 

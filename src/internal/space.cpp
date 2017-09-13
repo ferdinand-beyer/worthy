@@ -2,7 +2,7 @@
 
 #include "internal/check.h"
 #include "internal/object.h"
-#include "internal/object-header.h"
+#include "internal/object_header.h"
 
 #include <boost/align/aligned_alloc.hpp>
 
