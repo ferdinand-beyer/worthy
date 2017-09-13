@@ -15,9 +15,9 @@ set(Worthy_SRCS
     include/worthy/worthy.h
 
     src/internal/align.h
-    src/internal/block-allocator.cpp
-    src/internal/block-allocator.h
-    src/internal/block-layout.h
+    src/internal/block_allocator.cpp
+    src/internal/block_allocator.h
+    src/internal/block_layout.h
     src/internal/block.cpp
     src/internal/block.h
     src/internal/check.cpp
@@ -54,8 +54,8 @@ set(Worthy_SRCS
     )
 
 set(UnitTests_SRCS
-    test/unit/block-allocator-test.cpp
-    test/unit/block-test.cpp
+    test/unit/block_allocator_test.cpp
+    test/unit/block_test.cpp
     test/unit/hash-test.cpp
     test/unit/hashmap-test.cpp
     test/unit/value-test.cpp

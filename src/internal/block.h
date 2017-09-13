@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_BLOCK_H_
 
 
-#include "internal/block-layout.h"
+#include "internal/block_layout.h"
 #include "internal/globals.h"
 
 #include <boost/intrusive/list.hpp>

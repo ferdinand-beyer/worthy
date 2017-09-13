@@ -1,4 +1,4 @@
-#include "internal/block-allocator.h"
+#include "internal/block_allocator.h"
 
 #include "internal/check.h"
 

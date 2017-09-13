@@ -3,7 +3,7 @@
 
 
 #include "internal/block.h"
-#include "internal/block-layout.h"
+#include "internal/block_layout.h"
 #include "internal/globals.h"
 
 #include <list>
