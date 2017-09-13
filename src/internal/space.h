@@ -3,7 +3,7 @@
 
 
 #include "internal/globals.h"
-#include "internal/object-header.h"
+#include "internal/object_header.h"
 #include "internal/page.h"
 
 #include <boost/intrusive/list.hpp>

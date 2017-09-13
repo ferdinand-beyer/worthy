@@ -3,7 +3,7 @@
 
 
 #include "internal/object.h"
-#include "internal/object-decl.h"
+#include "internal/object_decl.h"
 #include "internal/variant.h"
 
 #include <array>

@@ -3,7 +3,7 @@
 
 
 #include "internal/globals.h"
-#include "internal/object-type.h"
+#include "internal/object_type.h"
 #include "internal/space.h"
 
 

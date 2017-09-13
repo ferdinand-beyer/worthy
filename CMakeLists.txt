@@ -7,7 +7,7 @@ set(Worthy_API_VERSION 1)
 
 set(Worthy_SRCS
     include/worthy/internal/primitive.h
-    include/worthy/abstract-value.h
+    include/worthy/abstract_value.h
     include/worthy/map.h
     include/worthy/runtime.h
     include/worthy/type.h
@@ -23,15 +23,15 @@ set(Worthy_SRCS
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
-    src/internal/object-decl.h
-    src/internal/object-dispatch.h
-    src/internal/object-space.cpp
-    src/internal/object-space.h
-    src/internal/object-header.cpp
-    src/internal/object-header.h
-    src/internal/object-type.h
     src/internal/object.cpp
     src/internal/object.h
+    src/internal/object_decl.h
+    src/internal/object_dispatch.h
+    src/internal/object_header.cpp
+    src/internal/object_header.h
+    src/internal/object_space.cpp
+    src/internal/object_space.h
+    src/internal/object_type.h
     src/internal/page.cpp
     src/internal/page.h
     src/internal/space.cpp
@@ -39,7 +39,7 @@ set(Worthy_SRCS
     src/internal/variant.cpp
     src/internal/variant.h
 
-    src/abstract-value.cpp
+    src/abstract_value.cpp
     src/adapters.cpp
     src/adapters.h
     src/map.cpp
@@ -48,15 +48,15 @@ set(Worthy_SRCS
     )
 
 set(UnitTests_SRCS
-    test/unit/hash-test.cpp
-    test/unit/hashmap-test.cpp
-    test/unit/value-test.cpp
-    test/unit/variant-test.cpp
+    test/unit/hash_test.cpp
+    test/unit/hashmap_test.cpp
+    test/unit/value_test.cpp
+    test/unit/variant_test.cpp
     test/main.cpp
     )
 
 set(IntegrationTests_SRCS
-    test/integration/map-test.cpp
+    test/integration/map_test.cpp
     test/main.cpp
     )
 

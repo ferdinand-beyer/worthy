@@ -2,8 +2,8 @@
 
 #include "internal/check.h"
 #include "internal/hashmap.h"
-#include "internal/object-space.h"
 #include "internal/object.h"
+#include "internal/object_space.h"
 
 
 namespace worthy {

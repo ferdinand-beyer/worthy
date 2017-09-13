@@ -2,7 +2,7 @@
 #define WORTHY_INTERNAL_OBJECT_H_
 
 
-#include "internal/object-type.h"
+#include "internal/object_type.h"
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>

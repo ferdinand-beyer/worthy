@@ -2,8 +2,8 @@
 
 #include "internal/hash.h"
 #include "internal/hashmap.h"
-#include "internal/object-dispatch.h"
-#include "internal/object-header.h"
+#include "internal/object_dispatch.h"
+#include "internal/object_header.h"
 
 
 namespace worthy {

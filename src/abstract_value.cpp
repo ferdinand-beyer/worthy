@@ -1,4 +1,4 @@
-#include "worthy/abstract-value.h"
+#include "worthy/abstract_value.h"
 
 #include "adapters.h"
 #include "internal/check.h"
