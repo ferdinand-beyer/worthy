@@ -8,11 +8,22 @@ namespace worthy {
 namespace internal {
 
 
+namespace {
+
+
+inline constexpr uintptr_t descriptorOffset(uintptr_t offset) {
+    return (offset & ~ChunkMask) |
+        descriptorFromBlockOffset(offset & ChunkMask & ~BlockMask);
+
+}
+
+
+} // namespace
+
+
 Block* Block::of(void* ptr) {
-    const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
     return reinterpret_cast<Block*>(
-            ((addr & ChunkMask & ~BlockMask) >> (BlockBits - BlockDescriptorBits))
-            | (addr & ~ChunkMask));
+            descriptorOffset(reinterpret_cast<uintptr_t>(ptr)));
 }
 
 

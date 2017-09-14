@@ -26,8 +26,16 @@ static constexpr size_t BlocksPerChunk =
 static constexpr size_t BlockOffset =
     ChunkSize - (BlockSize * BlocksPerChunk);
 
+
+// Scale the offset of a block within a chunk to the offset of its descriptor.
+inline constexpr size_t descriptorFromBlockOffset(size_t block_offset) {
+    return block_offset >> (BlockBits - BlockDescriptorBits);
+}
+
+
 static constexpr size_t BlockDescriptorOffset =
-    BlockOffset >> (BlockBits - BlockDescriptorBits);
+    descriptorFromBlockOffset(BlockOffset);
+
 
 
 } } // namespace worthy::internal

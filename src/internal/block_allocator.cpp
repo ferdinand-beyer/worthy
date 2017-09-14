@@ -2,12 +2,14 @@
 
 #include "internal/check.h"
 
+#include <boost/align/align_down.hpp>
 #include <boost/align/align_up.hpp>
 #include <boost/align/aligned_alloc.hpp>
 
 #include <new>
 
 
+using boost::alignment::align_down;
 using boost::alignment::align_up;
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;
@@ -20,22 +22,19 @@ namespace internal {
 namespace {
 
 
-inline size_t blocksForChunks(size_t chunk_count) {
-    WORTHY_DCHECK(chunk_count > 0);
+inline constexpr size_t blocksForChunks(size_t chunk_count) {
     return BlocksPerChunk + (chunk_count - 1) * (ChunkSize / BlockSize);
 }
 
 
-inline size_t chunksForBlocks(size_t block_count) {
-    WORTHY_DCHECK(block_count > 0);
+inline constexpr size_t chunksForBlocks(size_t block_count) {
     return 1 + align_up((block_count - BlocksPerChunk) * BlockSize,
             ChunkSize) / ChunkSize;
 }
 
 
 inline byte* chunkAddress(void* ptr) {
-    return reinterpret_cast<byte*>(
-            reinterpret_cast<uintptr_t>(ptr) & ~ChunkMask);
+    return reinterpret_cast<byte*>(align_down(ptr, ChunkSize));
 }
 
 
