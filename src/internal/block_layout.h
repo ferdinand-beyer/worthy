@@ -2,20 +2,12 @@
 #define WORTHY_INTERNAL_BLOCK_LAYOUT_H_
 
 
-#include "internal/globals.h"
+#include "internal/block.h"
 
 
 namespace worthy {
 namespace internal {
 
-
-static constexpr size_t ChunkBits = 20;
-static constexpr size_t BlockBits = 12;
-static constexpr size_t BlockDescriptorBits = 6;
-
-static constexpr size_t ChunkSize = 1 << ChunkBits;
-static constexpr size_t BlockSize = 1 << BlockBits;
-static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
 
 static constexpr uintptr_t ChunkMask = ChunkSize - 1;
 static constexpr uintptr_t BlockMask = BlockSize - 1;
@@ -23,7 +15,7 @@ static constexpr uintptr_t BlockMask = BlockSize - 1;
 static constexpr size_t BlocksPerChunk =
     ChunkSize / (BlockSize + BlockDescriptorSize);
 
-static constexpr size_t BlockOffset =
+static constexpr size_t FirstBlockOffset =
     ChunkSize - (BlockSize * BlocksPerChunk);
 
 
@@ -33,8 +25,8 @@ inline constexpr size_t descriptorFromBlockOffset(size_t block_offset) {
 }
 
 
-static constexpr size_t BlockDescriptorOffset =
-    descriptorFromBlockOffset(BlockOffset);
+static constexpr size_t FirstBlockDescriptorOffset =
+    descriptorFromBlockOffset(FirstBlockOffset);
 
 
 

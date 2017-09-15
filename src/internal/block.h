@@ -2,7 +2,6 @@
 #define WORTHY_INTERNAL_BLOCK_H_
 
 
-#include "internal/block_layout.h"
 #include "internal/globals.h"
 
 #include <boost/intrusive/list.hpp>
@@ -10,6 +9,15 @@
 
 namespace worthy {
 namespace internal {
+
+
+static constexpr size_t ChunkBits = 20;
+static constexpr size_t BlockBits = 12;
+static constexpr size_t BlockDescriptorBits = 6;
+
+static constexpr size_t ChunkSize = 1 << ChunkBits;
+static constexpr size_t BlockSize = 1 << BlockBits;
+static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
 
 
 class Block final : public boost::intrusive::list_base_hook<> {

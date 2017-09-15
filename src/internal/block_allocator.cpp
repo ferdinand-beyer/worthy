@@ -1,5 +1,6 @@
 #include "internal/block_allocator.h"
 
+#include "internal/block_layout.h"
 #include "internal/check.h"
 
 #include <boost/align/align_down.hpp>
@@ -40,7 +41,7 @@ inline byte* chunkAddress(void* ptr) {
 
 inline Block* chunkBegin(void* ptr) {
     return reinterpret_cast<Block*>(
-            chunkAddress(ptr) + BlockDescriptorOffset);
+            chunkAddress(ptr) + FirstBlockDescriptorOffset);
 }
 
 
@@ -329,8 +330,8 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
 
 
 void BlockAllocator::initChunkBlocks(byte* chunk_addr) {
-    byte* descr_addr = chunk_addr + BlockDescriptorOffset;
-    byte* block_addr = chunk_addr + BlockOffset;
+    byte* descr_addr = chunk_addr + FirstBlockDescriptorOffset;
+    byte* block_addr = chunk_addr + FirstBlockOffset;
 
     for (uint i = 0; i < BlocksPerChunk; i++) {
         new (descr_addr) Block(block_addr);

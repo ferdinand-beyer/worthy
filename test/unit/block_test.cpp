@@ -16,13 +16,13 @@ constexpr uintptr_t chunkAddress(int chunk_no) {
 
 
 constexpr uintptr_t descriptorAddress(int chunk_no, int block_no) {
-    return chunkAddress(chunk_no) + BlockDescriptorOffset
+    return chunkAddress(chunk_no) + FirstBlockDescriptorOffset
         + (block_no * BlockDescriptorSize);
 }
 
 
 constexpr uintptr_t blockAddress(int chunk_no, int block_no) {
-    return chunkAddress(chunk_no) + BlockOffset
+    return chunkAddress(chunk_no) + FirstBlockOffset
         + (block_no * BlockSize);
 }
 
