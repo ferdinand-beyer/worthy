@@ -205,3 +205,24 @@ TEST_CASE("Deallocate block groups", "[block]") {
     }
 }
 
+
+TEST_CASE("Deallocate linked list of blocks", "[block]") {
+    BlockAllocator allocator;
+
+    BlockList blocks;
+
+    for (uint i = 0; i < BlocksPerChunk; i++) {
+        Block* block = allocator.allocate();
+        blocks.push_back(*block);
+    }
+
+    REQUIRE(1 == allocator.chunksAllocated());
+
+    allocator.deallocate(blocks);
+
+    REQUIRE(blocks.empty());
+
+    allocator.allocate(BlocksPerChunk);
+
+    REQUIRE(1 == allocator.chunksAllocated());
+}

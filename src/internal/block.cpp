@@ -41,13 +41,46 @@ byte* Block::begin() const {
 }
 
 
+byte* Block::current() const {
+    return free_;
+}
+
+
 byte* Block::end() const {
-    return start_ + (block_count_ * BlockSize);
+    return start_ + capacity();
+}
+
+
+size_t Block::capacity() const {
+    return block_count_ * BlockSize;
+}
+
+
+size_t Block::bytesAllocated() const {
+    return free_ - start_;
 }
 
 
 size_t Block::bytesAvailable() const {
     return end() - free_;
+}
+
+
+void* Block::allocate(size_t size) {
+    WORTHY_CHECK(size > 0);
+    byte* new_free = free_ + size;
+    if (new_free > end()) {
+        return nullptr;
+    }
+    byte* result = free_;
+    free_ = new_free;
+    return result;
+}
+
+
+void Block::deallocate(size_t size) {
+    WORTHY_CHECK(size > 0 && size <= bytesAllocated());
+    free_ -= size;
 }
 
 

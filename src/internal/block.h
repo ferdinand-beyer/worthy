@@ -30,12 +30,26 @@ public:
     WORTHY_DISABLE_COPY(Block);
 
     byte* begin() const;
+    byte* current() const;
     byte* end() const;
+
+    size_t capacity() const;
+    size_t bytesAllocated() const;
 
     /**
      * Returns the number of free bytes in this block.
      */
     size_t bytesAvailable() const;
+
+    /**
+     * Allocate memory (without alignment requirements).
+     */
+    void* allocate(size_t size);
+
+    /**
+     * Deallocate memory from the end of the block.
+     */
+    void deallocate(size_t size);
 
 private:
     explicit Block(byte* start);

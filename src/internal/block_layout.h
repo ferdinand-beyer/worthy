@@ -25,9 +25,30 @@ inline constexpr size_t descriptorFromBlockOffset(size_t block_offset) {
 }
 
 
+inline constexpr size_t blockFromDescriptorOffset(size_t descr_offset) {
+    return descr_offset << (BlockBits - BlockDescriptorBits);
+}
+
+
 static constexpr size_t FirstBlockDescriptorOffset =
     descriptorFromBlockOffset(FirstBlockOffset);
 
+
+inline constexpr uintptr_t blockFromDescriptor(uintptr_t descr) {
+    return (descr & ~ChunkMask) | blockFromDescriptorOffset(descr & ChunkMask);
+}
+
+
+inline byte* blockFromDescriptor(byte* descr) {
+    return reinterpret_cast<byte*>(
+            blockFromDescriptor(reinterpret_cast<uintptr_t>(descr)));
+}
+
+
+inline byte* chunkAddress(void* ptr) {
+    return reinterpret_cast<byte*>(
+            reinterpret_cast<uintptr_t>(ptr) & ~ChunkMask);
+}
 
 
 } } // namespace worthy::internal

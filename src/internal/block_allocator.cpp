@@ -3,14 +3,12 @@
 #include "internal/block_layout.h"
 #include "internal/check.h"
 
-#include <boost/align/align_down.hpp>
 #include <boost/align/align_up.hpp>
 #include <boost/align/aligned_alloc.hpp>
 
 #include <new>
 
 
-using boost::alignment::align_down;
 using boost::alignment::align_up;
 using boost::alignment::aligned_alloc;
 using boost::alignment::aligned_free;
@@ -31,11 +29,6 @@ inline constexpr size_t blocksForChunks(size_t chunk_count) {
 inline constexpr size_t chunksForBlocks(size_t block_count) {
     return 1 + align_up((block_count - BlocksPerChunk) * BlockSize,
             ChunkSize) / ChunkSize;
-}
-
-
-inline byte* chunkAddress(void* ptr) {
-    return reinterpret_cast<byte*>(align_down(ptr, ChunkSize));
 }
 
 
@@ -117,6 +110,18 @@ void BlockAllocator::deallocate(Block* block) {
         freeChunkGroup(block);
     } else {
         addToFreeList(block);
+    }
+}
+
+
+void BlockAllocator::deallocate(BlockList& blocks) {
+    auto block = blocks.begin();
+    auto end = blocks.end();
+
+    while (block != end) {
+        auto b = &(*block);
+        block = blocks.erase(block);
+        deallocate(b);
     }
 }
 
@@ -271,9 +276,6 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
     WORTHY_DCHECK(block_count < BlocksPerChunk);
 
     Block* b = allocateChunkGroup(1);
-    if (!b) {
-        return nullptr; // TODO: Should allocateChunkGroup() throw?
-    }
     setupGroup(b, block_count);
 
     Block* rest = b + block_count;
@@ -313,7 +315,7 @@ Block* BlockAllocator::allocateChunkGroup(size_t chunk_count) {
     } else {
         void* memory = aligned_alloc(ChunkSize, chunk_count * ChunkSize);
         if (!memory) {
-            return nullptr; // TODO: Should we throw?
+            throw std::bad_alloc();
         }
         allocations_.push_front(memory);
         chunks_allocated_ += chunk_count;

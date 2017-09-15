@@ -34,6 +34,8 @@ public:
      */
     void deallocate(Block* block);
 
+    void deallocate(BlockList& blocks);
+
 private:
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
 
