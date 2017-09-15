@@ -117,11 +117,9 @@ void BlockAllocator::deallocate(Block* block) {
 void BlockAllocator::deallocate(BlockList& blocks) {
     auto block = blocks.begin();
     auto end = blocks.end();
-
     while (block != end) {
-        auto b = &(*block);
-        block = blocks.erase(block);
-        deallocate(b);
+        block = blocks.erase_and_dispose(
+                block, [&](auto b) { deallocate(b); });
     }
 }
 

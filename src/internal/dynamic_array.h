@@ -59,11 +59,9 @@ public:
     }
 
     void shrink_to_fit() {
-        auto block = blocks_.end();
-        const auto end = block--;
-        while (block != end && empty(*block)) {
-            allocator_->deallocate(&*block);
-            block = blocks_.erase(block);
+        while (!blocks_.empty() && empty(blocks_.back())) {
+            blocks_.pop_back_and_dispose(
+                [&](auto b) { allocator_->deallocate(b); });
         }
     }
 
