@@ -39,7 +39,7 @@ private:
 
     static bool isFree(Block* block);
     static void markFree(Block* block);
-    static void initBlock(Block* block);
+    static void markInUse(Block* block);
 
     static Block* nextFreeBlock(Block* block);
     static Block* previousFreeBlock(Block* block);

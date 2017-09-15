@@ -77,7 +77,7 @@ Block* BlockAllocator::allocate(size_t block_count) {
     if (block_count >= BlocksPerChunk) {
         // Might allocate more as requested (whole chunks).
         Block* block = allocateChunkGroup(chunksForBlocks(block_count));
-        initBlock(block);
+        markInUse(block);
         return block;
     }
 
@@ -131,7 +131,7 @@ void BlockAllocator::markFree(Block* block) {
 }
 
 
-void BlockAllocator::initBlock(Block* block) {
+void BlockAllocator::markInUse(Block* block) {
     block->free_ = block->start_;
 }
 
@@ -186,7 +186,7 @@ Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
     free_list->pop_front();
 
     if (block->block_count_ == block_count) {
-        initBlock(block);
+        markInUse(block);
         return block;
     }
 
@@ -206,7 +206,7 @@ Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     setupGroup(block, block->block_count_ - block_count);
     addToFreeList(block);
 
-    initBlock(b);
+    markInUse(b);
     return b;
 }
 
@@ -280,7 +280,7 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
     setupGroup(rest, BlocksPerChunk - block_count);
     addToFreeList(rest);
 
-    initBlock(b);
+    markInUse(b);
     return b;
 }
 
