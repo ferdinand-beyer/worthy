@@ -6,6 +6,9 @@
 #include <internal/block_allocator.h>
 #include <internal/check.h>
 
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/reverse_iterator.hpp>
+
 #include <stdexcept>
 
 
@@ -13,7 +16,60 @@ namespace worthy {
 namespace internal {
 
 
-template<class T>
+template<typename BlockIterator, typename T>
+class DynamicArrayIterator
+    : public boost::iterator_facade<
+          DynamicArrayIterator<BlockIterator, T>,
+          T, boost::bidirectional_traversal_tag> {
+public:
+    DynamicArrayIterator() : pos_{nullptr}
+    {}
+
+    DynamicArrayIterator(BlockIterator block, byte* pos) :
+        block_{block},
+        pos_{pos}
+    {}
+
+private:
+    static constexpr size_t ValueSize = sizeof(T);
+
+    T& dereference() const {
+        byte* p = pos_ ? pos_ : block_->begin();
+        return *reinterpret_cast<T*>(p);
+    }
+
+    bool equal(const DynamicArrayIterator& other) const {
+        return (block_ == other.block_) && (pos_ == other.pos_);
+    }
+
+    void increment() {
+        if (!pos_) {
+            pos_ = block_->begin();
+        }
+        pos_ += ValueSize;
+        if (pos_ >= block_->current()) {
+            ++block_;
+            pos_ = nullptr;
+        }
+    }
+
+    void decrement() {
+        if (pos_ > block_->begin()) {
+            pos_ -= ValueSize;
+        } else {
+            --block_;
+            pos_ = block_->current() - ValueSize;
+        }
+    }
+
+    BlockIterator block_;
+    byte* pos_;
+
+    friend class boost::iterator_core_access;
+};
+
+
+template<typename T>
 class DynamicArray final {
 public:
     typedef T value_type;
@@ -23,6 +79,11 @@ public:
     typedef const value_type& const_reference;
     typedef value_type* pointer;
     typedef const value_type* const_pointer;
+    typedef DynamicArrayIterator<BlockList::iterator, value_type> iterator;
+    typedef DynamicArrayIterator<BlockList::const_iterator, const value_type>
+        const_iterator;
+    typedef boost::reverse_iterator<iterator> reverse_iterator;
+    typedef boost::reverse_iterator<const_iterator> const_reverse_iterator;
 
     DynamicArray(const DynamicArray&) = delete;
     DynamicArray& operator=(const DynamicArray&) = delete;
@@ -63,6 +124,56 @@ public:
             blocks_.pop_back_and_dispose(
                 [&](auto b) { allocator_->deallocate(b); });
         }
+    }
+
+    iterator begin() noexcept {
+        auto iter = blocks_.begin();
+        return iterator(iter, iter->begin());
+    }
+
+    const_iterator begin() const noexcept {
+        auto iter = blocks_.begin();
+        return const_iterator(iter, iter->begin());
+    }
+
+    const_iterator cbegin() const noexcept {
+        return begin();
+    }
+
+    iterator end() noexcept {
+        return iterator(blocks_.end(), nullptr);
+    }
+
+    const_iterator end() const noexcept {
+        return const_iterator(blocks_.end(), nullptr);
+    }
+
+    const_iterator cend() const noexcept {
+        return end();
+    }
+
+    reverse_iterator rbegin() noexcept {
+        return reverse_iterator(end());
+    }
+
+    const_reverse_iterator rbegin() const noexcept {
+        return const_reverse_iterator(end());
+    }
+
+    const_reverse_iterator crbegin() const noexcept {
+        return rbegin();
+    }
+
+    reverse_iterator rend() noexcept {
+        return reverse_iterator(begin());
+    }
+
+    const_reverse_iterator rend() const noexcept {
+        return const_reverse_iterator(begin());
+    }
+
+    const_reverse_iterator crend() const noexcept {
+        return rend();
     }
 
     reference at(size_type pos) {

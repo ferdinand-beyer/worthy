@@ -234,3 +234,48 @@ TEST_CASE("Free unused memory", "[dynamic_array]") {
     REQUIRE(array.capacity() < old_capacity);
 }
 
+
+TEST_CASE("Iterator traversal", "[dynamic_array]") {
+    BlockAllocator allocator;
+    DynamicArray<int> array(&allocator);
+
+    const DynamicArray<int>& const_array = array;
+
+    constexpr int n = 3 * (BlockSize / sizeof(int));
+    constexpr int expected = (n * (n + 1)) / 2;
+
+    for (int i = 1; i <= n; i++) {
+        array.push_back(i);
+    }
+
+    int sum = 0;
+
+    SECTION("forwards") {
+        for (auto i : array) {
+            sum += i;
+        }
+        REQUIRE(sum == expected);
+    }
+
+    SECTION("const forwards") {
+        for (auto i : const_array) {
+            sum += i;
+        }
+        REQUIRE(sum == expected);
+    }
+
+    SECTION("backwards") {
+        for (auto i = array.rbegin(), end = array.rend(); i != end; ++i) {
+            sum += *i;
+        }
+        REQUIRE(sum == expected);
+    }
+
+    SECTION("const backwards") {
+        for (auto i = const_array.rbegin(), end = const_array.rend();
+             i != end; ++i) {
+            sum += *i;
+        }
+        REQUIRE(sum == expected);
+    }
+}
