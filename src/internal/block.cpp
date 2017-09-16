@@ -3,6 +3,8 @@
 #include "internal/block_layout.h"
 #include "internal/check.h"
 
+#include <new>
+
 
 namespace worthy {
 namespace internal {
@@ -81,6 +83,19 @@ void* Block::allocate(size_t size) {
 void Block::deallocate(size_t size) {
     WORTHY_CHECK(size > 0 && size <= bytesAllocated());
     free_ -= size;
+}
+
+
+Block* BlockTestAccess::construct(byte* buffer) {
+    byte* chunk_addr = chunkAddress(buffer + ChunkSize);
+    byte* descr_addr = chunk_addr + FirstBlockDescriptorOffset;
+    byte* block_addr = chunk_addr + FirstBlockOffset;
+
+    Block* block = ::new (descr_addr) Block(block_addr);
+    block->free_ = block_addr;
+    block->block_count_ = 1;
+
+    return block;
 }
 
 

@@ -69,14 +69,24 @@ private:
     byte padding_[PaddingSize];
 
     friend class BlockAllocator;
+    friend class BlockTestAccess;
 };
+
+
+static_assert(sizeof(Block) == BlockDescriptorSize,
+              "invalid block descriptor size");
 
 
 typedef boost::intrusive::list<Block> BlockList;
 
 
-static_assert(sizeof(Block) == BlockDescriptorSize,
-              "invalid block descriptor size");
+class BlockTestAccess {
+public:
+    static constexpr size_t MinBufferSize = 2 * ChunkSize;
+
+    static Block* construct(byte* buffer);
+};
+
 
 
 } } // namespace worthy::internal

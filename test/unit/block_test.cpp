@@ -12,28 +12,12 @@ using namespace worthy::internal;
 namespace {
 
 
-struct Descr : boost::intrusive::list_base_hook<> {
-    byte* start;
-    byte* free;
-    size_t size;
-};
-
-
-constexpr size_t TestBufferSize = 2 * ChunkSize;
+constexpr size_t TestBufferSize = BlockTestAccess::MinBufferSize;
 
 
 Block* initBlock(byte* buffer) {
     std::memset(buffer, 0, TestBufferSize);
-
-    byte* chunk = chunkAddress(buffer + ChunkSize);
-    byte* block = chunk + FirstBlockOffset;
-
-    Descr* d = reinterpret_cast<Descr*>(chunk + FirstBlockDescriptorOffset);
-    d->start = block;
-    d->free = block;
-    d->size = 1;
-
-    return reinterpret_cast<Block*>(d);
+    return BlockTestAccess::construct(buffer);
 }
 
 
