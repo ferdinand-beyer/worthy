@@ -20,28 +20,6 @@ TEST_CASE("A default constructed dynamic array", "[dynamic_array]") {
     SECTION("has size zero") {
         REQUIRE(array.size() == 0);
     }
-
-    SECTION("has capacity zero") {
-        REQUIRE(array.capacity() == 0);
-    }
-}
-
-
-TEST_CASE("Reserving space in a dynamic array", "[dynamic_array]") {
-    BlockAllocator allocator;
-    DynamicArray<int> array(&allocator);
-
-    array.reserve(100);
-
-    SECTION("increases capacity at least to reserved size") {
-        REQUIRE(array.capacity() >= 100);
-    }
-
-    SECTION("does nothing if capacity large enough") {
-        const auto old_capacity = array.capacity();
-        array.reserve(old_capacity);
-        REQUIRE(array.capacity() == old_capacity);
-    }
 }
 
 
@@ -58,10 +36,6 @@ TEST_CASE("Pushing a value to an empty array", "[dynamic_array]") {
     SECTION("increases the size") {
         REQUIRE(array.size() == 1);
     }
-
-    SECTION("increases the capacity") {
-        REQUIRE(array.capacity() >= 1);
-    }
 }
 
 
@@ -70,13 +44,6 @@ TEST_CASE("Pushing a value to a non-empty array", "[dynamic_array]") {
     DynamicArray<int> array(&allocator);
 
     array.push_back(100);
-
-    SECTION("does not change sufficient capacity") {
-        array.reserve(2);
-        const auto old_capacity = array.capacity();
-        array.push_back(200);
-        REQUIRE(array.capacity() == old_capacity);
-    }
 
     SECTION("increments size") {
         array.push_back(200);
@@ -87,16 +54,16 @@ TEST_CASE("Pushing a value to a non-empty array", "[dynamic_array]") {
     }
 
     SECTION("allocates new memory on demand") {
-        const auto old_capacity = array.capacity();
+        const auto nblocks = allocator.blocksAllocated();
 
         const int n = BlockSize / sizeof(int);
         for (int i = 1; i < n; i++) {
             array.push_back(i);
         }
-        REQUIRE(array.capacity() == old_capacity);
+        REQUIRE(allocator.blocksAllocated() == nblocks);
 
         array.push_back(n);
-        REQUIRE(array.capacity() > old_capacity);
+        REQUIRE(allocator.blocksAllocated() > nblocks);
     }
 }
 
@@ -223,15 +190,31 @@ TEST_CASE("Free unused memory", "[dynamic_array]") {
         array.push_back(i);
     }
 
-    const auto old_capacity = array.capacity();
+    const auto nblocks = allocator.blocksAllocated();
 
     array.pop_back();
 
-    REQUIRE(array.capacity() == old_capacity);
+    REQUIRE(allocator.blocksAllocated() == nblocks);
 
     array.shrink_to_fit();
 
-    REQUIRE(array.capacity() < old_capacity);
+    REQUIRE(allocator.blocksAllocated() < nblocks);
+}
+
+
+TEST_CASE("Iterators on empty array", "[dynamic_array]") {
+    BlockAllocator allocator;
+    DynamicArray<int> array(&allocator);
+
+    REQUIRE(array.begin() == array.end());
+    REQUIRE(array.cbegin() == array.cend());
+    REQUIRE(array.rbegin() == array.rend());
+    REQUIRE(array.crbegin() == array.crend());
+
+    const DynamicArray<int>& const_array = array;
+
+    REQUIRE(const_array.begin() == const_array.end());
+    REQUIRE(const_array.rbegin() == const_array.rend());
 }
 
 

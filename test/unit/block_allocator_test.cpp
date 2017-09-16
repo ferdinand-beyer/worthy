@@ -16,6 +16,7 @@ TEST_CASE("Allocate single blocks", "[block]") {
         Block* block = allocator.allocate();
 
         REQUIRE(block);
+        REQUIRE(allocator.blocksAllocated() == 1);
     }
 
     SECTION("from the same chunk") {
@@ -30,7 +31,8 @@ TEST_CASE("Allocate single blocks", "[block]") {
             REQUIRE(BlockSize == b->bytesAvailable());
         }
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(allocator.blocksAllocated() == BlocksPerChunk);
     }
 
     SECTION("more than fit in one chunk") {
@@ -38,7 +40,8 @@ TEST_CASE("Allocate single blocks", "[block]") {
             allocator.allocate();
         }
 
-        REQUIRE(2 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 2);
+        REQUIRE(allocator.blocksAllocated() == (BlocksPerChunk + 1));
     }
 }
 
@@ -49,14 +52,16 @@ TEST_CASE("Allocate block groups", "[block]") {
     SECTION("smaller than one chunk") {
         Block* block = allocator.allocate(10);
 
-        REQUIRE((10 * BlockSize) == block->bytesAvailable());
+        REQUIRE(allocator.blocksAllocated() == 10);
+        REQUIRE(block->bytesAvailable() == (10 * BlockSize));
     }
 
     SECTION("exactly one chunk") {
         Block* block = allocator.allocate(BlocksPerChunk);
 
-        REQUIRE(1 == allocator.chunksAllocated());
-        REQUIRE((BlocksPerChunk * BlockSize) == block->bytesAvailable());
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(allocator.blocksAllocated() == BlocksPerChunk);
+        REQUIRE(block->bytesAvailable() == (BlocksPerChunk * BlockSize));
     }
 
     SECTION("multiple chunks") {
@@ -70,8 +75,9 @@ TEST_CASE("Allocate block groups", "[block]") {
 
         Block* block = allocator.allocate(nblocks_requested);
 
-        REQUIRE(nchunks == allocator.chunksAllocated());
-        REQUIRE((nblocks_expected * BlockSize) == block->bytesAvailable());
+        REQUIRE(allocator.chunksAllocated() == nchunks);
+        REQUIRE(allocator.blocksAllocated() == nblocks_expected);
+        REQUIRE(block->bytesAvailable() == (nblocks_expected * BlockSize));
     }
 }
 
@@ -87,27 +93,31 @@ TEST_CASE("Deallocate blocks", "[block]") {
             allocator.allocate();
         }
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(allocator.blocksAllocated() == BlocksPerChunk);
 
         allocator.deallocate(first);
 
+        REQUIRE(allocator.blocksAllocated() == (BlocksPerChunk - 1));
+
         Block* reused = allocator.allocate();
 
-        REQUIRE(1 == allocator.chunksAllocated());
-        REQUIRE(first == reused);
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(reused == first);
     }
 
     SECTION("free all blocks") {
         Block* b = allocator.allocate();
         allocator.deallocate(b);
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(allocator.blocksAllocated() == 0);
 
         for (int i = 0; i < BlocksPerChunk; i++) {
             allocator.allocate();
         }
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
     }
 
     SECTION("free all blocks in order") {
@@ -117,13 +127,14 @@ TEST_CASE("Deallocate blocks", "[block]") {
         allocator.deallocate(b1);
         allocator.deallocate(b2);
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
+        REQUIRE(allocator.blocksAllocated() == 0);
 
         for (int i = 0; i < BlocksPerChunk; i++) {
             allocator.allocate();
         }
 
-        REQUIRE(1 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 1);
     }
 }
 
@@ -143,12 +154,14 @@ TEST_CASE("Merge blocks", "[block]") {
         allocator.deallocate(blocks[35 - i]);
     }
 
+    REQUIRE(allocator.blocksAllocated() == (BlocksPerChunk - 16));
+
     // We have deallocated 16 continous blocks.  Since free lists are indexed
     // with powers of two, we should be able to allocate these again.
     Block* large = allocator.allocate(16);
 
-    REQUIRE(large);
-    REQUIRE(1 == allocator.chunksAllocated());
+    REQUIRE(large != nullptr);
+    REQUIRE(allocator.chunksAllocated() == 1);
 }
 
 
@@ -156,20 +169,21 @@ TEST_CASE("Deallocate block groups", "[block]") {
     BlockAllocator allocator;
 
     Block* block = allocator.allocate(3 * BlocksPerChunk);
-    REQUIRE(3 == allocator.chunksAllocated());
-
     allocator.deallocate(block);
+
+    REQUIRE(allocator.chunksAllocated() == 3);
+    REQUIRE(allocator.blocksAllocated() == 0);
 
     SECTION("reuse deallocated chunks") {
         // This should reuse space from the deallocated chunks.
         block = allocator.allocate(BlocksPerChunk);
 
-        REQUIRE(3 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 3);
 
         // There are still two chunks available.
         Block* remaining = allocator.allocate(2 * BlocksPerChunk);
 
-        REQUIRE(3 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 3);
     }
 
     SECTION("merge deallocated chunks") {
@@ -177,7 +191,7 @@ TEST_CASE("Deallocate block groups", "[block]") {
         Block* b = allocator.allocate(BlocksPerChunk);
         Block* c = allocator.allocate(BlocksPerChunk);
 
-        REQUIRE(3 == allocator.chunksAllocated());
+        REQUIRE(allocator.chunksAllocated() == 3);
 
         allocator.deallocate(b);
 
@@ -185,14 +199,14 @@ TEST_CASE("Deallocate block groups", "[block]") {
             allocator.deallocate(a);
 
             block = allocator.allocate(2 * BlocksPerChunk);
-            REQUIRE(3 == allocator.chunksAllocated());
+            REQUIRE(allocator.chunksAllocated() == 3);
         }
 
         SECTION("merge in other direction") {
             allocator.deallocate(c);
 
             block = allocator.allocate(2 * BlocksPerChunk);
-            REQUIRE(3 == allocator.chunksAllocated());
+            REQUIRE(allocator.chunksAllocated() == 3);
         }
 
         SECTION("merge in both direction") {
@@ -200,7 +214,7 @@ TEST_CASE("Deallocate block groups", "[block]") {
             allocator.deallocate(c);
 
             block = allocator.allocate(3 * BlocksPerChunk);
-            REQUIRE(3 == allocator.chunksAllocated());
+            REQUIRE(allocator.chunksAllocated() == 3);
         }
     }
 }
@@ -216,7 +230,7 @@ TEST_CASE("Deallocate linked list of blocks", "[block]") {
         blocks.push_back(*block);
     }
 
-    REQUIRE(1 == allocator.chunksAllocated());
+    REQUIRE(allocator.chunksAllocated() == 1);
 
     allocator.deallocate(blocks);
 
@@ -224,5 +238,5 @@ TEST_CASE("Deallocate linked list of blocks", "[block]") {
 
     allocator.allocate(BlocksPerChunk);
 
-    REQUIRE(1 == allocator.chunksAllocated());
+    REQUIRE(allocator.chunksAllocated() == 1);
 }

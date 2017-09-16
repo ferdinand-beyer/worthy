@@ -20,11 +20,6 @@ public:
     WORTHY_DISABLE_COPY(BlockAllocator);
 
     /**
-     * Return the number of chunks allocated from the OS.
-     */
-    size_t chunksAllocated() const;
-
-    /**
      * Allocate a group of block_count blocks.
      */
     Block* allocate(size_t block_count = 1);
@@ -36,12 +31,19 @@ public:
 
     void deallocate(BlockList& blocks);
 
+    size_t blocksAllocated() const;
+
+    /**
+     * Return the number of chunks allocated from the OS.
+     */
+    size_t chunksAllocated() const;
+
 private:
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
 
     static bool isFree(Block* block);
-    static void markFree(Block* block);
-    static void markInUse(Block* block);
+    void markFree(Block* block);
+    void markInUse(Block* block);
 
     static Block* nextFreeBlock(Block* block);
     static Block* previousFreeBlock(Block* block);
@@ -73,6 +75,7 @@ private:
 
     std::list<void*> allocations_;
 
+    size_t blocks_allocated_;
     size_t chunks_allocated_;
 };
 

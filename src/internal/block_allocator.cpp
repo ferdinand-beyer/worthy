@@ -47,6 +47,7 @@ inline Block* chunkEnd(void* ptr) {
 
 
 BlockAllocator::BlockAllocator() :
+    blocks_allocated_{0},
     chunks_allocated_{0}
 {
 }
@@ -56,6 +57,10 @@ BlockAllocator::~BlockAllocator() {
     for (auto ptr : allocations_) {
         aligned_free(ptr);
     }
+}
+
+size_t BlockAllocator::blocksAllocated() const {
+    return blocks_allocated_;
 }
 
 
@@ -131,11 +136,13 @@ bool BlockAllocator::isFree(Block* block) {
 
 void BlockAllocator::markFree(Block* block) {
     block->free_ = nullptr;
+    blocks_allocated_ -= block->block_count_;
 }
 
 
 void BlockAllocator::markInUse(Block* block) {
     block->free_ = block->start_;
+    blocks_allocated_ += block->block_count_;
 }
 
 

@@ -23,6 +23,7 @@ set(Worthy_SRCS
     src/internal/check.cpp
     src/internal/check.h
     src/internal/dynamic_array.h
+    src/internal/dynamic_array_iterator.h
     src/internal/globals.h
     src/internal/hash.cpp
     src/internal/hash.h

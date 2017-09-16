@@ -5,9 +5,7 @@
 #include <internal/block.h>
 #include <internal/block_allocator.h>
 #include <internal/check.h>
-
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/reverse_iterator.hpp>
+#include <internal/dynamic_array_iterator.h>
 
 #include <stdexcept>
 
@@ -16,72 +14,24 @@ namespace worthy {
 namespace internal {
 
 
-template<typename BlockIterator, typename T>
-class DynamicArrayIterator
-    : public boost::iterator_facade<
-          DynamicArrayIterator<BlockIterator, T>,
-          T, boost::bidirectional_traversal_tag> {
-public:
-    DynamicArrayIterator() : pos_{nullptr}
-    {}
-
-    DynamicArrayIterator(BlockIterator block, byte* pos) :
-        block_{block},
-        pos_{pos}
-    {}
-
-private:
-    static constexpr size_t ValueSize = sizeof(T);
-
-    T& dereference() const {
-        byte* p = pos_ ? pos_ : block_->begin();
-        return *reinterpret_cast<T*>(p);
-    }
-
-    bool equal(const DynamicArrayIterator& other) const {
-        return (block_ == other.block_) && (pos_ == other.pos_);
-    }
-
-    void increment() {
-        if (!pos_) {
-            pos_ = block_->begin();
-        }
-        pos_ += ValueSize;
-        if (pos_ >= block_->current()) {
-            ++block_;
-            pos_ = nullptr;
-        }
-    }
-
-    void decrement() {
-        if (pos_ > block_->begin()) {
-            pos_ -= ValueSize;
-        } else {
-            --block_;
-            pos_ = block_->current() - ValueSize;
-        }
-    }
-
-    BlockIterator block_;
-    byte* pos_;
-
-    friend class boost::iterator_core_access;
-};
-
-
 template<typename T>
 class DynamicArray final {
 public:
     typedef T value_type;
+
     typedef size_t size_type;
     typedef ptrdiff_t difference_type;
+
     typedef value_type& reference;
     typedef const value_type& const_reference;
+
     typedef value_type* pointer;
     typedef const value_type* const_pointer;
+
     typedef DynamicArrayIterator<BlockList::iterator, value_type> iterator;
     typedef DynamicArrayIterator<BlockList::const_iterator, const value_type>
         const_iterator;
+
     typedef boost::reverse_iterator<iterator> reverse_iterator;
     typedef boost::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -107,18 +57,6 @@ public:
         return size_;
     }
 
-    size_type capacity() const noexcept {
-        return blocks_.size() * ValuesPerBlock;
-    }
-
-    void reserve(size_type new_capacity) {
-        size_type cap = capacity();
-        while (cap < new_capacity) {
-            allocateBlock();
-            cap += ValuesPerBlock;
-        }
-    }
-
     void shrink_to_fit() {
         while (!blocks_.empty() && empty(blocks_.back())) {
             blocks_.pop_back_and_dispose(
@@ -128,12 +66,12 @@ public:
 
     iterator begin() noexcept {
         auto iter = blocks_.begin();
-        return iterator(iter, iter->begin());
+        return iterator(iter, data(*iter));
     }
 
     const_iterator begin() const noexcept {
         auto iter = blocks_.begin();
-        return const_iterator(iter, iter->begin());
+        return const_iterator(iter, data(*iter));
     }
 
     const_iterator cbegin() const noexcept {
@@ -266,21 +204,29 @@ private:
         return block.current() == block.begin();
     }
 
+    static size_t size(const Block& block) noexcept {
+        return (block.current() - block.begin()) / ValueSize;
+    }
+
+    template<typename BlockIterator>
+    static void seek(BlockIterator& block, size_type& index) {
+        auto block_size = size(*block);
+        while (index >= block_size) {
+            index -= block_size;
+            ++block;
+            block_size = size(*block);
+        }
+    }
+
     reference ref(size_type index) {
         auto block = blocks_.begin();
-        while (index >= ValuesPerBlock) {
-            index -= ValuesPerBlock;
-            ++block;
-        }
+        seek(block, index);
         return data(*block)[index];
     }
 
     const_reference ref(size_type index) const {
         auto block = blocks_.begin();
-        while (index >= ValuesPerBlock) {
-            index -= ValuesPerBlock;
-            ++block;
-        }
+        seek(block, index);
         return data(*block)[index];
     }
 
