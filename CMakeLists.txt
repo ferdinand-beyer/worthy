@@ -15,6 +15,7 @@ set(Worthy_SRCS
     include/worthy/worthy.h
 
     src/internal/align.h
+    src/internal/atomic_intrusive_stack.h
     src/internal/block.cpp
     src/internal/block.h
     src/internal/block_allocator.cpp
@@ -46,6 +47,8 @@ set(Worthy_SRCS
     src/internal/object_space.cpp
     src/internal/object_space.h
     src/internal/object_type.h
+    src/internal/owner_block_allocator.cpp
+    src/internal/owner_block_allocator.h
     src/internal/page.cpp
     src/internal/page.h
     src/internal/root_block_allocator.cpp
@@ -66,6 +69,7 @@ set(Worthy_SRCS
 set(UnitTests_SRCS
     test/unit/block_test.cpp
     test/unit/blocked_vector_test.cpp
+    test/unit/handle_container_test.cpp
     test/unit/hash_test.cpp
     test/unit/hashmap_test.cpp
     test/unit/root_block_allocator_test.cpp
