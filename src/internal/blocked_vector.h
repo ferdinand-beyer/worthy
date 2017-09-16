@@ -46,7 +46,7 @@ public:
     }
 
     ~BlockedVector() noexcept {
-        allocator_->deallocate(blocks_);
+        allocator_->deallocateList(blocks_);
     }
 
     bool empty() const noexcept {

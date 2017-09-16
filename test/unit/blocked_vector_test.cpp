@@ -1,4 +1,5 @@
 #include "internal/blocked_vector.h"
+#include "internal/root_block_allocator.h"
 
 #include <catch.hpp>
 
@@ -10,7 +11,7 @@ using namespace worthy::internal;
 
 
 TEST_CASE("A default constructed blocked vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     SECTION("is empty") {
@@ -24,7 +25,7 @@ TEST_CASE("A default constructed blocked vector", "[blocked_vector]") {
 
 
 TEST_CASE("Pushing a value to an empty vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     vector.push_back(42);
@@ -40,7 +41,7 @@ TEST_CASE("Pushing a value to an empty vector", "[blocked_vector]") {
 
 
 TEST_CASE("Pushing a value to a non-empty vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     vector.push_back(100);
@@ -69,7 +70,7 @@ TEST_CASE("Pushing a value to a non-empty vector", "[blocked_vector]") {
 
 
 TEST_CASE("Read and write values in blocked vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
     const BlockedVector<int>& const_vector = vector;
 
@@ -122,7 +123,7 @@ TEST_CASE("Read and write values in blocked vector", "[blocked_vector]") {
 
 
 TEST_CASE("Move value into an vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<std::unique_ptr<int>> vector(&allocator);
 
     auto ptr = std::make_unique<int>(42);
@@ -134,7 +135,7 @@ TEST_CASE("Move value into an vector", "[blocked_vector]") {
 
 
 TEST_CASE("Construct value into an vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<std::string> vector(&allocator);
 
     vector.emplace_back(5, 'x');
@@ -145,7 +146,7 @@ TEST_CASE("Construct value into an vector", "[blocked_vector]") {
 
 
 TEST_CASE("Remove the last value from an vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<std::shared_ptr<int>> vector(&allocator);
 
     const auto ptr = std::make_shared<int>(42);
@@ -161,7 +162,7 @@ TEST_CASE("Remove the last value from an vector", "[blocked_vector]") {
 
 
 TEST_CASE("Clear an vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<std::shared_ptr<int>> vector(&allocator);
 
     const auto ptr = std::make_shared<int>(42);
@@ -181,7 +182,7 @@ TEST_CASE("Clear an vector", "[blocked_vector]") {
 
 
 TEST_CASE("Free unused memory", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     const int count = BlockSize / sizeof(int);
@@ -203,7 +204,7 @@ TEST_CASE("Free unused memory", "[blocked_vector]") {
 
 
 TEST_CASE("Iterators on empty vector", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     REQUIRE(vector.begin() == vector.end());
@@ -219,7 +220,7 @@ TEST_CASE("Iterators on empty vector", "[blocked_vector]") {
 
 
 TEST_CASE("Iterator traversal", "[blocked_vector]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
     BlockedVector<int> vector(&allocator);
 
     const BlockedVector<int>& const_vector = vector;

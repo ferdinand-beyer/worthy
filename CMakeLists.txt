@@ -27,6 +27,10 @@ set(Worthy_SRCS
     src/internal/check.cpp
     src/internal/check.h
     src/internal/globals.h
+    src/internal/handle.cpp
+    src/internal/handle.h
+    src/internal/handle_container.cpp
+    src/internal/handle_container.h
     src/internal/hash.cpp
     src/internal/hash.h
     src/internal/hashmap.cpp
@@ -44,6 +48,8 @@ set(Worthy_SRCS
     src/internal/object_type.h
     src/internal/page.cpp
     src/internal/page.h
+    src/internal/root_block_allocator.cpp
+    src/internal/root_block_allocator.h
     src/internal/space.cpp
     src/internal/space.h
     src/internal/variant.cpp
@@ -58,11 +64,11 @@ set(Worthy_SRCS
     )
 
 set(UnitTests_SRCS
-    test/unit/block_allocator_test.cpp
     test/unit/block_test.cpp
     test/unit/blocked_vector_test.cpp
     test/unit/hash_test.cpp
     test/unit/hashmap_test.cpp
+    test/unit/root_block_allocator_test.cpp
     test/unit/value_test.cpp
     test/unit/variant_test.cpp
     test/main.cpp

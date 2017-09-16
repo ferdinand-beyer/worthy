@@ -1,6 +1,6 @@
-#include "internal/block_allocator.h"
 #include "internal/block_layout.h"
 #include "internal/block_owner.h"
+#include "internal/root_block_allocator.h"
 
 #include <catch.hpp>
 
@@ -17,7 +17,7 @@ public:
 
 
 TEST_CASE("Allocate single blocks", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     SECTION("just one") {
         Block* block = allocator.allocate();
@@ -54,7 +54,7 @@ TEST_CASE("Allocate single blocks", "[block]") {
 
 
 TEST_CASE("Allocate block groups", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     SECTION("smaller than one chunk") {
         Block* block = allocator.allocate(10);
@@ -90,7 +90,7 @@ TEST_CASE("Allocate block groups", "[block]") {
 
 
 TEST_CASE("Deallocate blocks", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     SECTION("within one chunk") {
         Block* first = allocator.allocate();
@@ -147,7 +147,7 @@ TEST_CASE("Deallocate blocks", "[block]") {
 
 
 TEST_CASE("Merge blocks", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     Block* blocks[BlocksPerChunk];
 
@@ -173,7 +173,7 @@ TEST_CASE("Merge blocks", "[block]") {
 
 
 TEST_CASE("Deallocate block groups", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     Block* block = allocator.allocate(3 * BlocksPerChunk);
     allocator.deallocate(block);
@@ -228,7 +228,7 @@ TEST_CASE("Deallocate block groups", "[block]") {
 
 
 TEST_CASE("Deallocate linked list of blocks", "[block]") {
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     BlockList blocks;
 
@@ -239,7 +239,7 @@ TEST_CASE("Deallocate linked list of blocks", "[block]") {
 
     REQUIRE(allocator.chunksAllocated() == 1);
 
-    allocator.deallocate(blocks);
+    allocator.deallocateList(blocks);
 
     REQUIRE(blocks.empty());
 
@@ -251,7 +251,7 @@ TEST_CASE("Deallocate linked list of blocks", "[block]") {
 
 TEST_CASE("Block owner is reset", "[block]") {
     TestBlockOwner owner;
-    BlockAllocator allocator;
+    RootBlockAllocator allocator;
 
     Block* block = allocator.allocate();
 

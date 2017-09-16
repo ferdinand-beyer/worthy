@@ -77,7 +77,7 @@ private:
 
     byte padding_[PaddingSize];
 
-    friend class BlockAllocator;
+    friend class RootBlockAllocator;
     friend class BlockOwnerAccess;
     friend class BlockTestAccess;
 };

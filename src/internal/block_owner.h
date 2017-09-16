@@ -14,6 +14,8 @@ public:
     virtual ~BlockOwner() = default;
 
 protected:
+    BlockOwner() = default;
+
     void take(Block* block);
 };
 
