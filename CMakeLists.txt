@@ -20,6 +20,8 @@ set(Worthy_SRCS
     src/internal/block_allocator.cpp
     src/internal/block_allocator.h
     src/internal/block_layout.h
+    src/internal/block_owner.cpp
+    src/internal/block_owner.h
     src/internal/blocked_vector.h
     src/internal/blocked_vector_iterator.h
     src/internal/check.cpp

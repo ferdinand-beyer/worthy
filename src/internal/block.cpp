@@ -32,6 +32,7 @@ Block* Block::of(void* ptr) {
 Block::Block(byte* start) :
     start_{start},
     free_{nullptr},
+    owner_{nullptr},
     block_count_{0}
 {
     WORTHY_DCHECK(start);
@@ -83,6 +84,12 @@ void* Block::allocate(size_t size) {
 void Block::deallocate(size_t size) {
     WORTHY_CHECK(size > 0 && size <= bytesAllocated());
     free_ -= size;
+}
+
+
+void BlockOwnerAccess::take(BlockOwner* owner, Block* block) {
+    WORTHY_DCHECK(owner && block && !block->owner_);
+    block->owner_ = owner;
 }
 
 

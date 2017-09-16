@@ -11,6 +11,9 @@ namespace worthy {
 namespace internal {
 
 
+class BlockOwner;
+
+
 static constexpr size_t ChunkBits = 20;
 static constexpr size_t BlockBits = 12;
 static constexpr size_t BlockDescriptorBits = 6;
@@ -22,12 +25,15 @@ static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
 
 class Block final : public boost::intrusive::list_base_hook<> {
 public:
+    Block(const Block&) = delete;
+    Block& operator=(const Block&) = delete;
+
     /**
      * Returns the block that contains the given ptr.
      */
     static Block* of(void* ptr);
 
-    WORTHY_DISABLE_COPY(Block);
+    BlockOwner* owner() const;
 
     byte* begin() const;
     byte* current() const;
@@ -57,6 +63,8 @@ private:
     byte* const start_;
     byte* free_;
 
+    BlockOwner* owner_;
+
     size_t block_count_;
 
     static constexpr size_t PaddingSize =
@@ -64,11 +72,13 @@ private:
         - sizeof(boost::intrusive::list_base_hook<>)
         - sizeof(start_)
         - sizeof(free_)
+        - sizeof(owner_)
         - sizeof(block_count_);
 
     byte padding_[PaddingSize];
 
     friend class BlockAllocator;
+    friend class BlockOwnerAccess;
     friend class BlockTestAccess;
 };
 
@@ -78,6 +88,14 @@ static_assert(sizeof(Block) == BlockDescriptorSize,
 
 
 typedef boost::intrusive::list<Block> BlockList;
+
+
+class BlockOwnerAccess {
+private:
+    static void take(BlockOwner* owner, Block* block);
+
+    friend class BlockOwner;
+};
 
 
 class BlockTestAccess {
