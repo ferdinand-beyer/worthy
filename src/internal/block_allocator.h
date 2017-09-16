@@ -14,10 +14,14 @@ namespace internal {
 
 class BlockAllocator final {
 public:
+    BlockAllocator(const BlockAllocator&) = delete;
+    BlockAllocator& operator=(const BlockAllocator&) = delete;
+
     BlockAllocator();
     ~BlockAllocator();
 
-    WORTHY_DISABLE_COPY(BlockAllocator);
+    size_t blocksAllocated() const;
+    size_t chunksAllocated() const;
 
     /**
      * Allocate a group of block_count blocks.
@@ -31,24 +35,18 @@ public:
 
     void deallocate(BlockList& blocks);
 
-    size_t blocksAllocated() const;
-
-    /**
-     * Return the number of chunks allocated from the OS.
-     */
-    size_t chunksAllocated() const;
-
 private:
     static constexpr size_t FreeListCount = ChunkBits - BlockBits;
-
-    static bool isFree(Block* block);
-    void markFree(Block* block);
-    void markInUse(Block* block);
 
     static Block* nextFreeBlock(Block* block);
     static Block* previousFreeBlock(Block* block);
 
     static void setupGroup(Block* block, size_t block_count);
+
+    static bool isFree(Block* block);
+
+    void reclaim(Block* block);
+    Block* release(Block* block);
 
     Block* allocateFromFreeList(size_t block_count);
     Block* allocateFromFreeBlock(Block* block, size_t block_count);

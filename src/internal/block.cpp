@@ -39,6 +39,11 @@ Block::Block(byte* start) :
 }
 
 
+BlockOwner* Block::owner() const {
+    return owner_;
+}
+
+
 byte* Block::begin() const {
     return start_;
 }

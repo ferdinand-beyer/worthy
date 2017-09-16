@@ -75,8 +75,7 @@ Block* BlockAllocator::allocate(size_t block_count) {
     if (block_count >= BlocksPerChunk) {
         // Might allocate more as requested (whole chunks).
         Block* block = allocateChunkGroup(chunksForBlocks(block_count));
-        markInUse(block);
-        return block;
+        return release(block);
     }
 
     if (Block* block = allocateFromFreeList(block_count)) {
@@ -91,7 +90,7 @@ void BlockAllocator::deallocate(Block* block) {
     WORTHY_CHECK(block && !isFree(block));
     WORTHY_DCHECK(block->block_count_ > 0);
 
-    markFree(block);
+    reclaim(block);
 
     if (block->block_count_ >= BlocksPerChunk) {
         const auto chunk_count = chunksForBlocks(block->block_count_);
@@ -126,23 +125,6 @@ void BlockAllocator::deallocate(BlockList& blocks) {
         block = blocks.erase_and_dispose(
                 block, [&](auto b) { deallocate(b); });
     }
-}
-
-
-bool BlockAllocator::isFree(Block* block) {
-    return block->free_ == nullptr;
-}
-
-
-void BlockAllocator::markFree(Block* block) {
-    block->free_ = nullptr;
-    blocks_allocated_ -= block->block_count_;
-}
-
-
-void BlockAllocator::markInUse(Block* block) {
-    block->free_ = block->start_;
-    blocks_allocated_ += block->block_count_;
 }
 
 
@@ -185,6 +167,25 @@ void BlockAllocator::setupGroup(Block* block, size_t block_count) {
 }
 
 
+bool BlockAllocator::isFree(Block* block) {
+    return block->free_ == nullptr;
+}
+
+
+void BlockAllocator::reclaim(Block* block) {
+    block->owner_ = nullptr;
+    block->free_ = nullptr;
+    blocks_allocated_ -= block->block_count_;
+}
+
+
+Block* BlockAllocator::release(Block* block) {
+    block->free_ = block->start_;
+    blocks_allocated_ += block->block_count_;
+    return block;
+}
+
+
 Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
     auto free_list = freeListForAllocation(block_count);
     if (!free_list) {
@@ -196,8 +197,7 @@ Block* BlockAllocator::allocateFromFreeList(size_t block_count) {
     free_list->pop_front();
 
     if (block->block_count_ == block_count) {
-        markInUse(block);
-        return block;
+        return release(block);
     }
 
     return allocateFromFreeBlock(block, block_count);
@@ -216,8 +216,7 @@ Block* BlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     setupGroup(block, block->block_count_ - block_count);
     addToFreeList(block);
 
-    markInUse(b);
-    return b;
+    return release(b);
 }
 
 
@@ -287,8 +286,7 @@ Block* BlockAllocator::allocateFromNewChunk(size_t block_count) {
     setupGroup(rest, BlocksPerChunk - block_count);
     addToFreeList(rest);
 
-    markInUse(b);
-    return b;
+    return release(b);
 }
 
 

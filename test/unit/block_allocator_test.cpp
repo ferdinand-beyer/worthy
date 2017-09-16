@@ -1,5 +1,6 @@
 #include "internal/block_allocator.h"
 #include "internal/block_layout.h"
+#include "internal/block_owner.h"
 
 #include <catch.hpp>
 
@@ -7,6 +8,12 @@
 
 
 using namespace worthy::internal;
+
+
+class TestBlockOwner : public BlockOwner {
+public:
+    using BlockOwner::take;
+};
 
 
 TEST_CASE("Allocate single blocks", "[block]") {
@@ -240,3 +247,22 @@ TEST_CASE("Deallocate linked list of blocks", "[block]") {
 
     REQUIRE(allocator.chunksAllocated() == 1);
 }
+
+
+TEST_CASE("Block owner is reset", "[block]") {
+    TestBlockOwner owner;
+    BlockAllocator allocator;
+
+    Block* block = allocator.allocate();
+
+    owner.take(block);
+
+    REQUIRE(block->owner() == &owner);
+
+    allocator.deallocate(block);
+    Block* new_block = allocator.allocate();
+
+    REQUIRE(new_block == block);
+    REQUIRE(new_block->owner() == nullptr);
+}
+
