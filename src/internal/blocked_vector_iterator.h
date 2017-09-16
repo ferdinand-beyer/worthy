@@ -1,12 +1,11 @@
-#ifndef WORTHY_INTERNAL_DYNAMIC_ARRAY_ITERATOR_H_
-#define WORTHY_INTERNAL_DYNAMIC_ARRAY_ITERATOR_H_
+#ifndef WORTHY_INTERNAL_BLOCKED_VECTOR_ITERATOR_H_
+#define WORTHY_INTERNAL_BLOCKED_VECTOR_ITERATOR_H_
 
 
-#include <internal/block.h>
-#include <internal/check.h>
+#include "internal/block.h"
+#include "internal/check.h"
 
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/reverse_iterator.hpp>
 
 
 namespace worthy {
@@ -14,15 +13,15 @@ namespace internal {
 
 
 template<typename BlockIterator, typename T>
-class DynamicArrayIterator
+class BlockedVectorIterator final
     : public boost::iterator_facade<
-          DynamicArrayIterator<BlockIterator, T>,
+          BlockedVectorIterator<BlockIterator, T>,
           T, boost::bidirectional_traversal_tag> {
 public:
-    DynamicArrayIterator() : pos_{nullptr}
+    BlockedVectorIterator() : pos_{nullptr}
     {}
 
-    DynamicArrayIterator(BlockIterator block, T* pos) :
+    BlockedVectorIterator(BlockIterator block, T* pos) :
         block_{block},
         pos_{pos}
     {}
@@ -32,7 +31,7 @@ private:
         return pos_ ? *pos_ : *first();
     }
 
-    bool equal(const DynamicArrayIterator& other) const {
+    bool equal(const BlockedVectorIterator& other) const {
         return (block_ == other.block_) && (pos_ == other.pos_);
     }
 
@@ -74,4 +73,4 @@ private:
 } } // namespace worthy::internal
 
 
-#endif // WORTHY_INTERNAL_DYNAMIC_ARRAY_ITERATOR_H_
+#endif // WORTHY_INTERNAL_BLOCKED_VECTOR_ITERATOR_H_

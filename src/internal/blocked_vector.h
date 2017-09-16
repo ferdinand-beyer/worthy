@@ -1,11 +1,13 @@
-#ifndef WORTHY_INTERNAL_DYNAMIC_ARRAY_H_
-#define WORTHY_INTERNAL_DYNAMIC_ARRAY_H_
+#ifndef WORTHY_INTERNAL_BLOCKED_VECTOR_H_
+#define WORTHY_INTERNAL_BLOCKED_VECTOR_H_
 
 
-#include <internal/block.h>
-#include <internal/block_allocator.h>
-#include <internal/check.h>
-#include <internal/dynamic_array_iterator.h>
+#include "internal/block.h"
+#include "internal/block_allocator.h"
+#include "internal/blocked_vector_iterator.h"
+#include "internal/check.h"
+
+#include <boost/iterator/reverse_iterator.hpp>
 
 #include <stdexcept>
 
@@ -15,7 +17,7 @@ namespace internal {
 
 
 template<typename T>
-class DynamicArray final {
+class BlockedVector final {
 public:
     typedef T value_type;
 
@@ -28,24 +30,22 @@ public:
     typedef value_type* pointer;
     typedef const value_type* const_pointer;
 
-    typedef DynamicArrayIterator<BlockList::iterator, value_type> iterator;
-    typedef DynamicArrayIterator<BlockList::const_iterator, const value_type>
-        const_iterator;
+    typedef BlockedVectorIterator<BlockList::iterator, value_type> iterator;
+    typedef BlockedVectorIterator<
+        BlockList::const_iterator, const value_type> const_iterator;
 
     typedef boost::reverse_iterator<iterator> reverse_iterator;
     typedef boost::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    DynamicArray(const DynamicArray&) = delete;
-    DynamicArray& operator=(const DynamicArray&) = delete;
+    BlockedVector(const BlockedVector&) = delete;
+    BlockedVector& operator=(const BlockedVector&) = delete;
 
-    explicit DynamicArray(BlockAllocator* allocator) noexcept :
-        allocator_{allocator},
-        size_{0}
-    {
+    explicit BlockedVector(BlockAllocator* allocator) noexcept
+        : allocator_{allocator}, size_{0} {
         WORTHY_CHECK(allocator_);
     }
 
-    ~DynamicArray() noexcept {
+    ~BlockedVector() noexcept {
         allocator_->deallocate(blocks_);
     }
 
@@ -55,13 +55,6 @@ public:
 
     size_type size() const noexcept {
         return size_;
-    }
-
-    void shrink_to_fit() {
-        while (!blocks_.empty() && empty(blocks_.back())) {
-            blocks_.pop_back_and_dispose(
-                [&](auto b) { allocator_->deallocate(b); });
-        }
     }
 
     iterator begin() noexcept {
@@ -188,6 +181,13 @@ public:
         --size_;
     }
 
+    void shrink_to_fit() {
+        while (!blocks_.empty() && empty(blocks_.back())) {
+            blocks_.pop_back_and_dispose(
+                [&](auto b) { allocator_->deallocate(b); });
+        }
+    }
+
 private:
     static constexpr size_t ValueSize = sizeof(value_type);
     static constexpr size_t ValuesPerBlock = BlockSize / ValueSize;
@@ -261,4 +261,4 @@ private:
 } } // namespace worthy::internal
 
 
-#endif // WORTHY_INTERNAL_DYNAMIC_ARRAY_H_
+#endif // WORTHY_INTERNAL_BLOCKED_VECTOR_H_
