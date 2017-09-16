@@ -44,6 +44,11 @@ BlockOwner* Block::owner() const {
 }
 
 
+void Block::setOwner(BlockOwner* owner) {
+    owner_ = owner;
+}
+
+
 byte* Block::begin() const {
     return start_;
 }
@@ -89,12 +94,6 @@ void* Block::allocate(size_t size) {
 void Block::deallocate(size_t size) {
     WORTHY_CHECK(size > 0 && size <= bytesAllocated());
     free_ -= size;
-}
-
-
-void BlockOwnerAccess::take(BlockOwner* owner, Block* block) {
-    WORTHY_DCHECK(owner && block && !block->owner_);
-    block->owner_ = owner;
 }
 
 

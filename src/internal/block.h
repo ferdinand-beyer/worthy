@@ -34,6 +34,7 @@ public:
     static Block* of(void* ptr);
 
     BlockOwner* owner() const;
+    void setOwner(BlockOwner* owner);
 
     byte* begin() const;
     byte* current() const;
@@ -78,7 +79,6 @@ private:
     byte padding_[PaddingSize];
 
     friend class RootBlockAllocator;
-    friend class BlockOwnerAccess;
     friend class BlockTestAccess;
 };
 
@@ -88,14 +88,6 @@ static_assert(sizeof(Block) == BlockDescriptorSize,
 
 
 typedef boost::intrusive::list<Block> BlockList;
-
-
-class BlockOwnerAccess {
-private:
-    static void take(BlockOwner* owner, Block* block);
-
-    friend class BlockOwner;
-};
 
 
 class BlockTestAccess {

@@ -15,8 +15,6 @@ public:
 
 protected:
     BlockOwner() = default;
-
-    void take(Block* block);
 };
 
 

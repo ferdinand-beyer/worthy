@@ -11,8 +11,6 @@ using namespace worthy::internal;
 
 
 class TestBlockOwner : public BlockOwner {
-public:
-    using BlockOwner::take;
 };
 
 
@@ -254,8 +252,7 @@ TEST_CASE("Block owner is reset", "[block]") {
     RootBlockAllocator allocator;
 
     Block* block = allocator.allocate();
-
-    owner.take(block);
+    block->setOwner(&owner);
 
     REQUIRE(block->owner() == &owner);
 
