@@ -10,8 +10,7 @@ namespace internal {
 
 HandleContainer::HandleContainer(BlockAllocator* allocator) :
     allocator_{this, allocator},
-    handles_{&allocator_}/*,
-    free_handles_{nullptr}*/ {
+    handles_{&allocator_} {
 }
 
 
