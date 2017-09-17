@@ -34,7 +34,7 @@ private:
     static Block* nextFreeBlock(Block* block);
     static Block* previousFreeBlock(Block* block);
 
-    static void setupGroup(Block* block, size_t block_count);
+    static void setupGroup(Block* block, size_t span);
 
     static bool isFree(Block* block);
 

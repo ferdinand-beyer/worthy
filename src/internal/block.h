@@ -69,7 +69,7 @@ private:
 
     BlockOwner* owner_;
 
-    size_t block_count_;
+    uint32_t span_;
 
     static constexpr size_t PaddingSize =
         BlockDescriptorSize
@@ -77,7 +77,7 @@ private:
         - sizeof(start_)
         - sizeof(free_)
         - sizeof(owner_)
-        - sizeof(block_count_);
+        - sizeof(span_);
 
     byte padding_[PaddingSize];
 

@@ -88,29 +88,29 @@ Block* RootBlockAllocator::allocate(size_t block_count) {
 
 void RootBlockAllocator::deallocate(Block* block) {
     WORTHY_CHECK(block && !isFree(block));
-    WORTHY_DCHECK(block->block_count_ > 0);
+    WORTHY_DCHECK(block->span_ > 0);
 
     reclaim(block);
 
-    if (block->block_count_ >= BlocksPerChunk) {
-        const auto chunk_count = chunksForBlocks(block->block_count_);
-        WORTHY_DCHECK(block->block_count_ == blocksForChunks(chunk_count));
+    if (block->span_ >= BlocksPerChunk) {
+        const auto chunk_count = chunksForBlocks(block->span_);
+        WORTHY_DCHECK(block->span_ == blocksForChunks(chunk_count));
         freeChunkGroup(block);
         return;
     }
 
     if (Block* next = nextFreeBlock(block)) {
         removeFromFreeList(next);
-        setupGroup(block, block->block_count_ + next->block_count_);
+        setupGroup(block, block->span_ + next->span_);
     }
 
     if (Block* prev = previousFreeBlock(block)) {
         removeFromFreeList(prev);
-        setupGroup(prev, prev->block_count_ + block->block_count_);
+        setupGroup(prev, prev->span_ + block->span_);
         block = prev;
     }
 
-    if (block->block_count_ >= BlocksPerChunk) {
+    if (block->span_ >= BlocksPerChunk) {
         freeChunkGroup(block);
     } else {
         addToFreeList(block);
@@ -119,7 +119,7 @@ void RootBlockAllocator::deallocate(Block* block) {
 
 
 Block* RootBlockAllocator::nextFreeBlock(Block* block) {
-    Block* next = block + block->block_count_;
+    Block* next = block + block->span_;
     if (next < chunkEnd(block) && isFree(next)) {
         return next;
     }
@@ -130,13 +130,13 @@ Block* RootBlockAllocator::nextFreeBlock(Block* block) {
 Block* RootBlockAllocator::previousFreeBlock(Block* block) {
     if (block > chunkBegin(block)) {
         Block* prev = block - 1;
-        if (prev->block_count_ > 1) {
+        if (prev->span_ > 1) {
             // This is the last block in a group, get to the first block
             // of the group.
-            prev = block - prev->block_count_;
+            prev = block - prev->span_;
         }
 
-        WORTHY_DCHECK(block == (prev + prev->block_count_));
+        WORTHY_DCHECK(block == (prev + prev->span_));
 
         if (isFree(prev)) {
             return prev;
@@ -146,13 +146,13 @@ Block* RootBlockAllocator::previousFreeBlock(Block* block) {
 }
 
 
-void RootBlockAllocator::setupGroup(Block* block, size_t block_count) {
-    block->block_count_ = block_count;
+void RootBlockAllocator::setupGroup(Block* block, size_t span) {
+    block->span_ = span;
     // Save the count also in the last block of a group, so that we can get
     // back to the head of the group when merging blocks.
-    if (block_count > 1 && block_count <= BlocksPerChunk) {
-        Block* last = block + block_count - 1;
-        last->block_count_ = block_count;
+    if (span > 1 && span <= BlocksPerChunk) {
+        Block* last = block + span - 1;
+        last->span_ = span;
     }
 }
 
@@ -165,13 +165,13 @@ bool RootBlockAllocator::isFree(Block* block) {
 void RootBlockAllocator::reclaim(Block* block) {
     block->owner_ = nullptr;
     block->free_ = nullptr;
-    blocks_allocated_ -= block->block_count_;
+    blocks_allocated_ -= block->span_;
 }
 
 
 Block* RootBlockAllocator::release(Block* block) {
     block->free_ = block->start_;
-    blocks_allocated_ += block->block_count_;
+    blocks_allocated_ += block->span_;
     return block;
 }
 
@@ -186,7 +186,7 @@ Block* RootBlockAllocator::allocateFromFreeList(size_t block_count) {
     Block* block = &free_list->front();
     free_list->pop_front();
 
-    if (block->block_count_ == block_count) {
+    if (block->span_ == block_count) {
         return release(block);
     }
 
@@ -197,13 +197,13 @@ Block* RootBlockAllocator::allocateFromFreeList(size_t block_count) {
 Block* RootBlockAllocator::allocateFromFreeBlock(Block* block, size_t block_count) {
     // The block must be free but not on the free list.
     WORTHY_DCHECK(isFree(block));
-    WORTHY_DCHECK(block->block_count_ > block_count);
+    WORTHY_DCHECK(block->span_ > block_count);
 
     // Cut from the end of the free block.
-    Block* b = block + block->block_count_ - block_count;
+    Block* b = block + block->span_ - block_count;
     setupGroup(b, block_count);
 
-    setupGroup(block, block->block_count_ - block_count);
+    setupGroup(block, block->span_ - block_count);
     addToFreeList(block);
 
     return release(b);
@@ -235,11 +235,10 @@ BlockList* RootBlockAllocator::freeListForAllocation(size_t block_count) {
 
 
 size_t RootBlockAllocator::freeListIndex(Block* block) {
-    const auto block_count = block->block_count_;
-    WORTHY_DCHECK(block_count > 0 && block_count < (1 << FreeListCount));
+    WORTHY_DCHECK(block->span_ > 0 && block->span_ < (1 << FreeListCount));
 
     // Calculate log2, rounded down.
-    size_t n = block_count;
+    size_t n = block->span_;
     for (size_t i = 0; i < FreeListCount; i++) {
         n >>= 1;
         if (n == 0) {
@@ -288,12 +287,12 @@ Block* RootBlockAllocator::allocateChunkGroup(size_t chunk_count) {
 
     for (auto group = free_chunks_.begin(), end = free_chunks_.end();
          group != end; ++group) {
-        if (group->block_count_ == block_count) {
+        if (group->span_ == block_count) {
             free_chunks_.erase(group);
             return &(*group);
         }
-        if ((group->block_count_ > block_count) &&
-                (!best || (group->block_count_ < best->block_count_))) {
+        if ((group->span_ > block_count) &&
+                (!best || (group->span_ < best->span_))) {
             best = &(*group);
         }
     }
@@ -301,8 +300,7 @@ Block* RootBlockAllocator::allocateChunkGroup(size_t chunk_count) {
     byte* chunk_addr;
 
     if (best) {
-        const auto chunks_left =
-            chunksForBlocks(best->block_count_) - chunk_count;
+        const auto chunks_left = chunksForBlocks(best->span_) - chunk_count;
         setupGroup(best, blocksForChunks(chunks_left));
         chunk_addr = chunkAddress(best) + chunks_left * ChunkSize;
     } else {
@@ -338,7 +336,7 @@ void RootBlockAllocator::initChunkBlocks(byte* chunk_addr) {
 
 
 void RootBlockAllocator::freeChunkGroup(Block* block) {
-    WORTHY_DCHECK(block->block_count_ >= BlocksPerChunk);
+    WORTHY_DCHECK(block->span_ >= BlocksPerChunk);
 
     // The free_chunks_ list is sorted by address, to identify adjacent chunks
     // that are candidates for merging.
@@ -363,10 +361,10 @@ void RootBlockAllocator::freeChunkGroup(Block* block) {
 
 
 bool RootBlockAllocator::mergeChunkGroups(Block* block, Block* next) {
-    size_t chunk_count = chunksForBlocks(block->block_count_);
+    size_t chunk_count = chunksForBlocks(block->span_);
     const auto next_chunk = chunkAddress(block) + chunk_count * ChunkSize;
     if (next_chunk == chunkAddress(next)) {
-        chunk_count += chunksForBlocks(next->block_count_);
+        chunk_count += chunksForBlocks(next->span_);
         setupGroup(block, blocksForChunks(chunk_count));
         return true;
     }

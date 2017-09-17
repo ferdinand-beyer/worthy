@@ -33,7 +33,7 @@ Block::Block(byte* start) :
     start_{start},
     free_{nullptr},
     owner_{nullptr},
-    block_count_{0}
+    span_{0}
 {
     WORTHY_DCHECK(start);
 }
@@ -65,7 +65,7 @@ byte* Block::end() const {
 
 
 size_t Block::capacity() const {
-    return block_count_ * BlockSize;
+    return span_ * BlockSize;
 }
 
 
@@ -104,7 +104,7 @@ Block* BlockTestAccess::construct(byte* buffer) {
 
     Block* block = ::new (descr_addr) Block(block_addr);
     block->free_ = block_addr;
-    block->block_count_ = 1;
+    block->span_ = 1;
 
     return block;
 }
