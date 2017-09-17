@@ -101,8 +101,8 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
 
 
 configure_file(
-    "src/internal/version.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/src-gen/internal/version.h")
+    "src/internal/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/src-gen/internal/config.h")
 
 
 add_library(boost INTERFACE)
