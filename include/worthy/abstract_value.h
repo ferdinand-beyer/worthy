@@ -12,6 +12,7 @@ namespace worthy {
 
 
 namespace internal {
+class Handle;
 class Object;
 class Variant;
 }
@@ -29,6 +30,7 @@ protected:
     WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
+    AbstractValue(Type t, internal::Handle* handle);
     AbstractValue(Type t, internal::Object* obj);
 
     AbstractValue(const AbstractValue& other);
@@ -60,16 +62,16 @@ protected:
 
 private:
     union Data {
-        internal::Object* obj;
+        internal::Handle* handle;
 #define WORTHY_TEMP(name, id, type, field) \
         type field;
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
 
-        Data() noexcept : obj{nullptr} {}
-        explicit Data(internal::Object* obj_) noexcept : obj{obj_} {}
+        Data() noexcept : handle{nullptr} {}
+        explicit Data(internal::Handle* h) noexcept : handle{h} {}
 #define WORTHY_TEMP(name, id, type, field) \
-        explicit Data(type field##_) noexcept : field{field##_} {}
+        explicit Data(type val) noexcept : field{val} {}
         WORTHY_FOR_EACH_PRIMITIVE_TYPE(WORTHY_TEMP)
 #undef WORTHY_TEMP
     };

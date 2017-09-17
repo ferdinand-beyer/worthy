@@ -1,10 +1,12 @@
 #include "worthy/map.h"
 
 #include "adapters.h"
+#include "internal/handle.h"
 #include "internal/hashmap.h"
 #include "worthy/value.h"
 
 
+using worthy::internal::Handle;
 using worthy::internal::HashMap;
 using worthy::internal::Variant;
 
@@ -12,8 +14,14 @@ using worthy::internal::Variant;
 namespace worthy {
 
 
-Map::Map(HashMap* obj)
-    : AbstractValue{Type::Map, obj} {
+Map::Map(Handle* handle)
+    : AbstractValue{Type::Map, handle} {
+    WORTHY_DCHECK(handle->get()->isHashMap());
+}
+
+
+Map::Map(HashMap* map)
+    : AbstractValue{Type::Map, map} {
 }
 
 

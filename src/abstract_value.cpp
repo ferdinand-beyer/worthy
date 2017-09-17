@@ -2,6 +2,7 @@
 
 #include "adapters.h"
 #include "internal/check.h"
+#include "internal/handle.h"
 #include "internal/heap.h"
 #include "internal/object.h"
 #include "internal/variant.h"
@@ -10,6 +11,7 @@
 #include <utility>
 
 
+using worthy::internal::Handle;
 using worthy::internal::Object;
 using worthy::internal::Variant;
 
@@ -25,16 +27,30 @@ inline constexpr bool isObjectType(Type t) noexcept {
 }
 
 
+inline Handle* makeHandle(Object* obj) {
+    WORTHY_DCHECK(obj);
+    return obj->heap()->makeHandle(obj).detach();
+}
+
+
 } // namespace
 
 
-AbstractValue::AbstractValue(Type t, Object* obj)
-    : data_{obj},
+AbstractValue::AbstractValue(Type t, Handle* handle)
+    : data_{handle},
       type_{t} {
     WORTHY_DCHECK(isObjectType(t));
-    WORTHY_DCHECK(obj);
+    WORTHY_DCHECK(handle);
 
-    intrusive_ptr_add_ref(obj);
+    // NOTE: The handle is expected to have an elevated reference count,
+    // as returned from HandlePtr.detach().
+}
+
+
+AbstractValue::AbstractValue(Type t, Object* object)
+    : data_{makeHandle(object)},
+      type_{t} {
+    WORTHY_DCHECK(isObjectType(t));
 }
 
 
@@ -101,35 +117,34 @@ bool AbstractValue::equals(const AbstractValue& other) const {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isObjectType(type_));
-        return Object::equals(data_.obj, other.data_.obj);
+        return Object::equals(object(), other.object());
     }
 }
 
 
 void AbstractValue::reset() noexcept {
-    data_.obj = nullptr;
+    data_.handle = nullptr;
     type_ = Type::Null;
 }
 
 
 void AbstractValue::retain() {
     if (isObjectType(type_)) {
-        intrusive_ptr_add_ref(data_.obj);
+        data_.handle->retain();
     }
 }
 
 
 void AbstractValue::release() {
     if (isObjectType(type_)) {
-        intrusive_ptr_release(data_.obj);
+        data_.handle->release();
     }
 }
 
 
 Object* AbstractValue::object() const {
     WORTHY_DCHECK(isObjectType(type_));
-    return data_.obj;
+    return data_.handle->get();
 }
 
 
@@ -145,8 +160,7 @@ Variant toVariant(const AbstractValue& value) noexcept {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isObjectType(value.type_));
-        return Variant(value.data_.obj);
+        return Variant(value.object());
     }
 }
 
@@ -164,9 +178,8 @@ std::ostream& operator<<(std::ostream& os, const AbstractValue& value) {
 #undef WORTHY_TEMP
 
     default:
-        WORTHY_DCHECK(isObjectType(value.type_));
         // TODO: Delegate to Object!
-        os << value.data_.obj;
+        os << value.object();
         break;
     }
     return os;

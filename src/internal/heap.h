@@ -3,7 +3,9 @@
 
 
 #include "internal/globals.h"
+#include "internal/handle_container.h"
 #include "internal/object_space.h"
+#include "internal/root_block_allocator.h"
 
 #include <boost/intrusive_ptr.hpp>
 
@@ -22,9 +24,13 @@ class Object;
 
 class Heap final {
 public:
-    Heap();
+    Heap(const Heap&) = delete;
+    Heap& operator=(const Heap&) = delete;
 
+    Heap();
     ~Heap();
+
+    HandlePtr makeHandle(Object* obj);
 
     template<typename T, typename... Args>
     inline T* make(Args&&... args) {
@@ -38,16 +44,23 @@ public:
         return new (memory) T(std::forward<Args>(args)...);
     }
 
+    HandlePtr emptyHashMapHandle() const;
+    HandlePtr emptyHashMapBitmapNodeHandle() const;
+
     HashMap* emptyHashMap() const;
     HashMapBitmapNode* emptyHashMapBitmapNode() const;
 
 private:
-    WORTHY_DISABLE_COPY(Heap);
+    RootBlockAllocator allocator_;
 
+    // TODO: Per-thread
+    HandleContainer handles_;
+
+    // TODO: Obsolete
     std::unique_ptr<ObjectSpace> object_space_;
 
-    boost::intrusive_ptr<HashMap> empty_hash_map_;
-    boost::intrusive_ptr<HashMapBitmapNode> empty_hash_map_bitmap_node_;
+    HandlePtr empty_hashmap_;
+    HandlePtr empty_hashmap_bitmap_node_;
 };
 
 

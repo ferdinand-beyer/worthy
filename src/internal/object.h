@@ -41,10 +41,6 @@ private:
 };
 
 
-void intrusive_ptr_add_ref(Object* obj);
-void intrusive_ptr_release(Object* obj);
-
-
 inline HashCode hash(const Object* obj) {
     return obj ? obj->hashCode() : 0;
 }

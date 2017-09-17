@@ -40,14 +40,4 @@ bool Object::_equals(const Object* other) const {
 }
 
 
-void intrusive_ptr_add_ref(Object* obj) {
-    ObjectHeader::of(obj)->retain();
-}
-
-
-void intrusive_ptr_release(Object* obj) {
-    ObjectHeader::of(obj)->release();
-}
-
-
 } } // namespace worthy::internal

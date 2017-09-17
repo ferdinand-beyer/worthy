@@ -44,7 +44,8 @@ public:
     Map add(const Value& key, const Value& value) const;
 
 private:
-    Map(internal::HashMap* obj);
+    Map(internal::Handle* handle);
+    Map(internal::HashMap* map);
 
     internal::HashMap* map() const;
 
