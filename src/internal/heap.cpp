@@ -39,11 +39,6 @@ HandlePtr Heap::emptyHashMapHandle() const {
 }
 
 
-HandlePtr Heap::emptyHashMapBitmapNodeHandle() const {
-    return empty_hashmap_bitmap_node_;
-}
-
-
 HashMap* Heap::emptyHashMap() const {
     return HashMap::cast(empty_hashmap_->get());
 }

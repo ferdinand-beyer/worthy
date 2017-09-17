@@ -32,7 +32,6 @@ public:
     HandlePtr makeHandle(Object* obj);
 
     HandlePtr emptyHashMapHandle() const;
-    HandlePtr emptyHashMapBitmapNodeHandle() const;
 
     HashMap* emptyHashMap() const;
     HashMapBitmapNode* emptyHashMapBitmapNode() const;
