@@ -14,7 +14,6 @@ set(Worthy_SRCS
     include/worthy/value.h
     include/worthy/worthy.h
 
-    src/internal/align.h
     src/internal/atomic_intrusive_stack.h
     src/internal/block.cpp
     src/internal/block.h
@@ -38,19 +37,15 @@ set(Worthy_SRCS
     src/internal/hashmap.h
     src/internal/heap.cpp
     src/internal/heap.h
+    src/internal/nursery.cpp
+    src/internal/nursery.h
     src/internal/object.cpp
     src/internal/object.h
     src/internal/object_decl.h
     src/internal/object_dispatch.h
-    src/internal/object_header.cpp
-    src/internal/object_header.h
-    src/internal/object_space.cpp
-    src/internal/object_space.h
     src/internal/object_type.h
     src/internal/owner_block_allocator.cpp
     src/internal/owner_block_allocator.h
-    src/internal/page.cpp
-    src/internal/page.h
     src/internal/root_block_allocator.cpp
     src/internal/root_block_allocator.h
     src/internal/space.cpp

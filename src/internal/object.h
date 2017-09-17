@@ -33,11 +33,17 @@ public:
     bool equals(const Object* other) const;
 
 protected:
-    Object() = default;
+    Object();
 
 private:
-    HashCode _hashCode() const;
-    bool _equals(const Object* other) const;
+    HashCode hashCode_() const;
+    bool equals_(const Object* other) const;
+
+    uint32_t size_;
+    ObjectType type_;
+    uint8_t flags_;
+
+    friend class Nursery;
 };
 
 

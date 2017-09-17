@@ -20,7 +20,7 @@ public:
 
     explicit HandleContainer(BlockAllocator* allocator);
 
-    HandlePtr newHandle(Object* obj);
+    HandlePtr makeHandle(Object* obj);
 
 private:
     void reclaim(Handle* handle);

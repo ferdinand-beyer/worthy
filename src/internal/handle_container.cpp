@@ -14,7 +14,7 @@ HandleContainer::HandleContainer(BlockAllocator* allocator) :
 }
 
 
-HandlePtr HandleContainer::newHandle(Object* obj) {
+HandlePtr HandleContainer::makeHandle(Object* obj) {
     Handle* handle = free_handles_.pop();
     if (handle) {
         WORTHY_DCHECK(handle->ref_count_ == 0);

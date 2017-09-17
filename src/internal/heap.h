@@ -4,13 +4,10 @@
 
 #include "internal/globals.h"
 #include "internal/handle_container.h"
-#include "internal/object_space.h"
+#include "internal/nursery.h"
 #include "internal/root_block_allocator.h"
 
-#include <boost/intrusive_ptr.hpp>
-
 #include <memory>
-#include <new>
 
 
 namespace worthy {
@@ -30,19 +27,9 @@ public:
     Heap();
     ~Heap();
 
+    Nursery* nursery();
+
     HandlePtr makeHandle(Object* obj);
-
-    template<typename T, typename... Args>
-    inline T* make(Args&&... args) {
-        void* memory = object_space_->allocate<T>();
-        return new (memory) T(std::forward<Args>(args)...);
-    }
-
-    template<typename T, typename... Args>
-    inline T* makeExtra(std::size_t extra_size, Args&&... args) {
-        void* memory = object_space_->allocateExtra<T>(extra_size);
-        return new (memory) T(std::forward<Args>(args)...);
-    }
 
     HandlePtr emptyHashMapHandle() const;
     HandlePtr emptyHashMapBitmapNodeHandle() const;
@@ -54,10 +41,8 @@ private:
     RootBlockAllocator allocator_;
 
     // TODO: Per-thread
+    Nursery nursery_;
     HandleContainer handles_;
-
-    // TODO: Obsolete
-    std::unique_ptr<ObjectSpace> object_space_;
 
     HandlePtr empty_hashmap_;
     HandlePtr empty_hashmap_bitmap_node_;

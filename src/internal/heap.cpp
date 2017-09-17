@@ -2,8 +2,6 @@
 
 #include "internal/check.h"
 #include "internal/hashmap.h"
-#include "internal/object.h"
-#include "internal/object_space.h"
 
 
 namespace worthy {
@@ -12,11 +10,12 @@ namespace internal {
 
 Heap::Heap() :
     allocator_{},
-    handles_{&allocator_},
-    object_space_{std::make_unique<ObjectSpace>(this)} {
+    nursery_{this, &allocator_},
+    handles_{&allocator_} {
 
-    empty_hashmap_ = makeHandle(make<HashMap>());
-    empty_hashmap_bitmap_node_ = makeHandle(make<HashMapBitmapNode>());
+    empty_hashmap_ = handles_.makeHandle(nursery_.make<HashMap>());
+    empty_hashmap_bitmap_node_ =
+        handles_.makeHandle(nursery_.make<HashMapBitmapNode>());
 }
 
 
@@ -24,9 +23,14 @@ Heap::~Heap() {
 }
 
 
+Nursery* Heap::nursery() {
+    return &nursery_;
+}
+
+
 HandlePtr Heap::makeHandle(Object* obj) {
     WORTHY_DCHECK(obj);
-    return handles_.newHandle(obj);
+    return handles_.makeHandle(obj);
 }
 
 

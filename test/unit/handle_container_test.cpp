@@ -23,7 +23,7 @@ TEST_CASE("Handle container", "[handle]") {
 
     FakeObject obj;
 
-    auto handle = container.newHandle(obj);
+    auto handle = container.makeHandle(obj);
 
     REQUIRE(handle->get() == obj);
 
@@ -31,7 +31,7 @@ TEST_CASE("Handle container", "[handle]") {
         auto old_handle = handle.get();
         handle.reset();
 
-        handle = container.newHandle(obj);
+        handle = container.makeHandle(obj);
 
         REQUIRE(handle.get() == old_handle);
     }

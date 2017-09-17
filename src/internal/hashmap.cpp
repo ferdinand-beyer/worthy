@@ -1,6 +1,7 @@
 #include "internal/hashmap.h"
 
 #include "internal/heap.h"
+#include "internal/nursery.h"
 #include "internal/object_dispatch.h"
 
 #include <bitset>
@@ -36,7 +37,7 @@ inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
 inline HashMap* newHashMap(const Object* caller, uint32_t count,
                            const HashMapNode* root, bool has_null_key,
                            const Variant& null_value) {
-    return caller->heap()->make<HashMap>(
+    return caller->heap()->nursery()->make<HashMap>(
             count, root, has_null_key, null_value);
 }
 
@@ -47,14 +48,15 @@ inline HashMapBitmapNode* newBitmapNode(const Object* caller,
     WORTHY_DCHECK(array_length > 0);
     WORTHY_DCHECK((array_length % 2) == 0);
 
-    return caller->heap()->makeExtra<HashMapBitmapNode>(
-        VariantArray::sizeFor(array_length), bitmap);
+    return caller->heap()->nursery()->makeExtra<HashMapBitmapNode>(
+                VariantArray::sizeFor(array_length), bitmap);
 }
 
 
 template<typename... Args>
 inline HashMapArrayNode* newArrayNode(const Object* caller, Args&&... args) {
-    return caller->heap()->make<HashMapArrayNode>(std::forward<Args>(args)...);
+    return caller->heap()->nursery()->make<HashMapArrayNode>(
+            std::forward<Args>(args)...);
 }
 
 

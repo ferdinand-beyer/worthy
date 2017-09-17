@@ -3,39 +3,44 @@
 #include "internal/hash.h"
 #include "internal/hashmap.h"
 #include "internal/object_dispatch.h"
-#include "internal/object_header.h"
+#include "internal/space.h"
 
 
 namespace worthy {
 namespace internal {
 
 
+Object::Object() {
+    // NOTE: members are initialized by the nursery!
+}
+
+
 ObjectType Object::type() const {
-    return ObjectHeader::of(this)->type();
+    return type_;
 }
 
 
 Heap* Object::heap() const {
-    return ObjectHeader::of(this)->heap();
+    return Space::of(this)->heap();
 }
 
 
 HashCode Object::hashCode() const {
-    DISPATCH_CONST(WORTHY_OBJECT_TYPES, _hashCode, ());
-}
-
-
-HashCode Object::_hashCode() const {
-    return hash(reinterpret_cast<uintptr_t>(this));
+    DISPATCH_CONST(WORTHY_OBJECT_TYPES, hashCode_, ());
 }
 
 
 bool Object::equals(const Object* other) const {
-    DISPATCH_CONST(WORTHY_OBJECT_TYPES, _equals, (other));
+    DISPATCH_CONST(WORTHY_OBJECT_TYPES, equals_, (other));
 }
 
 
-bool Object::_equals(const Object* other) const {
+HashCode Object::hashCode_() const {
+    return hash(reinterpret_cast<uintptr_t>(this));
+}
+
+
+bool Object::equals_(const Object* other) const {
     return this == other;
 }
 

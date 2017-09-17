@@ -1,81 +1,61 @@
 #include "internal/space.h"
 
+#include "internal/block_allocator.h"
 #include "internal/check.h"
-#include "internal/object.h"
-#include "internal/object_header.h"
 
-#include <boost/align/aligned_alloc.hpp>
-
-#include <new>
+#include <boost/align/align_up.hpp>
 
 
-using boost::alignment::aligned_alloc;
-using boost::alignment::aligned_free;
+using boost::alignment::align_up;
 
 
 namespace worthy {
 namespace internal {
 
 
-Space::Space(Heap* heap) : heap_{heap} {
+Space* Space::of(const Object* object) {
+    BlockOwner* owner = Block::of(const_cast<Object*>(object))->owner();
+    WORTHY_DCHECK(dynamic_cast<Space*>(owner));
+    return static_cast<Space*>(owner);
+}
+
+
+Space::Space(Heap* heap, BlockAllocator* allocator)
+    : heap_{heap},
+      allocator_{allocator} {
+    WORTHY_DCHECK(heap);
+    WORTHY_DCHECK(allocator);
 }
 
 
 Space::~Space() {
-    deletePages();
+    allocator_->deallocateList(blocks_);
 }
 
 
-void* Space::placeObjectHeader(void* memory, std::size_t size,
-                               Page* page, ObjectType type) {
-    ObjectHeader* header = new (memory) ObjectHeader(size, type);
-    page->setMarker(&header->page_marker_);
-    return header + 1;
+Heap* Space::heap() const {
+    return heap_;
 }
 
 
-void Space::reclaim(Object* obj) {
-    // TODO: obj is no longer a root.
+void* Space::allocate(size_t size) {
+    Block* block = blockForAllocation(size);
+    return block->allocate(size);
 }
 
 
-Page* Space::addPage(std::size_t data_size) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    Page* page = allocatePage(data_size);
-
-    if (!page) {
-        // TODO: Notify runtime?
-        return nullptr;
+Block* Space::blockForAllocation(size_t size) {
+    if (!blocks_.empty()) {
+        Block* block = &blocks_.front();
+        if (block->bytesAvailable() >= size) {
+            return block;
+        }
     }
-
-    pages_.push_front(*page);
-
-    return page;
-}
-
-
-Page* Space::allocatePage(std::size_t data_size) {
-    const std::size_t page_size = sizeof(Page) + data_size;
-
-    // TODO: Define MaxPageSize in terms of data_size?
-    // For this, we must update offset computations to subtract
-    // the page header.
-    WORTHY_CHECK(page_size <= Page::MaxPageSize);
-
-    void* memory = aligned_alloc(Page::Alignment, page_size);
-    if (!memory) {
-        return nullptr;
-    }
-
-    return new (memory) Page(this, data_size);
-}
-
-
-void Space::deletePages() {
-    while (!pages_.empty()) {
-        pages_.pop_front_and_dispose(aligned_free);
-    }
+    const size_t count = align_up(size, BlockSize) / BlockSize;
+    Block* block = allocator_->allocate(count);
+    blocks_.push_front(*block);
+    block->setOwner(this);
+    return block;
 }
 
 

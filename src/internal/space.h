@@ -2,76 +2,42 @@
 #define WORTHY_INTERNAL_SPACE_H_
 
 
-#include "internal/globals.h"
-#include "internal/object_header.h"
-#include "internal/page.h"
-
-#include <boost/intrusive/list.hpp>
-
-#include <mutex>
+#include "internal/block.h"
+#include "internal/block_owner.h"
 
 
 namespace worthy {
 namespace internal {
 
 
+class BlockAllocator;
 class Heap;
 class Object;
 
 
-class Space {
+class Space : public BlockOwner {
 public:
-    virtual ~Space();
+    static Space* of(const Object* object);
 
-    Heap* heap();
+    Space(const Space&) = delete;
+    Space& operator=(const Space&) = delete;
+
+    ~Space() override;
+
+    Heap* heap() const;
 
 protected:
-    typedef boost::intrusive::list<Page> PageList;
+    Space(Heap* heap, BlockAllocator* allocator);
 
-    static constexpr std::size_t HeaderSize = sizeof(ObjectHeader);
-
-    explicit Space(Heap* heap);
-
-    void* placeObjectHeader(void* memory, std::size_t size,
-                            Page* page, ObjectType type);
-
-    Page* firstPage();
-    Page* addPage(std::size_t data_size);
+    void* allocate(size_t size);
 
 private:
-    WORTHY_DISABLE_COPY(Space);
-
-    virtual void reclaim(Object* obj);
-
-    Page* allocatePage(std::size_t data_size);
-    void deletePages();
+    Block* blockForAllocation(size_t size);
 
     Heap* heap_;
-    PageList pages_;
-    std::mutex mutex_;
-
-    friend class SpaceReclaimAccess;
+    BlockAllocator* allocator_;
+    BlockList blocks_;
 };
-
-
-class SpaceReclaimAccess {
-private:
-    static inline void reclaim(Space* space, Object* obj) {
-        space->reclaim(obj);
-    }
-
-    friend class ObjectHeader;
-};
-
-
-inline Heap* Space::heap() {
-    return heap_;
-}
-
-
-inline Page* Space::firstPage() {
-    return pages_.empty() ? nullptr : &pages_.front();
-}
 
 
 } } // namespace worthy::internal
