@@ -16,15 +16,13 @@ template<typename BlockIterator, typename T>
 class BlockedVectorIterator final
     : public boost::iterator_facade<
           BlockedVectorIterator<BlockIterator, T>,
-          T, boost::bidirectional_traversal_tag> {
+          T,
+          boost::bidirectional_traversal_tag> {
 public:
-    BlockedVectorIterator() : pos_{nullptr}
-    {}
+    BlockedVectorIterator() : pos_{nullptr} {}
 
-    BlockedVectorIterator(BlockIterator block, T* pos) :
-        block_{block},
-        pos_{pos}
-    {}
+    BlockedVectorIterator(BlockIterator block, T* pos)
+        : block_{block}, pos_{pos} {}
 
 private:
     T& dereference() const {
