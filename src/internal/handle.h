@@ -16,6 +16,9 @@ namespace internal {
 class Object;
 
 
+/*!
+ * \brief Reference-counted handle for Object instances.
+ */
 class Handle final {
     struct ConstructKey {};
 

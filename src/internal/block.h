@@ -23,6 +23,9 @@ static constexpr size_t BlockSize = 1 << BlockBits;
 static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
 
 
+/*!
+ * \brief A contiguous block of memory.
+ */
 class Block final : public boost::intrusive::list_base_hook<> {
 public:
     Block(const Block&) = delete;

@@ -10,6 +10,9 @@
 namespace worthy {
 
 
+/*!
+ * \brief An immutable value.
+ */
 class Value final : public AbstractValue {
 public:
     // Construct a Null value.

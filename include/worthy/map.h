@@ -18,6 +18,9 @@ class HashMap;
 class Value;
 
 
+/*!
+ * \brief The Map class provides a mapping of values.
+ */
 class Map final : public AbstractValue {
 public:
     Map(const Map&) = default;
