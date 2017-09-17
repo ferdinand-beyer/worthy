@@ -43,8 +43,8 @@ struct ObjectTypeOf;
 class object_type;                                                  \
 template<>                                                          \
 struct ObjectTypeOf<object_type>                                    \
-    : std::integral_constant<ObjectType, ObjectType::object_type>   \
-{};
+    : std::integral_constant<ObjectType, ObjectType::object_type> { \
+};
     BOOST_PP_SEQ_FOR_EACH(WORTHY_TEMP, _, WORTHY_OBJECT_TYPES)
 #undef WORTHY_TEMP
 
