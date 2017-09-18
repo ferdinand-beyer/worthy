@@ -1,6 +1,5 @@
 #include "worthy/abstract_value.h"
 
-#include "adapters.h"
 #include "internal/check.h"
 #include "internal/handle.h"
 #include "internal/heap.h"

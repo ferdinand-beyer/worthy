@@ -47,8 +47,6 @@ private:
     Map(internal::Handle* handle);
     Map(internal::HashMap* map);
 
-    internal::HashMap* map() const;
-
     friend class Runtime;
 };
 

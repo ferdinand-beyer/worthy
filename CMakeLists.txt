@@ -52,15 +52,17 @@ set(Worthy_SRCS
     src/internal/root_block_allocator.h
     src/internal/space.cpp
     src/internal/space.h
+    src/internal/thread.cpp
+    src/internal/thread.h
     src/internal/variant.cpp
     src/internal/variant.h
 
     src/abstract_value.cpp
-    src/adapters.cpp
-    src/adapters.h
     src/map.cpp
     src/runtime.cpp
     src/string.cpp
+    src/utils.cpp
+    src/utils.h
     )
 
 set(UnitTests_SRCS
