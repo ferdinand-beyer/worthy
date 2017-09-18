@@ -10,15 +10,6 @@ namespace worthy {
 namespace internal {
 
 
-thread_local Thread* Heap::current_thread_ = nullptr;
-
-
-Thread* Heap::currentThread() {
-    WORTHY_DCHECK(current_thread_ && current_thread_->isLocked());
-    return current_thread_;
-}
-
-
 Heap::Heap() :
     allocator_{},
     handle_pool_{&allocator_},
@@ -51,24 +42,33 @@ HandlePtr Heap::makeHandle(Object* obj) {
 
 
 void Heap::lock() {
+    WORTHY_DCHECK(!isLocked());
     if (!tryLockFreeThread()) {
         // TODO: Block if we are at a safepoint.
         lockThreadSync();
     }
-    WORTHY_DCHECK(currentThreadIsValid() && current_thread_->isLocked());
 }
 
 
 void Heap::unlock() {
-    WORTHY_DCHECK(currentThreadIsValid() && current_thread_->isLocked());
+    WORTHY_DCHECK(isLocked());
 
-    current_thread_->unlock();
+    Thread::current_thread_->unlock();
     thread_unlocked_.notify_one();
 }
 
 
-bool Heap::currentThreadIsValid() const {
-    return current_thread_ && (current_thread_->root_ == this);
+bool Heap::isLocked() const {
+    if (auto thread = registeredThread()) {
+        return thread->isLocked();
+    }
+    return false;
+}
+
+
+Thread* Heap::registeredThread() const {
+    return (Thread::current_thread_ && (Thread::current_thread_->root_ == this))
+            ? Thread::current_thread_ : nullptr;
 }
 
 
@@ -97,28 +97,19 @@ void Heap::lockThreadSync() {
     }
 
     // Create and lock a new thread.
-    bool locked = tryLockThread(addThread());
+    bool locked = addThread().tryLock();
     WORTHY_CHECK(locked);
 }
 
 
 bool Heap::tryLockFreeThread() {
-    // If current_thread_ is set, this thread had acquired a thread context
-    // before.  Try this previous one first.
-    const size_t start = currentThreadIsValid() ? current_thread_->index_ : 0;
+    auto thread = registeredThread();
+    // Try to lock the same thread as before first.
+    const size_t start = thread ? thread->index_ : 0;
     for (size_t i = 0; i < threads_.size(); i++) {
-        if (tryLockThread(threads_[(start + i) % threads_.size()])) {
+        if (threads_[(start + i) % threads_.size()].tryLock()) {
             return true;
         }
-    }
-    return false;
-}
-
-
-bool Heap::tryLockThread(Thread& thread) {
-    if (thread.tryLock()) {
-        current_thread_ = &thread;
-        return true;
     }
     return false;
 }

@@ -25,8 +25,6 @@ class Object;
 
 class Heap final {
 public:
-    static Thread* currentThread();
-
     Heap(const Heap&) = delete;
     Heap& operator=(const Heap&) = delete;
 
@@ -42,17 +40,16 @@ public:
     void lock();
     void unlock();
 
-private:
-    static thread_local Thread* current_thread_;
+    bool isLocked() const;
 
-    bool currentThreadIsValid() const;
+private:
+    Thread* registeredThread() const;
 
     Thread& addThread();
 
     void lockThreadSync();
     bool tryLockFreeThread();
 
-    static bool tryLockThread(Thread& thread);
     static size_t maxThreadCount();
 
     RootBlockAllocator allocator_;

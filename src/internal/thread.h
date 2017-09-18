@@ -21,6 +21,8 @@ class Thread final {
     struct ConstructKey {};
 
 public:
+    static Thread& current();
+
     Thread(const Thread&) = delete;
     Thread& operator=(const Thread&) = delete;
 
@@ -29,16 +31,12 @@ public:
     Nursery& nursery();
 
 private:
-    enum State {
-        Free,
-        Locked,
-        Blocked
-    };
+    static thread_local Thread* current_thread_;
+
+    bool isLocked() const;
 
     bool tryLock();
     void unlock();
-
-    bool isLocked() const;
 
     const size_t index_;
 
@@ -46,7 +44,7 @@ private:
     BlockAllocator* const allocator_;
     Nursery nursery_;
 
-    std::atomic<State> state_;
+    std::atomic_flag locked_;
 
     std::thread::id thread_id_;
 
