@@ -2,8 +2,6 @@
 #define WORTHY_CHECK_INTERNAL_H_
 
 
-#include "internal/globals.h"
-
 #include <boost/config.hpp>
 
 
@@ -71,7 +69,7 @@ BOOST_NORETURN void fatal(const char* file, int line, const char* format, ...);
 #else
 
 
-#define WORTHY_DCHECK(condition) WORTHY_NOOP
+#define WORTHY_DCHECK(condition) ((void) 0)
 
 
 #endif // WORTHY_ENABLE_DEBUG_CHECKS

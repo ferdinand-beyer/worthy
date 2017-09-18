@@ -10,18 +10,6 @@ namespace worthy {
 namespace internal {
 
 
-#define WORTHY_DISABLE_ASSIGN(T)        \
-    T& operator=(const T&) = delete
-
-
-#define WORTHY_DISABLE_COPY(T)          \
-    T(const T&) = delete;               \
-    WORTHY_DISABLE_ASSIGN(T)
-
-
-#define WORTHY_NOOP ((void) 0)
-
-
 using std::size_t;
 using std::ptrdiff_t;
 
@@ -44,20 +32,9 @@ typedef std::uint_fast32_t uint;
 
 typedef uint32_t HashCode;
 
-typedef uint16_t PageMarker;
-
-// TODO: Transients are TBD
-typedef intptr_t TransientTag;
-
 
 constexpr size_t PointerSize = sizeof(void*);
 constexpr size_t WordSize = PointerSize;
-
-
-template<typename T>
-inline constexpr uintptr_t addressOf(const T* ptr) {
-    return reinterpret_cast<uintptr_t>(ptr);
-}
 
 
 } } // namespace worthy::internal
