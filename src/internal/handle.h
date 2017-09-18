@@ -40,7 +40,7 @@ private:
     };
     std::atomic<uint32_t> ref_count_;
 
-    friend class HandleContainer;
+    friend class HandlePool;
     friend class IntrusiveStackAccess;
 };
 

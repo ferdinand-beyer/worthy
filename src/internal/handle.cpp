@@ -1,6 +1,6 @@
 #include "internal/handle.h"
 
-#include "internal/handle_container.h"
+#include "internal/handle_pool.h"
 
 
 namespace worthy {
@@ -25,7 +25,7 @@ void Handle::retain() {
 void Handle::release() {
     if (ref_count_.fetch_sub(1, std::memory_order_release) == 1) {
         std::atomic_thread_fence(std::memory_order_acquire);
-        HandleAccess::reclaim(this);
+        HandlePoolAccess::reclaim(this);
     }
 }
 

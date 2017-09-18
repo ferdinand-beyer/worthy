@@ -29,8 +29,8 @@ set(Worthy_SRCS
     src/internal/globals.h
     src/internal/handle.cpp
     src/internal/handle.h
-    src/internal/handle_container.cpp
-    src/internal/handle_container.h
+    src/internal/handle_pool.cpp
+    src/internal/handle_pool.h
     src/internal/hash.cpp
     src/internal/hash.h
     src/internal/hashmap.cpp
@@ -64,7 +64,7 @@ set(Worthy_SRCS
 set(UnitTests_SRCS
     test/unit/block_test.cpp
     test/unit/blocked_vector_test.cpp
-    test/unit/handle_container_test.cpp
+    test/unit/handle_pool_test.cpp
     test/unit/hash_test.cpp
     test/unit/hashmap_test.cpp
     test/unit/root_block_allocator_test.cpp

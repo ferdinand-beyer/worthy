@@ -1,5 +1,5 @@
-#ifndef WORTHY_INTERNAL_HANDLE_CONTAINER_
-#define WORTHY_INTERNAL_HANDLE_CONTAINER_
+#ifndef WORTHY_INTERNAL_HANDLE_POOL_
+#define WORTHY_INTERNAL_HANDLE_POOL_
 
 
 #include "internal/atomic_intrusive_stack.h"
@@ -13,12 +13,12 @@ namespace worthy {
 namespace internal {
 
 
-class HandleContainer final : public BlockOwner {
+class HandlePool final : public BlockOwner {
 public:
-    HandleContainer(const HandleContainer&) = delete;
-    HandleContainer& operator=(const HandleContainer&) = delete;
+    HandlePool(const HandlePool&) = delete;
+    HandlePool& operator=(const HandlePool&) = delete;
 
-    explicit HandleContainer(BlockAllocator* allocator);
+    explicit HandlePool(BlockAllocator* allocator);
 
     HandlePtr makeHandle(Object* obj);
 
@@ -30,11 +30,11 @@ private:
 
     AtomicIntrusiveStack<Handle> free_handles_;
 
-    friend class HandleAccess;
+    friend class HandlePoolAccess;
 };
 
 
-class HandleAccess {
+class HandlePoolAccess {
 private:
     static void reclaim(Handle* handle);
 
@@ -45,4 +45,4 @@ private:
 } } // namespace worthy::internal
 
 
-#endif // WORTHY_INTERNAL_HANDLE_CONTAINER_
+#endif // WORTHY_INTERNAL_HANDLE_POOL_

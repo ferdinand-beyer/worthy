@@ -3,7 +3,7 @@
 
 
 #include "internal/globals.h"
-#include "internal/handle_container.h"
+#include "internal/handle_pool.h"
 #include "internal/nursery.h"
 #include "internal/root_block_allocator.h"
 
@@ -41,7 +41,7 @@ private:
 
     // TODO: Per-thread
     Nursery nursery_;
-    HandleContainer handles_;
+    HandlePool handle_pool_;
 
     HandlePtr empty_hashmap_;
     HandlePtr empty_hashmap_bitmap_node_;

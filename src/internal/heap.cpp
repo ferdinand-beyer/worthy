@@ -11,11 +11,11 @@ namespace internal {
 Heap::Heap() :
     allocator_{},
     nursery_{this, &allocator_},
-    handles_{&allocator_} {
+    handle_pool_{&allocator_} {
 
-    empty_hashmap_ = handles_.makeHandle(nursery_.make<HashMap>());
+    empty_hashmap_ = handle_pool_.makeHandle(nursery_.make<HashMap>());
     empty_hashmap_bitmap_node_ =
-        handles_.makeHandle(nursery_.make<HashMapBitmapNode>());
+        handle_pool_.makeHandle(nursery_.make<HashMapBitmapNode>());
 }
 
 
@@ -30,7 +30,7 @@ Nursery* Heap::nursery() {
 
 HandlePtr Heap::makeHandle(Object* obj) {
     WORTHY_DCHECK(obj);
-    return handles_.makeHandle(obj);
+    return handle_pool_.makeHandle(obj);
 }
 
 

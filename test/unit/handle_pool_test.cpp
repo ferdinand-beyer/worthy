@@ -1,5 +1,5 @@
 #include "internal/handle.h"
-#include "internal/handle_container.h"
+#include "internal/handle_pool.h"
 #include "internal/root_block_allocator.h"
 
 #include <catch.hpp>
@@ -17,13 +17,13 @@ struct FakeObject {
 };
 
 
-TEST_CASE("Handle container", "[handle]") {
+TEST_CASE("Handle pool", "[handle]") {
     RootBlockAllocator allocator;
-    HandleContainer container(&allocator);
+    HandlePool pool(&allocator);
 
     FakeObject obj;
 
-    auto handle = container.makeHandle(obj);
+    auto handle = pool.makeHandle(obj);
 
     REQUIRE(handle->get() == obj);
 
@@ -31,7 +31,7 @@ TEST_CASE("Handle container", "[handle]") {
         auto old_handle = handle.get();
         handle.reset();
 
-        handle = container.makeHandle(obj);
+        handle = pool.makeHandle(obj);
 
         REQUIRE(handle.get() == old_handle);
     }
