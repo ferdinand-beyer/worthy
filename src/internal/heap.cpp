@@ -1,7 +1,6 @@
 #include "internal/heap.h"
 
 #include "internal/check.h"
-#include "internal/hashmap.h"
 
 
 namespace worthy {
@@ -10,16 +9,18 @@ namespace internal {
 
 Heap::Heap() :
     allocator_{},
-    nursery_{this, &allocator_},
-    handle_pool_{&allocator_} {
-
-    empty_hashmap_ = handle_pool_.makeHandle(nursery_.make<HashMap>());
-    empty_hashmap_bitmap_node_ =
-        handle_pool_.makeHandle(nursery_.make<HashMapBitmapNode>());
+    handle_pool_{&allocator_},
+    eternity_{this, &allocator_},
+    nursery_{this, &allocator_} {
 }
 
 
 Heap::~Heap() {
+}
+
+
+const Eternity& Heap::eternity() const {
+    return eternity_;
 }
 
 
@@ -34,20 +35,4 @@ HandlePtr Heap::makeHandle(Object* obj) {
 }
 
 
-HandlePtr Heap::emptyHashMapHandle() const {
-    return empty_hashmap_;
-}
-
-
-HashMap* Heap::emptyHashMap() const {
-    return HashMap::cast(empty_hashmap_->get());
-}
-
-
-HashMapBitmapNode* Heap::emptyHashMapBitmapNode() const {
-    return HashMapBitmapNode::cast(empty_hashmap_bitmap_node_->get());
-}
-
-
 } } // namespace worthy::internal
-

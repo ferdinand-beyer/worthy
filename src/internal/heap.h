@@ -2,12 +2,11 @@
 #define WORTHY_INTERNAL_HEAP_H_
 
 
+#include "internal/eternity.h"
 #include "internal/globals.h"
 #include "internal/handle_pool.h"
 #include "internal/nursery.h"
 #include "internal/root_block_allocator.h"
-
-#include <memory>
 
 
 namespace worthy {
@@ -27,24 +26,19 @@ public:
     Heap();
     ~Heap();
 
+    const Eternity& eternity() const;
+
     Nursery* nursery();
 
     HandlePtr makeHandle(Object* obj);
 
-    HandlePtr emptyHashMapHandle() const;
-
-    HashMap* emptyHashMap() const;
-    HashMapBitmapNode* emptyHashMapBitmapNode() const;
-
 private:
     RootBlockAllocator allocator_;
+    HandlePool handle_pool_;
+    Eternity eternity_;
 
     // TODO: Per-thread
     Nursery nursery_;
-    HandlePool handle_pool_;
-
-    HandlePtr empty_hashmap_;
-    HandlePtr empty_hashmap_bitmap_node_;
 };
 
 

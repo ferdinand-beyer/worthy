@@ -18,7 +18,7 @@ Runtime::~Runtime() {
 
 
 Map Runtime::map() {
-    return heap_->emptyHashMapHandle().detach();
+    return heap_->eternity().emptyHashMapHandle().detach();
 }
 
 

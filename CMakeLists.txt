@@ -26,6 +26,8 @@ set(Worthy_SRCS
     src/internal/blocked_vector_iterator.h
     src/internal/check.cpp
     src/internal/check.h
+    src/internal/eternity.cpp
+    src/internal/eternity.h
     src/internal/globals.h
     src/internal/handle.cpp
     src/internal/handle.h

@@ -30,7 +30,7 @@ inline uint bitcount(uint32_t bitmap) {
 
 
 inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
-    return caller->heap()->emptyHashMapBitmapNode();
+    return caller->heap()->eternity().emptyHashMapBitmapNode();
 }
 
 

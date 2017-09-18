@@ -43,7 +43,7 @@ private:
     ObjectType type_;
     uint8_t flags_;
 
-    friend class Nursery;
+    friend class Space;
 };
 
 
