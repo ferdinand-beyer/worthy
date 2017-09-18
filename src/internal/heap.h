@@ -6,7 +6,6 @@
 #include "internal/eternity.h"
 #include "internal/globals.h"
 #include "internal/handle_pool.h"
-#include "internal/nursery.h"
 #include "internal/root_block_allocator.h"
 #include "internal/thread.h"
 
@@ -33,18 +32,15 @@ public:
 
     const Eternity& eternity() const;
 
-    Nursery* nursery();
-
     HandlePtr makeHandle(Object* obj);
 
     void lock();
     void unlock();
 
+private:
     bool isLocked() const;
 
-private:
     Thread* registeredThread() const;
-
     Thread& addThread();
 
     void lockThreadSync();
@@ -61,9 +57,6 @@ private:
     std::mutex threads_mutex_;
 
     std::condition_variable thread_unlocked_;
-
-    // TODO: Per-thread
-    Nursery nursery_;
 };
 
 

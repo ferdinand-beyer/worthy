@@ -28,6 +28,8 @@ public:
 
     Thread(size_t index, Heap* root, BlockAllocator* allocator, ConstructKey);
 
+    Heap& root();
+
     Nursery& nursery();
 
 private:

@@ -19,9 +19,21 @@ constexpr std::uint32_t shift0_colliding_key_2 = 65;
 constexpr std::uint32_t shift0_colliding_key_3 = 70;
 
 
-inline HashMap* emptyHashMap(Heap& heap) {
-    return heap.eternity().emptyHashMap();
-}
+struct TestContext {
+    Heap heap;
+
+    TestContext() {
+        heap.lock();
+    }
+
+    ~TestContext() {
+        heap.unlock();
+    }
+
+    HashMap* emptyHashMap() {
+        return heap.eternity().emptyHashMap();
+    }
+};
 
 
 } // namespace
@@ -51,16 +63,16 @@ TEST_CASE("peconditions") {
 
 
 TEST_CASE("construct empty hashmap", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     REQUIRE(map->count() == 0);
 }
 
 
 TEST_CASE("get non-existing key", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     REQUIRE(map->get(42).isNull());
     REQUIRE(map->get(42, true) == true);
@@ -68,8 +80,8 @@ TEST_CASE("get non-existing key", "[hashmap]") {
 
 
 TEST_CASE("add values", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     HashMap* map2 = map->add(42, 1337);
 
@@ -106,8 +118,8 @@ TEST_CASE("add values", "[hashmap]") {
 
 
 TEST_CASE("value with null key", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     SECTION("add value") {
         map = map->add(nullptr, 42);
@@ -149,8 +161,8 @@ TEST_CASE("value with null key", "[hashmap]") {
 
 
 TEST_CASE("hash collision", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     SECTION("first level") {
         constexpr auto key1 = shift0_colliding_key_1;
@@ -166,8 +178,8 @@ TEST_CASE("hash collision", "[hashmap]") {
 
 
 TEST_CASE("add many values", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     SECTION("10 values") {
         const int n = 10;
@@ -200,8 +212,8 @@ TEST_CASE("add many values", "[hashmap]") {
 
 
 TEST_CASE("remove values", "[hashmap]") {
-    Heap heap;
-    HashMap* map = emptyHashMap(heap);
+    TestContext context;
+    HashMap* map = context.emptyHashMap();
 
     SECTION("remove non-existing null key") {
         HashMap* result = map->remove(nullptr);

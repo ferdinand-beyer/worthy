@@ -2,6 +2,7 @@
 
 #include "internal/heap.h"
 #include "internal/nursery.h"
+#include "internal/thread.h"
 #include "internal/object_dispatch.h"
 
 #include <bitset>
@@ -29,38 +30,34 @@ inline uint bitcount(uint32_t bitmap) {
 }
 
 
-inline HashMapBitmapNode* emptyBitmapNode(const Object* caller) {
-    return caller->heap()->eternity().emptyHashMapBitmapNode();
-}
-
-
-inline HashMap* newHashMap(const Object* caller, uint32_t count,
-                           const HashMapNode* root, bool has_null_key,
-                           const Variant& null_value) {
-    return caller->heap()->nursery()->make<HashMap>(
-            count, root, has_null_key, null_value);
-}
-
-
-inline HashMapBitmapNode* newBitmapNode(const Object* caller,
-                                        size_t array_length,
-                                        uint32_t bitmap) {
-    WORTHY_DCHECK(array_length > 0);
-    WORTHY_DCHECK((array_length % 2) == 0);
-
-    return caller->heap()->nursery()->makeExtra<HashMapBitmapNode>(
-                VariantArray::sizeFor(array_length), bitmap);
+inline HashMapBitmapNode* emptyBitmapNode() {
+    return Thread::current().root().eternity().emptyHashMapBitmapNode();
 }
 
 
 template<typename... Args>
-inline HashMapArrayNode* newArrayNode(const Object* caller, Args&&... args) {
-    return caller->heap()->nursery()->make<HashMapArrayNode>(
+inline HashMap* newHashMap(Args&&... args) {
+    return Thread::current().nursery().make<HashMap>(
             std::forward<Args>(args)...);
 }
 
 
-HashMapNode* newNode(const Object* caller, uint shift,
+inline HashMapBitmapNode* newBitmapNode(size_t array_length, uint32_t bitmap) {
+    WORTHY_DCHECK(array_length > 0);
+    WORTHY_DCHECK((array_length % 2) == 0);
+    return Thread::current().nursery().makeExtra<HashMapBitmapNode>(
+            VariantArray::sizeFor(array_length), bitmap);
+}
+
+
+template<typename... Args>
+inline HashMapArrayNode* newArrayNode(Args&&... args) {
+    return Thread::current().nursery().make<HashMapArrayNode>(
+            std::forward<Args>(args)...);
+}
+
+
+HashMapNode* newNode(uint shift,
                      const Variant& key1, const Variant& val1,
                      HashCode hash2,
                      const Variant& key2, const Variant& val2) {
@@ -70,7 +67,7 @@ HashMapNode* newNode(const Object* caller, uint shift,
         WORTHY_UNIMPLEMENTED();
     }
     bool added_leaf = false;
-    return emptyBitmapNode(caller)
+    return emptyBitmapNode()
         ->add_(shift, hash1, key1, val1, added_leaf)
         ->add(shift, hash2, key2, val2, added_leaf);
 }
@@ -137,12 +134,12 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
             // No change to the map.
             return const_cast<HashMap*>(this);
         }
-        return newHashMap(this, has_null_key_ ? count_ : count_ + 1,
+        return newHashMap(has_null_key_ ? count_ : count_ + 1,
                           root_, true, value);
     }
 
     bool added_leaf = false;
-    auto new_root = (root_ ? root_ : emptyBitmapNode(this))
+    auto new_root = (root_ ? root_ : emptyBitmapNode())
         ->add(0, hash(key), key, value, added_leaf);
 
     if (new_root == root_) {
@@ -150,7 +147,7 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
         return const_cast<HashMap*>(this);
     }
 
-    return newHashMap(this, added_leaf ? count_ + 1 : count_,
+    return newHashMap(added_leaf ? count_ + 1 : count_,
                       new_root, has_null_key_, null_value_);
 }
 
@@ -161,7 +158,7 @@ HashMap* HashMap::remove(const Variant& key) const {
             return const_cast<HashMap*>(this);
         }
         WORTHY_DCHECK(count_ > 0);
-        return newHashMap(this, count_ - 1, root_, false, nullptr);
+        return newHashMap(count_ - 1, root_, false, nullptr);
     }
 
     if (!root_) {
@@ -173,7 +170,7 @@ HashMap* HashMap::remove(const Variant& key) const {
         return const_cast<HashMap*>(this);
     }
 
-    return newHashMap(this, count_ - 1, new_root, has_null_key_, null_value_);
+    return newHashMap(count_ - 1, new_root, has_null_key_, null_value_);
 }
 
 
@@ -281,14 +278,14 @@ HashMapNode* HashMapBitmapNode::add_(uint shift, HashCode hash,
     if (n >= 16) {
         auto new_node = toArrayNode(shift, n + 1);
         const auto k = mask(hash, shift);
-        new_node->nodes_[k] = emptyBitmapNode(this)
+        new_node->nodes_[k] = emptyBitmapNode()
             ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
 
     const auto arr = array();
 
-    auto new_node = newBitmapNode(this, 2 * (n+1), bitmap_ | bit);
+    auto new_node = newBitmapNode(2 * (n+1), bitmap_ | bit);
     auto new_array = new_node->array();
 
     new_array.copy(0, arr, 0, 2*idx);
@@ -367,12 +364,12 @@ HashMapNode* HashMapBitmapNode::updateAt(uint index, uint shift, HashCode hash,
         return copyAndSet(2*index + 1, value);
     }
 
-    auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+    auto new_node = newBitmapNode(arr.length(), bitmap_);
     auto new_array = new_node->array();
 
     new_array.copy(arr);
     new_array.set(2*index, nullptr);
-    new_array.set(2*index + 1, newNode(this, shift + 5,
+    new_array.set(2*index + 1, newNode(shift + 5,
                                        current_key, current_value,
                                        hash, key, value));
 
@@ -389,7 +386,7 @@ HashMapNode* HashMapBitmapNode::removeAt(uint index, uint bit) const {
 
     const auto arr = array();
 
-    auto new_node = newBitmapNode(this, arr.length() - 2, bitmap_ ^ bit);
+    auto new_node = newBitmapNode(arr.length() - 2, bitmap_ ^ bit);
     auto new_array = new_node->array();
 
     copyWithoutPair(new_array, arr, index);
@@ -402,7 +399,7 @@ HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint array_index,
                                                  const Variant& value) const {
     const auto arr = array();
 
-    auto new_node = newBitmapNode(this, arr.length(), bitmap_);
+    auto new_node = newBitmapNode(arr.length(), bitmap_);
     auto new_array = new_node->array();
 
     new_array.copy(arr);
@@ -415,9 +412,9 @@ HashMapBitmapNode* HashMapBitmapNode::copyAndSet(uint array_index,
 HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
                                                  uint32_t count) const {
     const auto arr = array();
-    const auto empty = emptyBitmapNode(this);
+    const auto empty = emptyBitmapNode();
 
-    auto node = newArrayNode(this, count);
+    auto node = newArrayNode(count);
 
     uint k = 0;
     bool added_leaf = true;
@@ -482,8 +479,8 @@ HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
     const auto child = nodes_[idx];
 
     if (!child) {
-        auto new_node = newArrayNode(this, count_ + 1, nodes_);
-        new_node->nodes_[idx] = emptyBitmapNode(this)
+        auto new_node = newArrayNode(count_ + 1, nodes_);
+        new_node->nodes_[idx] = emptyBitmapNode()
             ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
     }
@@ -494,7 +491,7 @@ HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
         return const_cast<HashMapArrayNode*>(this);
     }
 
-    auto new_node = newArrayNode(this, count_, nodes_);
+    auto new_node = newArrayNode(count_, nodes_);
     new_node->nodes_[idx] = new_child;
     return new_node;
 }
@@ -516,7 +513,7 @@ HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
     }
 
     if (new_child) {
-        auto new_node = newArrayNode(this, count_, nodes_);
+        auto new_node = newArrayNode(count_, nodes_);
         new_node->nodes_[idx] = new_child;
         return new_node;
     }
@@ -525,14 +522,14 @@ HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
         return toBitmapNode(idx);
     }
 
-    auto new_node = newArrayNode(this, count_ - 1, nodes_);
+    auto new_node = newArrayNode(count_ - 1, nodes_);
     new_node->nodes_[idx] = nullptr;
     return new_node;
 }
 
 
 HashMapBitmapNode* HashMapArrayNode::toBitmapNode(uint remove_index) const {
-    auto node = newBitmapNode(this, 2 * (count_ - 1), 0);
+    auto node = newBitmapNode(2 * (count_ - 1), 0);
     auto array = node->array();
 
     // We only fill the values (initial k = 1), zero the memory to treat

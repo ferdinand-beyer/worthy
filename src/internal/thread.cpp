@@ -25,6 +25,16 @@ Thread::Thread(size_t index, Heap* root, BlockAllocator* allocator, ConstructKey
 }
 
 
+Heap& Thread::root() {
+    return *root_;
+}
+
+
+Nursery& Thread::nursery() {
+    return nursery_;
+}
+
+
 bool Thread::isLocked() const {
     return thread_id_ != std::thread::id();
 }

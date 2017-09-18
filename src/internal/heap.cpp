@@ -14,8 +14,7 @@ Heap::Heap() :
     allocator_{},
     handle_pool_{&allocator_},
     eternity_{this, &allocator_},
-    threads_{&allocator_},
-    nursery_{this, &allocator_}
+    threads_{&allocator_}
 {
     addThread();
 }
@@ -27,11 +26,6 @@ Heap::~Heap() {
 
 const Eternity& Heap::eternity() const {
     return eternity_;
-}
-
-
-Nursery* Heap::nursery() {
-    return &nursery_;
 }
 
 
