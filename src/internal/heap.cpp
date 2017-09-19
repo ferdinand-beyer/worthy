@@ -37,9 +37,9 @@ HandlePtr Heap::makeHandle(Object* obj) {
 
 void Heap::lock() {
     WORTHY_DCHECK(!isLocked());
-    if (!tryLockFreeThread()) {
+    if (!tryAcquireThread()) {
         // TODO: Block if we are at a safepoint.
-        lockThreadSync();
+        acquireThreadSync();
     }
 }
 
@@ -48,7 +48,7 @@ void Heap::unlock() {
     WORTHY_DCHECK(isLocked());
 
     Thread::current_thread_->unlock();
-    thread_unlocked_.notify_one();
+    thread_released_.notify_one();
 }
 
 
@@ -67,26 +67,27 @@ Thread* Heap::registeredThread() const {
 
 
 Thread& Heap::addThread() {
+    WORTHY_DCHECK(threads_.size() < maxThreadCount());
     return threads_.emplace_back(
             threads_.size(), this, &allocator_, Thread::ConstructKey());
 }
 
 
-void Heap::lockThreadSync() {
+void Heap::acquireThreadSync() {
     std::unique_lock<std::mutex> lock(threads_mutex_);
 
     // If we reached the thread limit, we have to wait for one thread to
     // become available again.
     if (threads_.size() == maxThreadCount()) {
-        while (!tryLockFreeThread()) {
-            thread_unlocked_.wait(lock);
+        while (!tryAcquireThread()) {
+            thread_released_.wait(lock);
         }
         return;
     }
 
     // Try a free thread again, as we could have been blocked by garbage
-    // collection.
-    if (tryLockFreeThread()) {
+    // collection before we acquired the mutex.
+    if (tryAcquireThread()) {
         return;
     }
 
@@ -96,7 +97,7 @@ void Heap::lockThreadSync() {
 }
 
 
-bool Heap::tryLockFreeThread() {
+bool Heap::tryAcquireThread() {
     auto thread = registeredThread();
     // Try to lock the same thread as before first.
     const size_t start = thread ? thread->index_ : 0;

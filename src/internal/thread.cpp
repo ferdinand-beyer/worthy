@@ -41,6 +41,7 @@ bool Thread::isLocked() const {
 
 
 bool Thread::tryLock() {
+    WORTHY_DCHECK((current_thread_ != this) || !isLocked());
     if (locked_.test_and_set(std::memory_order_acquire)) {
         // Was locked before.
         return false;
@@ -52,6 +53,7 @@ bool Thread::tryLock() {
 
 
 void Thread::unlock() {
+    WORTHY_DCHECK((current_thread_ == this) && isLocked());
     thread_id_ = std::thread::id();
     locked_.clear(std::memory_order_release);
 }

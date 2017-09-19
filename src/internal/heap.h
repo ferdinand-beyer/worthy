@@ -43,8 +43,8 @@ private:
     Thread* registeredThread() const;
     Thread& addThread();
 
-    void lockThreadSync();
-    bool tryLockFreeThread();
+    void acquireThreadSync();
+    bool tryAcquireThread();
 
     static size_t maxThreadCount();
 
@@ -56,7 +56,7 @@ private:
 
     std::mutex threads_mutex_;
 
-    std::condition_variable thread_unlocked_;
+    std::condition_variable thread_released_;
 };
 
 
