@@ -13,6 +13,10 @@ namespace internal {
 namespace {
 
 
+constexpr uint MaxFramesPerThread = 8;
+constexpr uint GenerationCount = 2;
+
+
 inline uint threadCount() {
     return std::max(1u, std::thread::hardware_concurrency());
 }
@@ -23,10 +27,11 @@ inline uint threadCount() {
 
 Heap::Heap() :
     thread_count_{threadCount()},
-    max_frame_count_{8 * thread_count_},
+    max_frame_count_{thread_count_ * MaxFramesPerThread},
     allocator_{},
     handle_pool_{&allocator_},
     eternity_{this, &allocator_},
+    generations_{&allocator_},
     frames_{&allocator_}
 {
     initFrames();
@@ -65,11 +70,10 @@ void Heap::unlock() {
 }
 
 
-bool Heap::isLocked() const {
-    if (auto frame = currentFrame()) {
-        return frame->isLocked();
+void Heap::initGenerations() {
+    for (uint i = 0; i < GenerationCount; i++) {
+        generations_.emplace_back(i, this, &allocator_);
     }
-    return false;
 }
 
 
@@ -77,6 +81,14 @@ void Heap::initFrames() {
     for (uint i = 0; i < thread_count_; i++) {
         newFrame();
     }
+}
+
+
+bool Heap::isLocked() const {
+    if (auto frame = currentFrame()) {
+        return frame->isLocked();
+    }
+    return false;
 }
 
 

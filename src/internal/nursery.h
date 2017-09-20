@@ -9,9 +9,6 @@ namespace worthy {
 namespace internal {
 
 
-class BlockAllocator;
-
-
 class Nursery final : public Space {
 public:
     Nursery(Heap* heap, BlockAllocator* allocator);

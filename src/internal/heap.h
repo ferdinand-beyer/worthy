@@ -5,6 +5,7 @@
 #include "internal/blocked_vector.h"
 #include "internal/eternity.h"
 #include "internal/frame.h"
+#include "internal/generation.h"
 #include "internal/globals.h"
 #include "internal/handle_pool.h"
 #include "internal/root_block_allocator.h"
@@ -36,9 +37,10 @@ public:
     void unlock();
 
 private:
-    bool isLocked() const;
-
+    void initGenerations();
     void initFrames();
+
+    bool isLocked() const;
 
     Frame* currentFrame() const;
     Frame& newFrame();
@@ -51,8 +53,9 @@ private:
 
     RootBlockAllocator allocator_;
     HandlePool handle_pool_;
-    Eternity eternity_;
 
+    Eternity eternity_;
+    BlockedVector<Generation> generations_;
     BlockedVector<Frame> frames_;
 
     std::mutex frames_mutex_;
