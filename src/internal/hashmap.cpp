@@ -1,8 +1,8 @@
 #include "internal/hashmap.h"
 
+#include "internal/frame.h"
 #include "internal/heap.h"
 #include "internal/nursery.h"
-#include "internal/thread.h"
 #include "internal/object_dispatch.h"
 
 #include <bitset>
@@ -31,13 +31,13 @@ inline uint bitcount(uint32_t bitmap) {
 
 
 inline HashMapBitmapNode* emptyBitmapNode() {
-    return Thread::current().root().eternity().emptyHashMapBitmapNode();
+    return Frame::current().heap().eternity().emptyHashMapBitmapNode();
 }
 
 
 template<typename... Args>
 inline HashMap* newHashMap(Args&&... args) {
-    return Thread::current().nursery().make<HashMap>(
+    return Frame::current().nursery().make<HashMap>(
             std::forward<Args>(args)...);
 }
 
@@ -45,14 +45,14 @@ inline HashMap* newHashMap(Args&&... args) {
 inline HashMapBitmapNode* newBitmapNode(size_t array_length, uint32_t bitmap) {
     WORTHY_DCHECK(array_length > 0);
     WORTHY_DCHECK((array_length % 2) == 0);
-    return Thread::current().nursery().makeExtra<HashMapBitmapNode>(
+    return Frame::current().nursery().makeExtra<HashMapBitmapNode>(
             VariantArray::sizeFor(array_length), bitmap);
 }
 
 
 template<typename... Args>
 inline HashMapArrayNode* newArrayNode(Args&&... args) {
-    return Thread::current().nursery().make<HashMapArrayNode>(
+    return Frame::current().nursery().make<HashMapArrayNode>(
             std::forward<Args>(args)...);
 }
 

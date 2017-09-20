@@ -10,13 +10,26 @@ namespace worthy {
 namespace internal {
 
 
+namespace {
+
+
+inline uint threadCount() {
+    return std::max(1u, std::thread::hardware_concurrency());
+}
+
+
+} // namespace
+
+
 Heap::Heap() :
+    thread_count_{threadCount()},
+    max_frame_count_{8 * thread_count_},
     allocator_{},
     handle_pool_{&allocator_},
     eternity_{this, &allocator_},
-    threads_{&allocator_}
+    frames_{&allocator_}
 {
-    addThread();
+    initFrames();
 }
 
 
@@ -37,9 +50,9 @@ HandlePtr Heap::makeHandle(Object* obj) {
 
 void Heap::lock() {
     WORTHY_DCHECK(!isLocked());
-    if (!tryAcquireThread()) {
+    if (!tryAcquireFrame()) {
         // TODO: Block if we are at a safepoint.
-        acquireThreadSync();
+        acquireFrameSync();
     }
 }
 
@@ -47,75 +60,73 @@ void Heap::lock() {
 void Heap::unlock() {
     WORTHY_DCHECK(isLocked());
 
-    Thread::current_thread_->unlock();
-    thread_released_.notify_one();
+    Frame::current_->unlock();
+    frame_released_.notify_one();
 }
 
 
 bool Heap::isLocked() const {
-    if (auto thread = registeredThread()) {
-        return thread->isLocked();
+    if (auto frame = currentFrame()) {
+        return frame->isLocked();
     }
     return false;
 }
 
 
-Thread* Heap::registeredThread() const {
-    return (Thread::current_thread_ && (Thread::current_thread_->root_ == this))
-            ? Thread::current_thread_ : nullptr;
+void Heap::initFrames() {
+    for (uint i = 0; i < thread_count_; i++) {
+        newFrame();
+    }
 }
 
 
-Thread& Heap::addThread() {
-    WORTHY_DCHECK(threads_.size() < maxThreadCount());
-    return threads_.emplace_back(
-            threads_.size(), this, &allocator_, Thread::ConstructKey());
+Frame* Heap::currentFrame() const {
+    return (Frame::current_ && (Frame::current_->heap_ == this))
+            ? Frame::current_ : nullptr;
 }
 
 
-void Heap::acquireThreadSync() {
-    std::unique_lock<std::mutex> lock(threads_mutex_);
+Frame& Heap::newFrame() {
+    WORTHY_DCHECK(frames_.size() < max_frame_count_);
+    return frames_.emplace_back(
+            frames_.size(), this, &allocator_, Frame::ConstructKey());
+}
 
-    // If we reached the thread limit, we have to wait for one thread to
-    // become available again.
-    if (threads_.size() == maxThreadCount()) {
-        while (!tryAcquireThread()) {
-            thread_released_.wait(lock);
+
+void Heap::acquireFrameSync() {
+    std::unique_lock<std::mutex> lock(frames_mutex_);
+
+    // If we reached the frame limit, we have to wait for one to become
+    // available again.
+    if (frames_.size() == max_frame_count_) {
+        while (!tryAcquireFrame()) {
+            frame_released_.wait(lock);
         }
         return;
     }
 
-    // Try a free thread again, as we could have been blocked by garbage
+    // Try a free frame again, as we could have been blocked by garbage
     // collection before we acquired the mutex.
-    if (tryAcquireThread()) {
+    if (tryAcquireFrame()) {
         return;
     }
 
-    // Create and lock a new thread.
-    bool locked = addThread().tryLock();
+    // Create and lock a new frame.
+    bool locked = newFrame().tryLock();
     WORTHY_CHECK(locked);
 }
 
 
-bool Heap::tryAcquireThread() {
-    auto thread = registeredThread();
-    // Try to lock the same thread as before first.
-    const size_t start = thread ? thread->index_ : 0;
-    for (size_t i = 0; i < threads_.size(); i++) {
-        if (threads_[(start + i) % threads_.size()].tryLock()) {
+bool Heap::tryAcquireFrame() {
+    auto frame = currentFrame();
+    // Try to lock the same frame as before first.
+    const size_t start = frame ? frame->index_ : 0;
+    for (size_t i = 0; i < frames_.size(); i++) {
+        if (frames_[(start + i) % frames_.size()].tryLock()) {
             return true;
         }
     }
     return false;
-}
-
-
-size_t Heap::maxThreadCount() {
-    static size_t result = 0;
-    if (!result) {
-        result = 8 * std::max(1u, std::thread::hardware_concurrency());
-    }
-    return result;
 }
 
 

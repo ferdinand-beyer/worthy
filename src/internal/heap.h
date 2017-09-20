@@ -4,10 +4,10 @@
 
 #include "internal/blocked_vector.h"
 #include "internal/eternity.h"
+#include "internal/frame.h"
 #include "internal/globals.h"
 #include "internal/handle_pool.h"
 #include "internal/root_block_allocator.h"
-#include "internal/thread.h"
 
 #include <condition_variable>
 #include <mutex>
@@ -17,8 +17,6 @@ namespace worthy {
 namespace internal {
 
 
-class HashMap;
-class HashMapBitmapNode;
 class Object;
 
 
@@ -40,23 +38,26 @@ public:
 private:
     bool isLocked() const;
 
-    Thread* registeredThread() const;
-    Thread& addThread();
+    void initFrames();
 
-    void acquireThreadSync();
-    bool tryAcquireThread();
+    Frame* currentFrame() const;
+    Frame& newFrame();
 
-    static size_t maxThreadCount();
+    void acquireFrameSync();
+    bool tryAcquireFrame();
+
+    const uint thread_count_;
+    const uint max_frame_count_;
 
     RootBlockAllocator allocator_;
     HandlePool handle_pool_;
     Eternity eternity_;
 
-    BlockedVector<Thread> threads_;
+    BlockedVector<Frame> frames_;
 
-    std::mutex threads_mutex_;
+    std::mutex frames_mutex_;
 
-    std::condition_variable thread_released_;
+    std::condition_variable frame_released_;
 };
 
 

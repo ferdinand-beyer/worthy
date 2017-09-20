@@ -1,5 +1,5 @@
-#ifndef WORTHY_INTERNAL_THREAD_H_
-#define WORTHY_INTERNAL_THREAD_H_
+#ifndef WORTHY_INTERNAL_FRAME_H_
+#define WORTHY_INTERNAL_FRAME_H_
 
 
 #include "internal/globals.h"
@@ -17,23 +17,22 @@ class BlockAllocator;
 class Heap;
 
 
-class Thread final {
+class Frame final {
     struct ConstructKey {};
 
 public:
-    static Thread& current();
+    static Frame& current();
 
-    Thread(const Thread&) = delete;
-    Thread& operator=(const Thread&) = delete;
+    Frame(const Frame&) = delete;
+    Frame& operator=(const Frame&) = delete;
 
-    Thread(size_t index, Heap* root, BlockAllocator* allocator, ConstructKey);
+    Frame(size_t index, Heap* heap, BlockAllocator* allocator, ConstructKey);
 
-    Heap& root();
-
+    Heap& heap();
     Nursery& nursery();
 
 private:
-    static thread_local Thread* current_thread_;
+    static thread_local Frame* current_;
 
     bool isLocked() const;
 
@@ -42,11 +41,11 @@ private:
 
     const size_t index_;
 
-    Heap* const root_;
+    Heap* const heap_;
     BlockAllocator* const allocator_;
     Nursery nursery_;
 
-    std::atomic_flag locked_;
+    std::atomic_flag locked_ = ATOMIC_FLAG_INIT;
 
     std::thread::id thread_id_;
 
@@ -57,4 +56,4 @@ private:
 } } // namespace worthy::internal
 
 
-#endif // WORTHY_INTERNAL_THREAD_H_
+#endif // WORTHY_INTERNAL_FRAME_H_

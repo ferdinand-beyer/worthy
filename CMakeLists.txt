@@ -28,6 +28,8 @@ set(Worthy_SRCS
     src/internal/check.h
     src/internal/eternity.cpp
     src/internal/eternity.h
+    src/internal/frame.cpp
+    src/internal/frame.h
     src/internal/globals.h
     src/internal/handle.cpp
     src/internal/handle.h
@@ -52,8 +54,6 @@ set(Worthy_SRCS
     src/internal/root_block_allocator.h
     src/internal/space.cpp
     src/internal/space.h
-    src/internal/thread.cpp
-    src/internal/thread.h
     src/internal/variant.cpp
     src/internal/variant.h
 

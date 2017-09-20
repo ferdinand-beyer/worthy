@@ -21,7 +21,7 @@ Value toValue(const internal::Variant& v);
 
 
 /*!
- * \brief Guard access to the Heap using an object.
+ * \brief Guarded access to the Heap through an Object.
  */
 template<typename T>
 class With final {
@@ -29,30 +29,30 @@ public:
     With(const With&) = delete;
     With& operator=(const With&) = delete;
 
-    explicit With(internal::Object* obj)
-            : ptr_{T::cast(obj)}, root_{obj->heap()} {
-        root_->lock();
+    explicit With(internal::Object* object)
+            : object_{T::cast(object)}, heap_{object->heap()} {
+        heap_->lock();
     }
 
     ~With() {
-        root_->unlock();
+        heap_->unlock();
     }
 
     T* operator->() const noexcept {
-        return ptr_;
+        return object_;
     }
 
     T& operator*() const noexcept {
-        return *ptr_;
+        return *object_;
     }
 
     T* get() const noexcept {
-        return ptr_;
+        return object_;
     }
 
 private:
-    T* const ptr_;
-    internal::Heap* const root_;
+    T* const object_;
+    internal::Heap* const heap_;
 };
 
 
