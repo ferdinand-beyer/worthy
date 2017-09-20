@@ -3,86 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 project(Worthy VERSION 0.1.0)
 
 
-set(Worthy_API_VERSION 1)
-
-set(Worthy_SRCS
-    include/worthy/internal/primitive.h
-    include/worthy/abstract_value.h
-    include/worthy/map.h
-    include/worthy/runtime.h
-    include/worthy/type.h
-    include/worthy/value.h
-    include/worthy/worthy.h
-
-    src/internal/atomic_intrusive_stack.h
-    src/internal/block.cpp
-    src/internal/block.h
-    src/internal/block_allocator.cpp
-    src/internal/block_allocator.h
-    src/internal/block_layout.h
-    src/internal/block_owner.cpp
-    src/internal/block_owner.h
-    src/internal/blocked_vector.h
-    src/internal/blocked_vector_iterator.h
-    src/internal/check.cpp
-    src/internal/check.h
-    src/internal/eternity.cpp
-    src/internal/eternity.h
-    src/internal/frame.cpp
-    src/internal/frame.h
-    src/internal/globals.h
-    src/internal/handle.cpp
-    src/internal/handle.h
-    src/internal/handle_pool.cpp
-    src/internal/handle_pool.h
-    src/internal/hash.cpp
-    src/internal/hash.h
-    src/internal/hashmap.cpp
-    src/internal/hashmap.h
-    src/internal/heap.cpp
-    src/internal/heap.h
-    src/internal/nursery.cpp
-    src/internal/nursery.h
-    src/internal/object.cpp
-    src/internal/object.h
-    src/internal/object_decl.h
-    src/internal/object_dispatch.h
-    src/internal/object_type.h
-    src/internal/owner_block_allocator.cpp
-    src/internal/owner_block_allocator.h
-    src/internal/root_block_allocator.cpp
-    src/internal/root_block_allocator.h
-    src/internal/space.cpp
-    src/internal/space.h
-    src/internal/variant.cpp
-    src/internal/variant.h
-
-    src/abstract_value.cpp
-    src/map.cpp
-    src/runtime.cpp
-    src/string.cpp
-    src/utils.cpp
-    src/utils.h
-    )
-
-set(UnitTests_SRCS
-    test/unit/block_test.cpp
-    test/unit/blocked_vector_test.cpp
-    test/unit/handle_pool_test.cpp
-    test/unit/hash_test.cpp
-    test/unit/hashmap_test.cpp
-    test/unit/root_block_allocator_test.cpp
-    test/unit/value_test.cpp
-    test/unit/variant_test.cpp
-    test/main.cpp
-    )
-
-set(IntegrationTests_SRCS
-    test/integration/map_test.cpp
-    test/main.cpp
-    )
-
-
 find_package(Boost 1.54.0 REQUIRED)
 find_package(Doxygen)
 
@@ -109,7 +29,6 @@ target_include_directories(boost INTERFACE ${Boost_INCLUDE_DIRS})
 
 
 add_library(murmur3 STATIC
-    third-party/murmur3/MurmurHash3.h
     third-party/murmur3/MurmurHash3.cpp)
 target_include_directories(murmur3 INTERFACE third-party/murmur3)
 
@@ -118,31 +37,59 @@ add_library(catch INTERFACE)
 target_include_directories(catch INTERFACE third-party/catch)
 
 
-add_library(worthy SHARED ${Worthy_SRCS})
+add_library(worthy SHARED
+    src/internal/block.cpp
+    src/internal/block_allocator.cpp
+    src/internal/block_owner.cpp
+    src/internal/check.cpp
+    src/internal/eternity.cpp
+    src/internal/frame.cpp
+    src/internal/handle.cpp
+    src/internal/handle_pool.cpp
+    src/internal/hash.cpp
+    src/internal/hashmap.cpp
+    src/internal/heap.cpp
+    src/internal/nursery.cpp
+    src/internal/object.cpp
+    src/internal/owner_block_allocator.cpp
+    src/internal/root_block_allocator.cpp
+    src/internal/space.cpp
+    src/internal/variant.cpp
+
+    src/abstract_value.cpp
+    src/map.cpp
+    src/runtime.cpp
+    src/string.cpp
+    src/utils.cpp
+    )
 target_include_directories(worthy INTERFACE include)
 target_include_directories(worthy PRIVATE
     include src ${CMAKE_CURRENT_BINARY_DIR}/src-gen)
 target_link_libraries(worthy boost murmur3)
 #set_target_properties(worthy PROPERTIES
 #    VERSION ${Worthy_VERSION}
-#    SOVERSION ${Worthy_API_VERSION})
+#    SOVERSION 1)
 
 
-add_executable(unit-tests ${UnitTests_SRCS})
-target_compile_definitions(unit-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
-target_include_directories(unit-tests PRIVATE test src)
-target_link_libraries(unit-tests worthy boost catch)
+add_executable(worthy-test
+    test/block_test.cpp
+    test/blocked_vector_test.cpp
+    test/handle_pool_test.cpp
+    test/hash_test.cpp
+    test/hashmap_test.cpp
+    test/map_test.cpp
+    test/root_block_allocator_test.cpp
+    test/value_test.cpp
+    test/variant_test.cpp
 
-
-add_executable(integration-tests ${IntegrationTests_SRCS})
-target_compile_definitions(integration-tests PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
-target_include_directories(integration-tests PRIVATE test)
-target_link_libraries(integration-tests worthy catch)
-
+    test/main.cpp
+    )
+target_compile_definitions(worthy-test PRIVATE WORTHY_ENABLE_DEBUG_CHECKS=1)
+target_include_directories(worthy-test PRIVATE test src)
+target_link_libraries(worthy-test worthy boost catch)
 
 enable_testing()
-add_test(NAME unit-tests COMMAND unit-tests)
-add_test(NAME integration-tests COMMAND integration-tests)
+add_test(NAME worthy-test COMMAND worthy-test)
 
 
 if(DOXYGEN_FOUND)

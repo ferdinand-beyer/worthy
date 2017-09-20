@@ -5,13 +5,10 @@
 #include <catch.hpp>
 
 
-using worthy::Map;
-using worthy::Runtime;
-using worthy::Type;
-using worthy::Value;
+using namespace worthy;
 
 
-TEST_CASE("construct empty map", "[map]") {
+TEST_CASE("An empty Map is empty", "[api][map]") {
     Runtime rt;
 
     Map map = rt.map();
@@ -21,7 +18,7 @@ TEST_CASE("construct empty map", "[map]") {
 }
 
 
-TEST_CASE("get non-existing key", "[map]") {
+TEST_CASE("A Map returns a null or default value for non-existing key", "[api][map]") {
     Runtime rt;
 
     Map map = rt.map();
@@ -31,36 +28,39 @@ TEST_CASE("get non-existing key", "[map]") {
 }
 
 
-TEST_CASE("add values", "[map]") {
+TEST_CASE("When adding a value to a Map", "[api][map]") {
     Runtime rt;
 
     Map map = rt.map();
     Map map2 = map.add(42, 1337);
 
-    SECTION("value is added") {
+    SECTION("the size is changed") {
         REQUIRE(map2.size() == 1);
+    }
+
+    SECTION("the value can be retrieved") {
         REQUIRE(map2.containsKey(42));
         REQUIRE(map2.get(42) == 1337);
     }
 
-    SECTION("original map is not modified") {
+    SECTION("the original map is not modified") {
         REQUIRE(map.size() == 0);
         REQUIRE(!map.containsKey(42));
     }
 
-    SECTION("other key does not exist") {
+    SECTION("another key does not exist") {
         REQUIRE(!map2.containsKey(43));
         REQUIRE(map2.get(43).isNull());
     }
 
-    SECTION("add same entry again") {
+    SECTION("twice does has no effect") {
         Map map3 = map2.add(42, 1337);
 
         REQUIRE(map3.size() == 1);
         REQUIRE(map3.get(42) == 1337);
     }
 
-    SECTION("overwrite key") {
+    SECTION("with the same key, the old value is overwritten") {
         Map map3 = map2.add(42, false);
 
         REQUIRE(map3.size() == 1);
@@ -69,32 +69,27 @@ TEST_CASE("add values", "[map]") {
 }
 
 
-TEST_CASE("value with null key", "[map]") {
+TEST_CASE("When adding a null key to a Map", "[api][map]") {
     Runtime rt;
 
     Map map = rt.map();
 
-    SECTION("add value") {
+    SECTION("the value is associated") {
         map = map.add(nullptr, 42);
 
         REQUIRE(map.size() == 1);
         REQUIRE(map.containsKey(nullptr));
-    }
-
-    SECTION("get value") {
-        map = map.add(nullptr, 42);
-
         REQUIRE(map.get(nullptr) == 42);
     }
 
-    SECTION("overwrite value") {
+    SECTION("an old value is overwritten") {
         map = map.add(nullptr, 1);
         map = map.add(nullptr, 2);
 
         REQUIRE(map.get(nullptr) == 2);
     }
 
-    SECTION("add value multiple times") {
+    SECTION("multiple times has no effect") {
         for (int i = 0; i < 10; ++i) {
             map = map.add(nullptr, 42);
         }
@@ -102,7 +97,7 @@ TEST_CASE("value with null key", "[map]") {
         REQUIRE(map.size() == 1);
     }
 
-    SECTION("add null and non-null") {
+    SECTION("it does not effect non-null keys") {
         map = map.add(nullptr, 1);
         map = map.add(0, 2);
 
@@ -113,7 +108,7 @@ TEST_CASE("value with null key", "[map]") {
 }
 
 
-TEST_CASE("add many values", "[map]") {
+TEST_CASE("Map supports adding multiple values", "[api][map]") {
     Runtime rt;
 
     Map map = rt.map();
