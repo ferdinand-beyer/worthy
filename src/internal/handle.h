@@ -23,6 +23,9 @@ class Handle final {
     struct ConstructKey {};
 
 public:
+    static void* operator new(size_t) = delete;
+    static void operator delete(void*) = delete;
+
     Handle(const Handle&) = delete;
     Handle& operator=(const Handle&) = delete;
 

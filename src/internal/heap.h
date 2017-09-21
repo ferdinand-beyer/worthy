@@ -37,6 +37,8 @@ public:
     void lock();
     void unlock();
 
+    size_t objectCount() const;
+
 private:
     void initGenerations();
     void initFrames();

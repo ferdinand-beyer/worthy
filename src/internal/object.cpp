@@ -1,7 +1,9 @@
 #include "internal/object.h"
 
+#include "internal/frame.h"
 #include "internal/hash.h"
 #include "internal/hashmap.h"
+#include "internal/nursery.h"
 #include "internal/object_dispatch.h"
 #include "internal/space.h"
 

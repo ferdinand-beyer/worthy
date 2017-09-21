@@ -25,7 +25,7 @@ public:
     static bool equals(const Object* a, const Object* b);
 
     template<typename T, typename... Args>
-    static T* construct(void* ptr, size_t size, Args&&... args) {
+    static T* emplace(void* ptr, size_t size, Args&&... args) {
         WORTHY_DCHECK(size >= sizeof(T) && size >= 2 * WordSize);
         WORTHY_DCHECK(reinterpret_cast<uintptr_t>(ptr) % alignof(T) == 0);
 
@@ -33,8 +33,8 @@ public:
         return ::new (ptr) T(std::forward<Args>(args)...);
     }
 
-    void* operator new(size_t) = delete;
-    void operator delete(void*) = delete;
+    static void* operator new(size_t) = delete;
+    static void operator delete(void*) = delete;
 
     Object& operator=(const Object&) = delete;
 

@@ -70,6 +70,18 @@ void Heap::unlock() {
 }
 
 
+size_t Heap::objectCount() const {
+    size_t count = eternity_.objectCount();
+    for (auto& gen : generations_) {
+        count += gen.objectCount();
+    }
+    for (auto& frame : frames_) {
+        count += frame.nursery().objectCount();
+    }
+    return count;
+}
+
+
 void Heap::initGenerations() {
     for (uint i = 0; i < GenerationCount; i++) {
         generations_.emplace_back(i, this, &allocator_);

@@ -34,6 +34,11 @@ Nursery& Frame::nursery() {
 }
 
 
+const Nursery& Frame::nursery() const {
+    return nursery_;
+}
+
+
 bool Frame::isLocked() const {
     return thread_id_ != std::thread::id();
 }

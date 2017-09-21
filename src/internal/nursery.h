@@ -13,8 +13,8 @@ class Nursery final : public Space {
 public:
     Nursery(Heap* heap, BlockAllocator* allocator);
 
-    using Space::make;
-    using Space::makeExtra;
+    using Space::construct;
+    using Space::constructEx;
 };
 
 

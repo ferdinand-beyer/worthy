@@ -2,7 +2,6 @@
 
 #include "internal/frame.h"
 #include "internal/heap.h"
-#include "internal/nursery.h"
 #include "internal/object_dispatch.h"
 
 #include <boost/core/ignore_unused.hpp>
@@ -37,25 +36,11 @@ inline HashMapBitmapNode* emptyBitmapNode() {
 }
 
 
-template<typename... Args>
-inline HashMap* newHashMap(Args&&... args) {
-    return Frame::current().nursery().make<HashMap>(
-            std::forward<Args>(args)...);
-}
-
-
 inline HashMapBitmapNode* newBitmapNode(size_t array_length, uint32_t bitmap) {
     WORTHY_DCHECK(array_length > 0);
     WORTHY_DCHECK((array_length % 2) == 0);
-    return Frame::current().nursery().makeExtra<HashMapBitmapNode>(
+    return constructEx<HashMapBitmapNode>(
             VariantArray::sizeFor(array_length), bitmap);
-}
-
-
-template<typename... Args>
-inline HashMapArrayNode* newArrayNode(Args&&... args) {
-    return Frame::current().nursery().make<HashMapArrayNode>(
-            std::forward<Args>(args)...);
 }
 
 
@@ -136,8 +121,8 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
             // No change to the map.
             return const_cast<HashMap*>(this);
         }
-        return newHashMap(has_null_key_ ? count_ : count_ + 1,
-                          root_, true, value);
+        return construct<HashMap>(has_null_key_ ? count_ : count_ + 1,
+                root_, true, value);
     }
 
     bool added_leaf = false;
@@ -149,8 +134,8 @@ HashMap* HashMap::add(const Variant& key, const Variant& value) const {
         return const_cast<HashMap*>(this);
     }
 
-    return newHashMap(added_leaf ? count_ + 1 : count_,
-                      new_root, has_null_key_, null_value_);
+    return construct<HashMap>(added_leaf ? count_ + 1 : count_,
+            new_root, has_null_key_, null_value_);
 }
 
 
@@ -160,7 +145,7 @@ HashMap* HashMap::remove(const Variant& key) const {
             return const_cast<HashMap*>(this);
         }
         WORTHY_DCHECK(count_ > 0);
-        return newHashMap(count_ - 1, root_, false, nullptr);
+        return construct<HashMap>(count_ - 1, root_, false, nullptr);
     }
 
     if (!root_) {
@@ -172,7 +157,7 @@ HashMap* HashMap::remove(const Variant& key) const {
         return const_cast<HashMap*>(this);
     }
 
-    return newHashMap(count_ - 1, new_root, has_null_key_, null_value_);
+    return construct<HashMap>(count_ - 1, new_root, has_null_key_, null_value_);
 }
 
 
@@ -417,7 +402,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
     const auto arr = array();
     const auto empty = emptyBitmapNode();
 
-    auto node = newArrayNode(count);
+    auto node = construct<HashMapArrayNode>(count);
 
     uint k = 0;
     bool added_leaf = true;
@@ -482,7 +467,7 @@ HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
     const auto child = nodes_[idx];
 
     if (!child) {
-        auto new_node = newArrayNode(count_ + 1, nodes_);
+        auto new_node = construct<HashMapArrayNode>(count_ + 1, nodes_);
         new_node->nodes_[idx] = emptyBitmapNode()
             ->add_(shift + 5, hash, key, value, added_leaf);
         return new_node;
@@ -494,7 +479,7 @@ HashMapNode* HashMapArrayNode::add_(uint shift, HashCode hash,
         return const_cast<HashMapArrayNode*>(this);
     }
 
-    auto new_node = newArrayNode(count_, nodes_);
+    auto new_node = construct<HashMapArrayNode>(count_, nodes_);
     new_node->nodes_[idx] = new_child;
     return new_node;
 }
@@ -516,7 +501,7 @@ HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
     }
 
     if (new_child) {
-        auto new_node = newArrayNode(count_, nodes_);
+        auto new_node = construct<HashMapArrayNode>(count_, nodes_);
         new_node->nodes_[idx] = new_child;
         return new_node;
     }
@@ -525,7 +510,7 @@ HashMapNode* HashMapArrayNode::remove_(uint shift, HashCode hash,
         return toBitmapNode(idx);
     }
 
-    auto new_node = newArrayNode(count_ - 1, nodes_);
+    auto new_node = construct<HashMapArrayNode>(count_ - 1, nodes_);
     new_node->nodes_[idx] = nullptr;
     return new_node;
 }

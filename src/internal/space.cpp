@@ -23,7 +23,8 @@ Space* Space::of(const Object* object) {
 
 Space::Space(Heap* heap, BlockAllocator* allocator)
     : heap_{heap},
-      allocator_{allocator} {
+      allocator_{allocator},
+      object_count_{0} {
     WORTHY_DCHECK(heap);
     WORTHY_DCHECK(allocator);
 }
@@ -39,6 +40,11 @@ Heap* Space::heap() const {
 }
 
 
+size_t Space::objectCount() const {
+    return object_count_;
+}
+
+
 void* Space::allocate(size_t& size) {
     if (size >= LargeObjectThreshold) {
         WORTHY_UNIMPLEMENTED(); // TODO
@@ -46,7 +52,9 @@ void* Space::allocate(size_t& size) {
     // Allocate more to leave an aligned pointer.
     size = align_up(size, ObjectAlignment);
     Block* block = blockForAllocation(size);
-    return block->allocate(size);
+    void* ptr = block->allocate(size);
+    ++object_count_;
+    return ptr;
 }
 
 

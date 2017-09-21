@@ -30,6 +30,7 @@ public:
 
     Heap& heap();
     Nursery& nursery();
+    const Nursery& nursery() const;
 
 private:
     static thread_local Frame* current_;
@@ -51,6 +52,20 @@ private:
 
     friend class Heap;
 };
+
+
+template<typename T, typename... Args>
+inline T* construct(Args&&... args) {
+    return Frame::current().nursery().construct<T>(
+            std::forward<Args>(args)...);
+}
+
+
+template<typename T, typename... Args>
+inline T* constructEx(size_t size, Args&&... args) {
+    return Frame::current().nursery().constructEx<T>(
+            size, std::forward<Args>(args)...);
+}
 
 
 } } // namespace worthy::internal
