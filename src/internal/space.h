@@ -44,7 +44,7 @@ protected:
 
     template<typename T, typename... Args>
     inline T* makeExtra(std::size_t extra_size, Args&&... args) {
-        //static_assert((sizeof(T) % ObjectAlignment) == 0, "invalid size");
+        static_assert((sizeof(T) % ObjectAlignment) == 0, "invalid size");
         size_t size = sizeof(T) + extra_size;
         void* memory = allocate(size);
         return Object::construct<T>(memory, size, std::forward<Args>(args)...);

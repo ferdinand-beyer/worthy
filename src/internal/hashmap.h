@@ -62,7 +62,7 @@ private:
     HashMapArrayNode* toArrayNode(uint shift, uint32_t count) const;
 
     uint32_t bitmap_;
-    //TransientTag tag_;
+    uint32_t padding_;
 
     friend class HashMapArrayNode;
 };

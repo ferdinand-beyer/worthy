@@ -5,6 +5,8 @@
 #include "internal/nursery.h"
 #include "internal/object_dispatch.h"
 
+#include <boost/core/ignore_unused.hpp>
+
 #include <bitset>
 
 
@@ -209,6 +211,7 @@ HashMapNode* HashMapNode::remove(uint shift, HashCode hash,
 
 HashMapBitmapNode::HashMapBitmapNode()
     : bitmap_{0} {
+    boost::ignore_unused(padding_);
 }
 
 

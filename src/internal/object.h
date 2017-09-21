@@ -3,11 +3,13 @@
 
 
 #include "internal/check.h"
+#include "internal/globals.h"
 #include "internal/object_type.h"
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
+#include <atomic>
 #include <new>
 
 
@@ -24,12 +26,15 @@ public:
 
     template<typename T, typename... Args>
     static T* construct(void* ptr, size_t size, Args&&... args) {
-        WORTHY_DCHECK(size >= sizeof(T));
+        WORTHY_DCHECK(size >= sizeof(T) && size >= 2 * WordSize);
         WORTHY_DCHECK(reinterpret_cast<uintptr_t>(ptr) % alignof(T) == 0);
 
         preInit(ptr, size, ObjectTypeOf<T>());
-        return new (ptr) T(std::forward<Args>(args)...);
+        return ::new (ptr) T(std::forward<Args>(args)...);
     }
+
+    void* operator new(size_t) = delete;
+    void operator delete(void*) = delete;
 
     Object& operator=(const Object&) = delete;
 
@@ -57,10 +62,13 @@ private:
 
     uint32_t size_;
     ObjectType type_;
-    uint8_t flags_;
+    std::atomic<uint8_t> flags_;
 
     friend class GarbageCollector;
 };
+
+
+static_assert(sizeof(Object) == WordSize, "invalid object size");
 
 
 inline HashCode hash(const Object* obj) {
