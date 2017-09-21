@@ -16,7 +16,7 @@ public:
     size_t index() const;
 
 private:
-    size_t index_;
+    const size_t index_;
 };
 
 

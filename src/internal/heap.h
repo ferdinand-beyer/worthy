@@ -5,6 +5,7 @@
 #include "internal/blocked_vector.h"
 #include "internal/eternity.h"
 #include "internal/frame.h"
+#include "internal/garbage_collector.h"
 #include "internal/generation.h"
 #include "internal/globals.h"
 #include "internal/handle_pool.h"
@@ -57,6 +58,8 @@ private:
     Eternity eternity_;
     BlockedVector<Generation> generations_;
     BlockedVector<Frame> frames_;
+
+    GarbageCollector collector_;
 
     std::mutex frames_mutex_;
 

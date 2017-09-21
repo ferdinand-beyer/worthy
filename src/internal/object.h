@@ -43,6 +43,7 @@ private:
     ObjectType type_;
     uint8_t flags_;
 
+    friend class GarbageCollector;
     friend class Space;
 };
 
