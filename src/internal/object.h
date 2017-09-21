@@ -2,10 +2,13 @@
 #define WORTHY_INTERNAL_OBJECT_H_
 
 
+#include "internal/check.h"
 #include "internal/object_type.h"
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
+
+#include <new>
 
 
 namespace worthy {
@@ -18,6 +21,17 @@ class Heap;
 class Object {
 public:
     static bool equals(const Object* a, const Object* b);
+
+    template<typename T, typename... Args>
+    static T* construct(void* ptr, size_t size, Args&&... args) {
+        WORTHY_DCHECK(size >= sizeof(T));
+        WORTHY_DCHECK(reinterpret_cast<uintptr_t>(ptr) % alignof(T) == 0);
+
+        preInit(ptr, size, ObjectTypeOf<T>());
+        return new (ptr) T(std::forward<Args>(args)...);
+    }
+
+    Object& operator=(const Object&) = delete;
 
     ObjectType type() const;
 
@@ -36,6 +50,8 @@ protected:
     Object();
 
 private:
+    static void preInit(void* ptr, size_t size, ObjectType type);
+
     HashCode hashCode_() const;
     bool equals_(const Object* other) const;
 
@@ -44,7 +60,6 @@ private:
     uint8_t flags_;
 
     friend class GarbageCollector;
-    friend class Space;
 };
 
 

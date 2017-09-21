@@ -39,22 +39,12 @@ Heap* Space::heap() const {
 }
 
 
-void* Space::allocateObject(ObjectType type, size_t size) {
+void* Space::allocate(size_t& size) {
     if (size >= LargeObjectThreshold) {
         WORTHY_UNIMPLEMENTED(); // TODO
     }
-    const size_t real_size = align_up(size, ObjectAlignment);
-    void* memory = allocate(real_size);
-    Object* as_obj = reinterpret_cast<Object*>(memory);
-    // TODO: Make "size in words" more obvious!
-    as_obj->size_ = real_size / WordSize;
-    as_obj->type_ = type;
-    as_obj->flags_ = 0;
-    return memory;
-}
-
-
-void* Space::allocate(size_t size) {
+    // Allocate more to leave an aligned pointer.
+    size = align_up(size, ObjectAlignment);
     Block* block = blockForAllocation(size);
     return block->allocate(size);
 }
