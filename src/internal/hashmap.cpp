@@ -2,6 +2,7 @@
 
 #include "internal/frame.h"
 #include "internal/heap.h"
+#include "internal/map_visitor.h"
 #include "internal/object_dispatch.h"
 
 #include <boost/core/ignore_unused.hpp>
@@ -67,6 +68,19 @@ void copyWithoutPair(VariantArray& dest, const VariantArray& src, uint index) {
     dest.copy(0, src, 0, 2*index);
     dest.copy(2*index, src, 2*(index+1), dest.length() - 2*index);
 }
+
+
+class EqualsVisitor final : public MapVisitor {
+public:
+    EqualsVisitor(const HashMap* map) : map_{map} {}
+
+    bool visit(const Variant& key, const Variant& value) override {
+        return (value == map_->get(key, map_));
+    }
+
+private:
+    const HashMap* const map_;
+};
 
 
 } // namespace
@@ -166,6 +180,30 @@ HashMap* HashMap::remove(const Variant& key) const {
 }
 
 
+bool HashMap::accept(MapVisitor& visitor) const {
+    if (has_null_key_ && !visitor.visit(Variant(), null_value_)) {
+        return false;
+    }
+    return root_ ? root_->accept(visitor) : true;
+}
+
+
+bool HashMap::equals_(const Object* other) const {
+    if (this == other) {
+        return true;
+    }
+    if (!other || !other->isHashMap()) {
+        return false;
+    }
+    const auto m = HashMap::cast(other);
+    if (count_ != m->count_) {
+        return false;
+    }
+    EqualsVisitor visitor(m);
+    return accept(visitor);
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapNode
 
@@ -195,6 +233,11 @@ HashMapNode* HashMapNode::remove(uint shift, HashCode hash,
 }
 
 
+bool HashMapNode::accept(MapVisitor& visitor) const {
+    NODE_DISPATCH(accept_, (visitor));
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapBitmapNode
 
@@ -221,8 +264,6 @@ uint HashMapBitmapNode::index(uint32_t bit) const {
 
 
 VariantArray HashMapBitmapNode::array() const {
-    // TODO: Make sure that HashMapBitmapNode has a size multiple of 8, otherwise
-    // the VariantArray won't ne properly aligned!
     return {const_cast<HashMapBitmapNode*>(this + 1),
             static_cast<size_t>(2 * count())};
 }
@@ -434,6 +475,25 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 }
 
 
+bool HashMapBitmapNode::accept_(MapVisitor& visitor) const {
+    const auto arr = array();
+    for (uint i = 0; i < arr.length(); i += 2) {
+        const auto key = arr.get(i);
+        const auto value = arr.get(i + 1);
+
+        if (key.isNull()) {
+            auto node = static_cast<HashMapNode*>(value.toObject());
+            if (!node->accept(visitor)) {
+                return false;
+            }
+        } else if (!visitor.visit(key, value)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapArrayNode
 
@@ -550,6 +610,16 @@ HashMapBitmapNode* HashMapArrayNode::toBitmapNode(uint remove_index) const {
 }
 
 
+bool HashMapArrayNode::accept_(MapVisitor& visitor) const {
+    for (auto node : nodes_) {
+        if (node && !node->accept(visitor)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapCollisionNode
 
@@ -573,6 +643,11 @@ HashMapNode* HashMapCollisionNode::add_(uint shift,
 
 HashMapNode* HashMapCollisionNode::remove_(uint shift, HashCode hash,
                                            const Variant& key) const {
+    WORTHY_UNIMPLEMENTED(); // TODO
+}
+
+
+bool HashMapCollisionNode::accept_(MapVisitor& visitor) const {
     WORTHY_UNIMPLEMENTED(); // TODO
 }
 

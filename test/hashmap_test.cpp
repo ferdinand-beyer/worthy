@@ -325,3 +325,82 @@ TEST_CASE("remove values", "[hashmap]") {
         }
     }
 }
+
+
+TEST_CASE("Two HashMaps are equal", "[hashmap]") {
+    TestContext context;
+    HashMap* map1 = context.emptyHashMap();
+    HashMap* map2 = context.emptyHashMap();
+
+    SECTION("when they are identical") {
+        REQUIRE(map1->equals(map2));
+        REQUIRE(map2->equals(map1));
+    }
+
+    SECTION("unless they differ in size") {
+        map1 = map1->add(nullptr, 1);
+
+        REQUIRE_FALSE(map1->equals(map2));
+        REQUIRE_FALSE(map2->equals(map1));
+    }
+
+    SECTION("when they contain same values for null key") {
+        map1 = map1->add(nullptr, 1);
+        map2 = map2->add(nullptr, 1);
+
+        REQUIRE(map1->equals(map2));
+        REQUIRE(map2->equals(map1));
+    }
+
+    SECTION("unless they contain different values for null key") {
+        map1 = map1->add(nullptr, 1);
+        map2 = map2->add(nullptr, 2);
+
+        REQUIRE_FALSE(map1->equals(map2));
+        REQUIRE_FALSE(map2->equals(map1));
+    }
+
+    SECTION("when they contain same values for same key") {
+        map1 = map1->add(1, 1);
+        map2 = map2->add(1, 1);
+
+        REQUIRE(map1->equals(map2));
+        REQUIRE(map2->equals(map1));
+    }
+
+    SECTION("unless they contain different values for same key") {
+        map1 = map1->add(1, 1);
+        map2 = map2->add(1, 2);
+
+        REQUIRE_FALSE(map1->equals(map2));
+        REQUIRE_FALSE(map2->equals(map1));
+    }
+
+    SECTION("unless they contain different keys") {
+        map1 = map1->add(1, 1);
+        map2 = map2->add(2, 1);
+
+        REQUIRE_FALSE(map1->equals(map2));
+        REQUIRE_FALSE(map2->equals(map1));
+    }
+
+    SECTION("when they contain the same many entries") {
+        for (int i = 0; i < 50; i++) {
+            map1 = map1->add(i, i + 1);
+            map2 = map2->add(i, i + 1);
+        }
+
+        REQUIRE(map1->equals(map2));
+        REQUIRE(map2->equals(map1));
+    }
+
+    SECTION("unless they contain different many entries") {
+        for (int i = 0; i < 50; i++) {
+            map1 = map1->add(i, i + 1);
+            map2 = map2->add(i, i + 2);
+        }
+
+        REQUIRE_FALSE(map1->equals(map2));
+        REQUIRE_FALSE(map2->equals(map1));
+    }
+}

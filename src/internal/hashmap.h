@@ -14,6 +14,9 @@ namespace worthy {
 namespace internal {
 
 
+class MapVisitor;
+
+
 class HashMapNode : public Object {
 public:
     Variant find(uint shift, HashCode hash,
@@ -24,6 +27,8 @@ public:
                      bool& added_leaf) const;
 
     HashMapNode* remove(uint shift, HashCode hash, const Variant& key) const;
+
+    bool accept(MapVisitor& visitor) const;
 
 protected:
     HashMapNode() = default;
@@ -45,6 +50,8 @@ public:
                       bool& added_leaf) const;
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
+
+    bool accept_(MapVisitor& visitor) const;
 
 private:
     uint count() const;
@@ -88,6 +95,8 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
+    bool accept_(MapVisitor& visitor) const;
+
 private:
     HashMapBitmapNode* toBitmapNode(uint remove_index) const;
 
@@ -111,6 +120,8 @@ public:
                       bool& added_leaf) const;
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
+
+    bool accept_(MapVisitor& visitor) const;
 
 private:
     //HashCode hash_;
@@ -137,6 +148,10 @@ public:
     HashMap* add(const Variant& key, const Variant& value) const;
 
     HashMap* remove(const Variant& key) const;
+
+    bool accept(MapVisitor& visitor) const;
+
+    bool equals_(const Object* other) const;
 
 private:
     const HashMapNode* const root_;
