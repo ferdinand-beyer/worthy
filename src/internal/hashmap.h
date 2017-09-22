@@ -2,6 +2,7 @@
 #define WORTHY_INTERNAL_HASHMAP_H_
 
 
+#include "internal/map_iterator.h"
 #include "internal/object.h"
 #include "internal/object_decl.h"
 #include "internal/variant.h"
@@ -154,9 +155,12 @@ private:
 };
 
 
-inline uint32_t HashMap::count() const {
-    return count_;
-}
+class HashMapIterator final : public MapIterator {
+public:
+    Variant key_() const;
+    Variant value_() const;
+    bool moveNext_();
+};
 
 
 } } // namespace worthy::internal

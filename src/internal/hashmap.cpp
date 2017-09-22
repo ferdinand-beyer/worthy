@@ -95,6 +95,11 @@ HashMap::HashMap(uint32_t count,
 }
 
 
+uint32_t HashMap::count() const {
+    return count_;
+}
+
+
 bool HashMap::containsKey(const Variant& key) const {
     if (key.isNull()) {
         return has_null_key_;
@@ -166,7 +171,7 @@ HashMap* HashMap::remove(const Variant& key) const {
 
 
 #define NODE_DISPATCH(method, args) \
-    DISPATCH_CONST(WORTHY_HASHMAPNODE_DERIVED_TYPES, method, args)
+    DISPATCH_CONST(WORTHY_HASHMAPNODE_TYPES, method, args)
 
 
 Variant HashMapNode::find(uint shift,
@@ -553,8 +558,7 @@ Variant HashMapCollisionNode::find_(uint shift,
                                     HashCode hash,
                                     const Variant& key,
                                     const Variant& not_found) const {
-    // TODO
-    WORTHY_UNIMPLEMENTED();
+    WORTHY_UNIMPLEMENTED(); // TODO
 }
 
 
@@ -563,15 +567,32 @@ HashMapNode* HashMapCollisionNode::add_(uint shift,
                                         const Variant& key,
                                         const Variant& value,
                                         bool& added_leaf) const {
-    // TODO
-    WORTHY_UNIMPLEMENTED();
+    WORTHY_UNIMPLEMENTED(); // TODO
 }
 
 
 HashMapNode* HashMapCollisionNode::remove_(uint shift, HashCode hash,
                                            const Variant& key) const {
-    // TODO
-    WORTHY_UNIMPLEMENTED();
+    WORTHY_UNIMPLEMENTED(); // TODO
+}
+
+
+// ---------------------------------------------------------------------
+// HashMapIterator
+
+
+Variant HashMapIterator::key_() const {
+    WORTHY_UNIMPLEMENTED(); // TODO
+}
+
+
+Variant HashMapIterator::value_() const {
+    WORTHY_UNIMPLEMENTED(); // TODO
+}
+
+
+bool HashMapIterator::moveNext_() {
+    WORTHY_UNIMPLEMENTED(); // TODO
 }
 
 

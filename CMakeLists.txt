@@ -51,6 +51,8 @@ add_library(worthy SHARED
     src/internal/hash.cpp
     src/internal/hashmap.cpp
     src/internal/heap.cpp
+    src/internal/iterator.cpp
+    src/internal/map_iterator.cpp
     src/internal/nursery.cpp
     src/internal/object.cpp
     src/internal/owner_block_allocator.cpp

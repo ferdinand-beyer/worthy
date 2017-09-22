@@ -14,20 +14,25 @@ namespace worthy {
 namespace internal {
 
 
-#define WORTHY_OBJECT_DERIVED_TYPES \
-    (HashMap)                       \
-    (TransientHashMap)
+#define WORTHY_MAP_ITERATOR_TYPES   \
+    (HashMapIterator)
 
 
-#define WORTHY_HASHMAPNODE_DERIVED_TYPES    \
-    (HashMapArrayNode)                      \
-    (HashMapBitmapNode)                     \
+#define WORTHY_ITERATOR_TYPES       \
+    WORTHY_MAP_ITERATOR_TYPES
+
+
+#define WORTHY_HASHMAPNODE_TYPES    \
+    (HashMapArrayNode)              \
+    (HashMapBitmapNode)             \
     (HashMapCollisionNode)
 
 
-#define WORTHY_OBJECT_TYPES             \
-    WORTHY_OBJECT_DERIVED_TYPES         \
-    WORTHY_HASHMAPNODE_DERIVED_TYPES
+#define WORTHY_OBJECT_TYPES         \
+    WORTHY_ITERATOR_TYPES           \
+    WORTHY_HASHMAPNODE_TYPES        \
+    (HashMap)                       \
+    (TransientHashMap)
 
 
 enum class ObjectType : std::uint8_t {
