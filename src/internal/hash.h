@@ -56,6 +56,13 @@ inline HashCode hash(float x) {
 }
 
 
+template<typename T>
+inline void hashCombine(HashCode& seed, const T& x) {
+    // Like boost::hash_combine, but with our hash() implementation.
+    seed ^= hash(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+
 } } // namespace worthy::internal
 
 
