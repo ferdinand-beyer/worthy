@@ -1,6 +1,7 @@
 #include "internal/hashmap.h"
 
 #include "internal/frame.h"
+#include "internal/hash.h"
 #include "internal/heap.h"
 #include "internal/map_visitor.h"
 #include "internal/object_dispatch.h"
@@ -83,6 +84,27 @@ private:
 };
 
 
+class HashSumVisitor final : public MapVisitor {
+public:
+    HashSumVisitor() : hash_sum_{0} {}
+
+    HashCode hashSum() const {
+        return hash_sum_;
+    }
+
+    bool visit(const Variant& key, const Variant& value) override {
+        HashCode entry_hash = 0;
+        hashCombine(entry_hash, key);
+        hashCombine(entry_hash, value);
+        hash_sum_ += entry_hash;
+        return true;
+    }
+
+private:
+    HashCode hash_sum_;
+};
+
+
 } // namespace
 
 
@@ -94,7 +116,8 @@ HashMap::HashMap()
     : root_{nullptr},
       null_value_{},
       has_null_key_{false},
-      count_{0} {
+      count_{0},
+      hash_code_{0} {
 }
 
 
@@ -105,7 +128,8 @@ HashMap::HashMap(uint32_t count,
     : root_{root},
       null_value_{null_value},
       has_null_key_{has_null_key},
-      count_{count} {
+      count_{count},
+      hash_code_{0} {
 }
 
 
@@ -201,6 +225,19 @@ bool HashMap::equals_(const Object* other) const {
     }
     EqualsVisitor visitor(m);
     return accept(visitor);
+}
+
+
+HashCode HashMap::hashCode_() const {
+    HashCode hash = hash_code_;
+    if (hash == 0) {
+        HashSumVisitor visitor;
+        accept(visitor);
+        hash = visitor.hashSum();
+        hashCombine(hash, count());
+        hash_code_ = hash;
+    }
+    return hash;
 }
 
 

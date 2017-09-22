@@ -404,3 +404,42 @@ TEST_CASE("Two HashMaps are equal", "[hashmap]") {
         REQUIRE_FALSE(map2->equals(map1));
     }
 }
+
+
+TEST_CASE("The HashCodes of two HashMaps", "[hashmap]") {
+    TestContext context;
+    HashMap* map1 = context.emptyHashMap();
+    HashMap* map2 = context.emptyHashMap();
+
+    SECTION("are equal for identical maps") {
+        REQUIRE(map1->hashCode() == map2->hashCode());
+    }
+
+    SECTION("are equal for small equal maps") {
+        map1 = map1->add(nullptr, 1);
+        map2 = map2->add(nullptr, 1);
+
+        REQUIRE(map1->hashCode() == map2->hashCode());
+
+        map1 = map1->add(1, 2);
+        map2 = map2->add(1, 2);
+
+        REQUIRE(map1->hashCode() == map2->hashCode());
+    }
+
+    SECTION("are unequal for small unequal maps") {
+        map1 = map1->add(nullptr, 1);
+        map2 = map2->add(nullptr, 2);
+
+        REQUIRE(map1->hashCode() != map2->hashCode());
+    }
+
+    SECTION("are equal for large equal maps") {
+        for (int i = 0; i < 50; i++) {
+            map1 = map1->add(i, i + 1);
+            map2 = map2->add(i, i + 1);
+        }
+
+        REQUIRE(map1->hashCode() == map2->hashCode());
+    }
+}

@@ -153,11 +153,14 @@ public:
 
     bool equals_(const Object* other) const;
 
+    HashCode hashCode_() const;
+
 private:
     const HashMapNode* const root_;
     const Variant null_value_;
     const bool has_null_key_;
     const uint32_t count_;
+    mutable HashCode hash_code_;
 };
 
 
