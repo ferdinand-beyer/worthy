@@ -76,7 +76,8 @@ public:
     EqualsVisitor(const HashMap* map) : map_{map} {}
 
     bool visit(const Variant& key, const Variant& value) override {
-        return (value == map_->get(key, map_));
+        const Variant not_found = map_;
+        return (value == map_->get(key, not_found));
     }
 
 private:
