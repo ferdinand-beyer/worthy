@@ -1,5 +1,9 @@
 #include "internal/garbage_collector.h"
 
+#include "internal/frame.h"
+#include "internal/generation.h"
+#include "internal/heap.h"
+
 
 namespace worthy {
 namespace internal {
@@ -14,26 +18,24 @@ namespace internal {
 // XXX: For parallel GC, we need an atomic operation.
 
 
-GarbageCollector::GarbageCollector() {
-    // Initialize workspace per Generation
-    // Needs:
-    // - Generations
+GarbageCollector::GarbageCollector(Heap* heap)
+    : heap_{heap},
+      worker_{this},
+      max_generation_index_{0} {
+    // TODO: Initialize workspace per Generation
 }
 
 
-void GarbageCollector::collect() {
-    // Take: (Max) Generation to collect
+void GarbageCollector::collect(size_t generation_index) {
+    max_generation_index_ = generation_index;
 
-    // TODO: Workers?
-    
-    // Prepare gens:
-    // - Stash blocks (to-space -> from-space)
-    // - Flag blocks as not evacuated (from-space)
-    // Prepare older gens: stash remembered sets
+    prepareGenerations();
 
-    // Scavenge old remembered sets
+    //worker_.prepareCycle();
 
-    // Evacuate all roots
+    // TODO: Scavenge old remembered sets
+
+    evacuateRoots();
 
     // Scavenge until there is nothing more to do.
 
@@ -43,6 +45,26 @@ void GarbageCollector::collect() {
     // - Record evacuated large objects
 
     // Reset nurseries
+}
+
+
+void GarbageCollector::prepareGenerations() {
+    for (uint i = 0; i <= max_generation_index_; i++) {
+        prepareCollectedGeneration(heap_->generations_[i]);
+    }
+    // TODO: Prepare older gens: stash remembered sets
+}
+
+
+void GarbageCollector::prepareCollectedGeneration(Generation& gen) {
+    // Prepare gens:
+    // - Stash blocks (to-space -> from-space)
+    // - Flag blocks as not evacuated (from-space)
+}
+
+
+void GarbageCollector::evacuateRoots() {
+    heap_->handle_pool_.accept(worker_);
 }
 
 

@@ -17,6 +17,8 @@ public:
 
 private:
     const size_t index_;
+
+    BlockList old_blocks_;
 };
 
 

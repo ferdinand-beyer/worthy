@@ -45,6 +45,7 @@ add_library(worthy SHARED
     src/internal/eternity.cpp
     src/internal/frame.cpp
     src/internal/garbage_collector.cpp
+    src/internal/gc_worker.cpp
     src/internal/generation.cpp
     src/internal/handle.cpp
     src/internal/handle_pool.cpp

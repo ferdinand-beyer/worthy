@@ -13,6 +13,9 @@ namespace worthy {
 namespace internal {
 
 
+class GCVisitor;
+
+
 class HandlePool final : public BlockOwner {
 public:
     HandlePool(const HandlePool&) = delete;
@@ -21,6 +24,8 @@ public:
     explicit HandlePool(BlockAllocator* allocator);
 
     HandlePtr makeHandle(Object* obj);
+
+    void accept(GCVisitor& visitor);
 
 private:
     void reclaim(Handle* handle);

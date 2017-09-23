@@ -39,6 +39,8 @@ public:
 
     size_t objectCount() const;
 
+    void gc();
+
 private:
     void initGenerations();
     void initFrames();
@@ -61,11 +63,13 @@ private:
     BlockedVector<Generation> generations_;
     BlockedVector<Frame> frames_;
 
-    GarbageCollector collector_;
+    GarbageCollector gc_;
 
     std::mutex frames_mutex_;
 
     std::condition_variable frame_released_;
+
+    friend class GarbageCollector;
 };
 
 

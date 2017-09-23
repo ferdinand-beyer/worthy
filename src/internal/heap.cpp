@@ -32,7 +32,8 @@ Heap::Heap() :
     handle_pool_{&allocator_},
     eternity_{this, &allocator_},
     generations_{&allocator_},
-    frames_{&allocator_}
+    frames_{&allocator_},
+    gc_{this}
 {
     initFrames();
 }
@@ -79,6 +80,13 @@ size_t Heap::objectCount() const {
         count += frame.nursery().objectCount();
     }
     return count;
+}
+
+
+void Heap::gc() {
+    WORTHY_CHECK(!isLocked());
+    // TODO: Stop the world, determine required generation number.
+    gc_.collect(generations_.size() - 1);
 }
 
 
