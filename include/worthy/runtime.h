@@ -16,10 +16,9 @@ class Heap;
 class Map;
 
 
-class Runtime {
+class Runtime final {
 public:
     Runtime();
-
     ~Runtime();
 
     Map map();

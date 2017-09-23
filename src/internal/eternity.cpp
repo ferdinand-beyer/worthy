@@ -10,24 +10,18 @@ namespace internal {
 
 Eternity::Eternity(Heap* heap, BlockAllocator* allocator)
         : Space(heap, allocator, -1, Block::ImmortalFlag) {
-    empty_hashmap_ = heap->makeHandle(construct<HashMap>());
-    empty_hashmap_bitmap_node_ =
-        heap->makeHandle(construct<HashMapBitmapNode>());
-}
-
-
-HandlePtr Eternity::emptyHashMapHandle() const {
-    return empty_hashmap_;
+    empty_hashmap_ = construct<HashMap>();
+    empty_hashmap_bitmap_node_ = construct<HashMapBitmapNode>();
 }
 
 
 HashMap* Eternity::emptyHashMap() const {
-    return HashMap::cast(empty_hashmap_->get());
+    return empty_hashmap_;
 }
 
 
 HashMapBitmapNode* Eternity::emptyHashMapBitmapNode() const {
-    return HashMapBitmapNode::cast(empty_hashmap_bitmap_node_->get());
+    return empty_hashmap_bitmap_node_;
 }
 
 

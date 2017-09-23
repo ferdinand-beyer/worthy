@@ -2,7 +2,6 @@
 #define WORTHY_INTERNAL_ETERNITY_H_
 
 
-#include "internal/handle.h"
 #include "internal/space.h"
 
 
@@ -21,14 +20,12 @@ class Eternity final : public Space {
 public:
     Eternity(Heap* heap, BlockAllocator* allocator);
 
-    HandlePtr emptyHashMapHandle() const;
-
     HashMap* emptyHashMap() const;
     HashMapBitmapNode* emptyHashMapBitmapNode() const;
 
 private:
-    HandlePtr empty_hashmap_;
-    HandlePtr empty_hashmap_bitmap_node_;
+    HashMap* empty_hashmap_;
+    HashMapBitmapNode* empty_hashmap_bitmap_node_;
 };
 
 
