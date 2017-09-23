@@ -35,6 +35,26 @@ TEST_CASE("Block addresses", "[block]") {
 }
 
 
+TEST_CASE("Block flags", "[block]") {
+    byte buffer[TestBufferSize];
+    Block* block = initBlock(buffer);
+
+    SECTION("are initially clear") {
+        REQUIRE_FALSE(block->hasFlag(Block::EvacuatedFlag));
+    }
+
+    SECTION("can be set") {
+        block->setFlag(Block::EvacuatedFlag);
+        REQUIRE(block->hasFlag(Block::EvacuatedFlag));
+
+        SECTION("can be cleared") {
+            block->clearFlag(Block::EvacuatedFlag);
+            REQUIRE_FALSE(block->hasFlag(Block::EvacuatedFlag));
+        }
+    }
+}
+
+
 TEST_CASE("Allocating from block", "[block]") {
     byte buffer[TestBufferSize];
     Block* block = initBlock(buffer);

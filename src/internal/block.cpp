@@ -33,7 +33,8 @@ Block::Block(byte* start) :
     start_{start},
     free_{nullptr},
     owner_{nullptr},
-    span_{0}
+    span_{0},
+    flags_{0}
 {
     WORTHY_DCHECK(start);
 }
@@ -46,6 +47,21 @@ BlockOwner* Block::owner() const {
 
 void Block::setOwner(BlockOwner* owner) {
     owner_ = owner;
+}
+
+
+bool Block::hasFlag(uint16_t flag) const {
+    return (flags_ & flag) != 0;
+}
+
+
+void Block::setFlag(uint16_t flag) {
+    flags_ |= flag;
+}
+
+
+void Block::clearFlag(uint16_t flag) {
+    flags_ &= ~flag;
 }
 
 

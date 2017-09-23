@@ -28,6 +28,8 @@ static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
  */
 class Block final : public boost::intrusive::list_base_hook<> {
 public:
+    static constexpr uint16_t EvacuatedFlag = 1;
+
     Block(const Block&) = delete;
     Block& operator=(const Block&) = delete;
 
@@ -38,6 +40,10 @@ public:
 
     BlockOwner* owner() const;
     void setOwner(BlockOwner* owner);
+
+    bool hasFlag(uint16_t flag) const;
+    void setFlag(uint16_t flag);
+    void clearFlag(uint16_t flag);
 
     byte* begin() const;
     byte* current() const;
@@ -64,12 +70,14 @@ public:
 private:
     explicit Block(byte* start);
 
+    // TODO: The start address can be computed from this!
     byte* const start_;
     byte* free_;
 
     BlockOwner* owner_;
 
     uint32_t span_;
+    uint16_t flags_;
 
     static constexpr size_t PaddingSize =
         BlockDescriptorSize
@@ -77,7 +85,8 @@ private:
         - sizeof(start_)
         - sizeof(free_)
         - sizeof(owner_)
-        - sizeof(span_);
+        - sizeof(span_)
+        - sizeof(flags_);
 
     byte padding_[PaddingSize];
 
