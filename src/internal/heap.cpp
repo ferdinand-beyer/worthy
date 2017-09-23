@@ -55,6 +55,10 @@ Heap::Heap() :
     allocator_{},
     frame_count_{0}
 {
+    const size_t gc_worker_count = thread_count_;
+    const size_t gc_workspace_size =
+        GarbageCollector::workspaceSize(gc_worker_count, GenerationCount);
+
     // Calculate (maximum) required size for all member objects.
     const size_t reserve_size =
         alignedSizeOf<HandlePool>() +
@@ -62,7 +66,7 @@ Heap::Heap() :
         GenerationCount * alignedSizeOf<Generation>() +
         max_frame_count_ * alignedSizeOf<Frame>() +
         alignedSizeOf<GarbageCollector>() +
-        thread_count_ * alignedSizeOf<GCWorker>();
+        gc_workspace_size;
 
     block_ = allocator_.allocate(blocksForBytes(reserve_size));
 
@@ -73,8 +77,10 @@ Heap::Heap() :
 
     initGenerations();
 
-    gc_ = block_->construct<GarbageCollector>(this);
-    // TODO: Allocate GC workers and workspaces.
+    void* gc_workspace = block_->allocate(gc_workspace_size);
+
+    gc_ = block_->construct<GarbageCollector>(this, gc_worker_count,
+            GenerationCount, gc_workspace);
 
     // After this point, the memory in the allocated block is exclusively
     // reserved for frames.

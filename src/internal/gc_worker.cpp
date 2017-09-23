@@ -29,6 +29,12 @@ void GCWorker::scavenge() {
 }
 
 
+GCWorkspace& GCWorker::workspace(uint16_t generation_number) {
+    GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
+    return workspaces[generation_number];
+}
+
+
 void GCWorker::evacuate(Object*& addr) {
     Block* block = Block::of(addr);
     WORTHY_DCHECK(dynamic_cast<Space*>(block->owner()));

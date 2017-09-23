@@ -16,10 +16,13 @@ class Heap;
 
 class GarbageCollector final {
 public:
+    static size_t workspaceSize(size_t worker_count, size_t generation_count);
+
     GarbageCollector(const GarbageCollector&) = delete;
     GarbageCollector& operator=(const GarbageCollector&) = delete;
 
-    explicit GarbageCollector(Heap* heap);
+    GarbageCollector(Heap* heap, size_t worker_count, size_t generation_count,
+            void* workspace);
 
     void collect(size_t generation_index);
 

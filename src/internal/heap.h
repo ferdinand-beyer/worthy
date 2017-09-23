@@ -68,7 +68,6 @@ private:
     size_t frame_count_;
 
     std::mutex frames_mutex_;
-
     std::condition_variable frame_released_;
 
     friend class GarbageCollector;

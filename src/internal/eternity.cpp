@@ -1,7 +1,6 @@
 #include "internal/eternity.h"
 
 #include "internal/hashmap.h"
-#include "internal/heap.h"
 
 
 namespace worthy {

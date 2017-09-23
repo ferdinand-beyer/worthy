@@ -12,7 +12,15 @@ namespace worthy {
 namespace internal {
 
 
-GarbageCollector::GarbageCollector(Heap* heap)
+size_t GarbageCollector::workspaceSize(
+        size_t worker_count, size_t generation_count) {
+    return worker_count * (
+            sizeof(GCWorker) + generation_count * sizeof(GCWorkspace));
+}
+
+
+GarbageCollector::GarbageCollector(Heap* heap, size_t worker_count,
+        size_t generation_count, void* workspace)
     : heap_{heap},
       worker_{this},
       max_generation_index_{0} {
