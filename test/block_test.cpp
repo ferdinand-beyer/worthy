@@ -40,17 +40,12 @@ TEST_CASE("Block flags", "[block]") {
     Block* block = initBlock(buffer);
 
     SECTION("are initially clear") {
-        REQUIRE_FALSE(block->hasFlag(Block::EvacuatedFlag));
+        REQUIRE(block->flags() == 0);
     }
 
     SECTION("can be set") {
-        block->setFlag(Block::EvacuatedFlag);
-        REQUIRE(block->hasFlag(Block::EvacuatedFlag));
-
-        SECTION("can be cleared") {
-            block->clearFlag(Block::EvacuatedFlag);
-            REQUIRE_FALSE(block->hasFlag(Block::EvacuatedFlag));
-        }
+        block->flags() |= Block::EvacuatedFlag;
+        REQUIRE((block->flags() & Block::EvacuatedFlag));
     }
 }
 

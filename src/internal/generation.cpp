@@ -5,14 +5,8 @@ namespace worthy {
 namespace internal {
 
 
-Generation::Generation(size_t index, Heap* heap, BlockAllocator* allocator)
-    : Space{heap, allocator},
-      index_{index} {
-}
-
-
-size_t Generation::index() const {
-    return index_;
+Generation::Generation(uint16_t number, Heap* heap, BlockAllocator* allocator)
+    : Space{heap, allocator, number} {
 }
 
 

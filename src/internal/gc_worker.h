@@ -3,6 +3,7 @@
 
 
 #include "internal/gc_visitor.h"
+#include "internal/globals.h"
 
 
 namespace worthy {
@@ -19,10 +20,17 @@ public:
 
     explicit GCWorker(GarbageCollector* gc);
 
-    void visit(Object*& reference) override;
+    void visit(Object*& addr) override;
+
+    void evacuate(Object*& addr);
 
 private:
-    GarbageCollector* gc_;
+    void copy(Object*& addr, uint16_t generation_number);
+    void* allocate(size_t size, uint16_t generation_number);
+
+    static void alreadyMoved(Object*& addr, Object* new_addr);
+
+    GarbageCollector* const gc_;
 };
 
 

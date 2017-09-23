@@ -12,6 +12,7 @@ namespace internal {
 
 
 class BlockAllocator;
+class Generation;
 class Heap;
 class Object;
 
@@ -29,13 +30,16 @@ public:
 
     size_t objectCount() const;
 
+    void setNextGeneration(Generation* generation);
+
 protected:
     static constexpr size_t LargeObjectThreshold = BlockSize * 8 / 10;
     static constexpr size_t ObjectAlignment = 8;
 
     static_assert((ObjectAlignment % WordSize) == 0, "invalid alignment");
 
-    Space(Heap* heap, BlockAllocator* allocator);
+    Space(Heap* heap, BlockAllocator* allocator, uint16_t generation_number,
+            uint16_t block_flags = 0);
 
     template<typename T, typename... Args>
     inline T* construct(Args&&... args) {
@@ -49,6 +53,8 @@ protected:
                 std::forward<Args>(args)...);
     }
 
+    void reset();
+
 private:
     template<typename T, typename... Args>
     inline T* constructInternal(size_t size, Args&&... args) {
@@ -60,11 +66,19 @@ private:
 
     Block* blockForAllocation(size_t size);
 
-    Heap* heap_;
-    BlockAllocator* allocator_;
+    Heap* const heap_;
+    BlockAllocator* const allocator_;
+
+    const uint16_t block_flags_;
+    const uint16_t generation_number_;
+
+    Generation* next_generation_;
+
     BlockList blocks_;
     size_t object_count_;
 
+    friend class GarbageCollector;
+    friend class GCWorker;
     friend class ObjectSpaceAccess;
 };
 

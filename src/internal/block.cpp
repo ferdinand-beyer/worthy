@@ -50,18 +50,13 @@ void Block::setOwner(BlockOwner* owner) {
 }
 
 
-bool Block::hasFlag(uint16_t flag) const {
-    return (flags_ & flag) != 0;
+uint16_t Block::flags() const {
+    return flags_;
 }
 
 
-void Block::setFlag(uint16_t flag) {
-    flags_ |= flag;
-}
-
-
-void Block::clearFlag(uint16_t flag) {
-    flags_ &= ~flag;
+uint16_t& Block::flags() {
+    return flags_;
 }
 
 

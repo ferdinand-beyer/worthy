@@ -18,15 +18,13 @@ class Heap;
 
 
 class Frame final {
-    struct ConstructKey {};
-
 public:
     static Frame& current();
 
     Frame(const Frame&) = delete;
     Frame& operator=(const Frame&) = delete;
 
-    Frame(size_t index, Heap* heap, BlockAllocator* allocator, ConstructKey);
+    Frame(size_t index, Heap* heap, BlockAllocator* allocator);
 
     Heap& heap();
     Nursery& nursery();

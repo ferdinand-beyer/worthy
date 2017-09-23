@@ -60,15 +60,16 @@ private:
     HashCode hashCode_() const;
     bool equals_(const Object* other) const;
 
-    uint32_t size_;
+    uint32_t size_in_words_;
     ObjectType type_;
-    std::atomic<uint8_t> flags_;
+    uint8_t flags_;
+    std::atomic<Object*> moved_;
 
-    friend class GarbageCollector;
+    friend class GCWorker;
 };
 
 
-static_assert(sizeof(Object) == WordSize, "invalid object size");
+static_assert((sizeof(Object) % WordSize) == 0, "invalid object size");
 
 
 inline HashCode hash(const Object* obj) {

@@ -28,7 +28,8 @@ static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
  */
 class Block final : public boost::intrusive::list_base_hook<> {
 public:
-    static constexpr uint16_t EvacuatedFlag = 1;
+    static constexpr uint16_t EvacuatedFlag = 0x01;
+    static constexpr uint16_t ImmortalFlag = 0x02;
 
     Block(const Block&) = delete;
     Block& operator=(const Block&) = delete;
@@ -41,9 +42,8 @@ public:
     BlockOwner* owner() const;
     void setOwner(BlockOwner* owner);
 
-    bool hasFlag(uint16_t flag) const;
-    void setFlag(uint16_t flag);
-    void clearFlag(uint16_t flag);
+    uint16_t flags() const;
+    uint16_t& flags();
 
     byte* begin() const;
     byte* current() const;

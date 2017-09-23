@@ -6,7 +6,7 @@ namespace internal {
 
 
 Nursery::Nursery(Heap* heap, BlockAllocator* allocator)
-    : Space(heap, allocator) {
+    : Space(heap, allocator, 0) {
 }
 
 

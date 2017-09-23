@@ -9,7 +9,7 @@ namespace internal {
 
 
 Eternity::Eternity(Heap* heap, BlockAllocator* allocator)
-        : Space(heap, allocator) {
+        : Space(heap, allocator, -1, Block::ImmortalFlag) {
     empty_hashmap_ = heap->makeHandle(construct<HashMap>());
     empty_hashmap_bitmap_node_ =
         heap->makeHandle(construct<HashMapBitmapNode>());

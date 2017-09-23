@@ -23,11 +23,17 @@ public:
 
     void collect(size_t generation_index);
 
+    // TODO: Temporary, required until we use workspaces.
+    Generation& gen(uint16_t no);
+
 private:
     void prepareGenerations();
-    void prepareCollectedGeneration(Generation& gen);
+    static void prepareCollectedGeneration(Generation& gen);
+    static void swapSpaces(Generation& gen);
 
     void evacuateRoots();
+
+    void resetNurseries();
 
     Heap* const heap_;
 

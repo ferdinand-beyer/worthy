@@ -16,7 +16,7 @@ Frame& Frame::current() {
 }
 
 
-Frame::Frame(size_t index, Heap* heap, BlockAllocator* allocator, ConstructKey)
+Frame::Frame(size_t index, Heap* heap, BlockAllocator* allocator)
     : index_{index},
       heap_{heap},
       allocator_{allocator},

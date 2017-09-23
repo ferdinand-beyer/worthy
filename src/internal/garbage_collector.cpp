@@ -1,5 +1,7 @@
 #include "internal/garbage_collector.h"
 
+#include "internal/block.h"
+#include "internal/check.h"
 #include "internal/frame.h"
 #include "internal/generation.h"
 #include "internal/heap.h"
@@ -7,15 +9,6 @@
 
 namespace worthy {
 namespace internal {
-
-
-// Forwarding pointers: We could reorder the fields in Object
-// and make the flags_ field first, then use the LSB to
-// distinguish live objects from forwarding pointers.  This
-// works as objects are 8-byte aligned, so the last three bits
-// of object pointers (forwarding addresses) are always zero.
-// Could be an 'Alive' bit.
-// XXX: For parallel GC, we need an atomic operation.
 
 
 GarbageCollector::GarbageCollector(Heap* heap)
@@ -37,14 +30,14 @@ void GarbageCollector::collect(size_t generation_index) {
 
     evacuateRoots();
 
-    // Scavenge until there is nothing more to do.
+    // TODO: Scavenge until there is nothing more to do.
 
-    // Clean-up gens:
+    // TODO: Clean-up gens:
     // - Free old blocks (from-space)
     // Clean-up older gens:
-    // - Record evacuated large objects
+    // - Move evacuated large objects
 
-    // Reset nurseries
+    resetNurseries();
 }
 
 
@@ -57,14 +50,39 @@ void GarbageCollector::prepareGenerations() {
 
 
 void GarbageCollector::prepareCollectedGeneration(Generation& gen) {
-    // Prepare gens:
-    // - Stash blocks (to-space -> from-space)
-    // - Flag blocks as not evacuated (from-space)
+    // TODO: Dispose remembered sets (for each frame)
+    swapSpaces(gen);
+}
+
+
+void GarbageCollector::swapSpaces(Generation& gen) {
+    WORTHY_DCHECK(gen.old_blocks_.empty());
+    gen.blocks_.swap(gen.old_blocks_);
+
+    for (auto& block : gen.old_blocks_) {
+        block.flags() &= ~Block::EvacuatedFlag;
+    }
+
+    gen.object_count_ = 0;
 }
 
 
 void GarbageCollector::evacuateRoots() {
     heap_->handle_pool_.accept(worker_);
+}
+
+
+void GarbageCollector::resetNurseries() {
+    for (auto& frame : heap_->frames_) {
+        frame.nursery().reset();
+        // TODO: Reserve new nursery space?
+    }
+}
+
+
+// TODO: Remove
+Generation& GarbageCollector::gen(uint16_t no) {
+    return heap_->generations_[no];
 }
 
 

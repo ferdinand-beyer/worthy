@@ -35,6 +35,7 @@ Heap::Heap() :
     frames_{&allocator_},
     gc_{this}
 {
+    initGenerations();
     initFrames();
 }
 
@@ -94,6 +95,11 @@ void Heap::initGenerations() {
     for (uint i = 0; i < GenerationCount; i++) {
         generations_.emplace_back(i, this, &allocator_);
     }
+    const uint last = GenerationCount - 1;
+    for (uint i = 0; i < last; i++) {
+        generations_[i].setNextGeneration(&generations_[i + 1]);
+    }
+    generations_[last].setNextGeneration(&generations_[last]);
 }
 
 
@@ -120,8 +126,9 @@ Frame* Heap::currentFrame() const {
 
 Frame& Heap::newFrame() {
     WORTHY_DCHECK(frames_.size() < max_frame_count_);
-    return frames_.emplace_back(
-            frames_.size(), this, &allocator_, Frame::ConstructKey());
+    auto& frame = frames_.emplace_back(frames_.size(), this, &allocator_);
+    frame.nursery().setNextGeneration(&generations_.front());
+    return frame;
 }
 
 

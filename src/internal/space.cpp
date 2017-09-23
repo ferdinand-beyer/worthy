@@ -21,9 +21,13 @@ Space* Space::of(const Object* object) {
 }
 
 
-Space::Space(Heap* heap, BlockAllocator* allocator)
+Space::Space(Heap* heap, BlockAllocator* allocator, uint16_t generation_number,
+        uint16_t block_flags)
     : heap_{heap},
       allocator_{allocator},
+      block_flags_{block_flags},
+      generation_number_{generation_number},
+      next_generation_{nullptr},
       object_count_{0} {
     WORTHY_DCHECK(heap);
     WORTHY_DCHECK(allocator);
@@ -42,6 +46,17 @@ Heap* Space::heap() const {
 
 size_t Space::objectCount() const {
     return object_count_;
+}
+
+
+void Space::setNextGeneration(Generation* generation) {
+    next_generation_ = generation;
+}
+
+
+void Space::reset() {
+    allocator_->deallocateList(blocks_);
+    object_count_ = 0;
 }
 
 
@@ -69,6 +84,7 @@ Block* Space::blockForAllocation(size_t size) {
     Block* block = allocator_->allocate(count);
     blocks_.push_front(*block);
     block->setOwner(this);
+    block->flags() = block_flags_;
     return block;
 }
 

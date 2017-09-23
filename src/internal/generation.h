@@ -11,14 +11,12 @@ namespace internal {
 
 class Generation final : public Space {
 public:
-    Generation(size_t index, Heap* heap, BlockAllocator* allocator);
-
-    size_t index() const;
+    Generation(uint16_t number, Heap* heap, BlockAllocator* allocator);
 
 private:
-    const size_t index_;
-
     BlockList old_blocks_;
+
+    friend class GarbageCollector;
 };
 
 
