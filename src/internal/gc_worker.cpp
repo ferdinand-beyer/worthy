@@ -25,6 +25,10 @@ void GCWorker::visit(Object*& addr) {
 }
 
 
+void GCWorker::scavenge() {
+}
+
+
 void GCWorker::evacuate(Object*& addr) {
     Block* block = Block::of(addr);
     WORTHY_DCHECK(dynamic_cast<Space*>(block->owner()));

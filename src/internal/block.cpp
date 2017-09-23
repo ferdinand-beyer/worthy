@@ -3,7 +3,7 @@
 #include "internal/block_layout.h"
 #include "internal/check.h"
 
-#include <new>
+#include <memory>
 
 
 namespace worthy {
@@ -21,6 +21,15 @@ inline constexpr uintptr_t descriptorOffset(uintptr_t offset) {
 
 
 } // namespace
+
+
+size_t blocksForBytes(size_t size) {
+    size_t count = size / BlockSize;
+    if (size > (count * BlockSize)) {
+        ++count;
+    }
+    return count;
+}
 
 
 Block* Block::of(void* ptr) {
@@ -99,6 +108,21 @@ void* Block::allocate(size_t size) {
     byte* result = free_;
     free_ = new_free;
     return result;
+}
+
+
+void* Block::allocate(size_t size, size_t alignment) {
+    WORTHY_CHECK(size > 0);
+
+    void* ptr = free_;
+    size_t space = bytesAvailable();
+
+    if (std::align(alignment, size, ptr, space)) {
+        free_ = reinterpret_cast<byte*>(ptr) + size;
+        return ptr;
+    }
+
+    return nullptr;
 }
 
 

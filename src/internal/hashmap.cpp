@@ -1,5 +1,6 @@
 #include "internal/hashmap.h"
 
+#include "internal/eternity.h"
 #include "internal/frame.h"
 #include "internal/hash.h"
 #include "internal/heap.h"

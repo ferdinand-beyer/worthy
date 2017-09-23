@@ -41,6 +41,8 @@ protected:
     Space(Heap* heap, BlockAllocator* allocator, uint16_t generation_number,
             uint16_t block_flags = 0);
 
+    BlockAllocator& allocator();
+
     template<typename T, typename... Args>
     inline T* construct(Args&&... args) {
         return constructInternal<T>(sizeof(T), std::forward<Args>(args)...);

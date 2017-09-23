@@ -1,3 +1,4 @@
+#include "internal/eternity.h"
 #include "internal/hash.h"
 #include "internal/hashmap.h"
 #include "internal/heap.h"

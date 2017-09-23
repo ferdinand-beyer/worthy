@@ -2,13 +2,8 @@
 #define WORTHY_INTERNAL_HEAP_H_
 
 
-#include "internal/blocked_vector.h"
-#include "internal/eternity.h"
-#include "internal/frame.h"
-#include "internal/garbage_collector.h"
-#include "internal/generation.h"
 #include "internal/globals.h"
-#include "internal/handle_pool.h"
+#include "internal/handle.h"
 #include "internal/root_block_allocator.h"
 
 #include <condition_variable>
@@ -19,6 +14,11 @@ namespace worthy {
 namespace internal {
 
 
+class Eternity;
+class Frame;
+class GarbageCollector;
+class Generation;
+class HandlePool;
 class Object;
 
 
@@ -57,13 +57,15 @@ private:
     const uint max_frame_count_;
 
     RootBlockAllocator allocator_;
-    HandlePool handle_pool_;
+    Block* block_;
 
-    Eternity eternity_;
-    BlockedVector<Generation> generations_;
-    BlockedVector<Frame> frames_;
+    HandlePool* handle_pool_;
+    Eternity* eternity_;
+    Generation* generations_;
+    GarbageCollector* gc_;
 
-    GarbageCollector gc_;
+    Frame* frames_;
+    size_t frame_count_;
 
     std::mutex frames_mutex_;
 

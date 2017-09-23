@@ -4,6 +4,7 @@
 #include "internal/check.h"
 #include "internal/frame.h"
 #include "internal/generation.h"
+#include "internal/handle_pool.h"
 #include "internal/heap.h"
 
 
@@ -16,6 +17,7 @@ GarbageCollector::GarbageCollector(Heap* heap)
       worker_{this},
       max_generation_index_{0} {
     // TODO: Initialize workspace per Generation
+    // TODO: Support multiple workers
 }
 
 
@@ -30,13 +32,9 @@ void GarbageCollector::collect(size_t generation_index) {
 
     evacuateRoots();
 
-    // TODO: Scavenge until there is nothing more to do.
+    worker_.scavenge();
 
-    // TODO: Clean-up gens:
-    // - Free old blocks (from-space)
-    // Clean-up older gens:
-    // - Move evacuated large objects
-
+    finalizeGenerations();
     resetNurseries();
 }
 
@@ -68,13 +66,27 @@ void GarbageCollector::swapSpaces(Generation& gen) {
 
 
 void GarbageCollector::evacuateRoots() {
-    heap_->handle_pool_.accept(worker_);
+    heap_->handle_pool_->accept(worker_);
+}
+
+
+void GarbageCollector::finalizeGenerations() {
+    for (uint i = 0; i <= max_generation_index_; i++) {
+        finalizeCollectedGeneration(heap_->generations_[i]);
+    }
+    // TODO: Clean-up older gens:
+    // - Move evacuated large objects
+}
+
+
+void GarbageCollector::finalizeCollectedGeneration(Generation& gen) {
+    gen.allocator_->deallocateList(gen.old_blocks_);
 }
 
 
 void GarbageCollector::resetNurseries() {
-    for (auto& frame : heap_->frames_) {
-        frame.nursery().reset();
+    for (uint i = 0; i < heap_->frame_count_; i++) {
+        heap_->frames_[i].nursery().reset();
         // TODO: Reserve new nursery space?
     }
 }

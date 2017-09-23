@@ -22,9 +22,10 @@ public:
 
     void visit(Object*& addr) override;
 
-    void evacuate(Object*& addr);
+    void scavenge();
 
 private:
+    void evacuate(Object*& addr);
     void copy(Object*& addr, uint16_t generation_number);
     void* allocate(size_t size, uint16_t generation_number);
 

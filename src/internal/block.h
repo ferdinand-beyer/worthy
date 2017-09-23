@@ -6,6 +6,8 @@
 
 #include <boost/intrusive/list.hpp>
 
+#include <new>
+
 
 namespace worthy {
 namespace internal {
@@ -21,6 +23,9 @@ static constexpr size_t BlockDescriptorBits = 6;
 static constexpr size_t ChunkSize = 1 << ChunkBits;
 static constexpr size_t BlockSize = 1 << BlockBits;
 static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
+
+
+size_t blocksForBytes(size_t size);
 
 
 /*!
@@ -62,10 +67,21 @@ public:
      */
     void* allocate(size_t size);
 
+    void* allocate(size_t size, size_t alignment);
+
     /**
      * Deallocate memory from the end of the block.
      */
     void deallocate(size_t size);
+
+    template<typename T, typename... Args>
+    T* construct(Args&&... args) {
+        void* ptr = allocate(sizeof(T), alignof(T));
+        if (!ptr) {
+            throw std::bad_alloc();
+        }
+        return ::new (ptr) T(std::forward<Args>(args)...);
+    }
 
 private:
     explicit Block(byte* start);

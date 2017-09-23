@@ -1,3 +1,4 @@
+#include "internal/frame.h"
 #include "internal/garbage_collector.h"
 #include "internal/hashmap.h"
 #include "internal/heap.h"

@@ -33,6 +33,9 @@ private:
 
     void evacuateRoots();
 
+    void finalizeGenerations();
+    static void finalizeCollectedGeneration(Generation& gen);
+
     void resetNurseries();
 
     Heap* const heap_;
