@@ -156,7 +156,7 @@ void GCWorker::scavengeBlock(Block& block) {
             (block.scan_ptr_ < block.free_)) {
         Object* object = reinterpret_cast<Object*>(block.scan_ptr_);
 
-        object->scan(*this);
+        object->traverse(*this);
 
         // TODO: Remembered set if failed to evac
 

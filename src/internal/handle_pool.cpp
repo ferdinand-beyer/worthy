@@ -2,7 +2,7 @@
 
 #include "internal/block.h"
 #include "internal/check.h"
-#include "internal/gc_visitor.h"
+#include "internal/object_visitor.h"
 
 
 namespace worthy {
@@ -26,7 +26,7 @@ HandlePtr HandlePool::makeHandle(Object* obj) {
 }
 
 
-void HandlePool::accept(GCVisitor& visitor) {
+void HandlePool::traverse(ObjectVisitor& visitor) {
     for (auto& handle : handles_) {
         // XXX: Use a dedicated field for lock-free decision if this handle is
         // free.  The GC has stopped the world.

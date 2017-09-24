@@ -97,7 +97,7 @@ void GarbageCollector::swapSpaces(Generation& gen) {
 
 
 void GarbageCollector::evacuateRoots() {
-    heap_->handle_pool_->accept(*worker_);
+    heap_->handle_pool_->traverse(*worker_);
 }
 
 

@@ -53,7 +53,7 @@ public:
 
     bool accept_(MapVisitor& visitor) const;
 
-    void scan_(GCVisitor& visitor);
+    void traverse_(ObjectVisitor& visitor);
 
 private:
     uint count() const;
@@ -98,7 +98,7 @@ public:
 
     bool accept_(MapVisitor& visitor) const;
 
-    void scan_(GCVisitor& visitor);
+    void traverse_(ObjectVisitor& visitor);
 
 private:
     HashMapBitmapNode* toBitmapNode(uint remove_index) const;
@@ -126,7 +126,7 @@ public:
 
     bool accept_(MapVisitor& visitor) const;
 
-    void scan_(GCVisitor& visitor);
+    void traverse_(ObjectVisitor& visitor);
 
 private:
     //HashCode hash_;
@@ -160,7 +160,7 @@ public:
 
     HashCode hashCode_() const;
 
-    void scan_(GCVisitor& visitor);
+    void traverse_(ObjectVisitor& visitor);
 
 private:
     const HashMapNode* const root_;

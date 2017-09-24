@@ -17,8 +17,8 @@ namespace worthy {
 namespace internal {
 
 
-class GCVisitor;
 class Heap;
+class ObjectVisitor;
 
 
 class alignas(WordSize) Object {
@@ -52,7 +52,7 @@ public:
 
     bool equals(const Object* other) const;
 
-    void scan(GCVisitor& visitor);
+    void traverse(ObjectVisitor& visitor);
 
 protected:
     Object();
@@ -63,7 +63,7 @@ private:
     HashCode hashCode_() const;
     bool equals_(const Object* other) const;
 
-    void scan_(GCVisitor& visitor);
+    void traverse_(ObjectVisitor& visitor);
 
     uint32_t size_in_words_;
     ObjectType type_;

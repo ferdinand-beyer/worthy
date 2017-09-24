@@ -15,12 +15,12 @@ namespace internal {
 void Object::preInit(void* ptr, size_t size, ObjectType type) {
     WORTHY_DCHECK((size % WordSize) == 0);
 
-    Object* this_ = reinterpret_cast<Object*>(ptr);
-    this_->size_in_words_ = size / WordSize;
-    this_->type_ = type;
-    this_->flags_ = 0;
+    Object* self = reinterpret_cast<Object*>(ptr);
+    self->size_in_words_ = size / WordSize;
+    self->type_ = type;
+    self->flags_ = 0;
 
-    std::atomic_init<Object*>(&this_->moved_, nullptr);
+    std::atomic_init<Object*>(&self->moved_, nullptr);
 }
 
 
@@ -49,8 +49,8 @@ bool Object::equals(const Object* other) const {
 }
 
 
-void Object::scan(GCVisitor& visitor) {
-    DISPATCH(WORTHY_OBJECT_TYPES, scan_, (visitor));
+void Object::traverse(ObjectVisitor& visitor) {
+    DISPATCH(WORTHY_OBJECT_TYPES, traverse_, (visitor));
 }
 
 
@@ -64,7 +64,7 @@ bool Object::equals_(const Object* other) const {
 }
 
 
-void Object::scan_(GCVisitor& visitor) {
+void Object::traverse_(ObjectVisitor& visitor) {
 }
 
 

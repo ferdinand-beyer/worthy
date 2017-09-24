@@ -1,9 +1,9 @@
 #include "internal/variant.h"
 
 #include "internal/check.h"
-#include "internal/gc_visitor.h"
 #include "internal/hash.h"
 #include "internal/object.h"
+#include "internal/object_visitor.h"
 
 #include <algorithm>
 #include <cstring>
@@ -43,7 +43,7 @@ bool Variant::operator==(const Variant& other) const {
 }
 
 
-void Variant::scan(GCVisitor& visitor) {
+void Variant::traverse(ObjectVisitor& visitor) {
     if (isObject()) {
         visitor.visit(data_.obj);
     }
@@ -83,7 +83,7 @@ void VariantArray::copy(size_t dst_index, const VariantArray& src,
 }
 
 
-void VariantArray::scan(GCVisitor& visitor) {
+void VariantArray::traverse(ObjectVisitor& visitor) {
     for (size_t i = 0; i < length_; i++) {
         if (type_array_[i] == VariantType::Object) {
             visitor.visit(data_array_[i].obj);

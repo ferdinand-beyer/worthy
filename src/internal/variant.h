@@ -14,8 +14,8 @@ namespace worthy {
 namespace internal {
 
 
-class GCVisitor;
 class Object;
+class ObjectVisitor;
 
 
 #define WORTHY_FOR_EACH_VARIANT_TYPE(F)             \
@@ -74,7 +74,7 @@ public:
 
     Object* toObject() const;
 
-    void scan(GCVisitor& visitor);
+    void traverse(ObjectVisitor& visitor);
 
 private:
     VariantData data_;
@@ -169,7 +169,7 @@ public:
               size_t src_index,
               size_t length);
 
-    void scan(GCVisitor& visitor);
+    void traverse(ObjectVisitor& visitor);
 
 private:
     const size_t length_;

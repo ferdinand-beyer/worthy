@@ -13,7 +13,7 @@ namespace worthy {
 namespace internal {
 
 
-class GCVisitor;
+class ObjectVisitor;
 
 
 class HandlePool final : public BlockOwner {
@@ -25,7 +25,7 @@ public:
 
     HandlePtr makeHandle(Object* obj);
 
-    void accept(GCVisitor& visitor);
+    void traverse(ObjectVisitor& visitor);
 
 private:
     void reclaim(Handle* handle);

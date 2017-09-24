@@ -2,8 +2,8 @@
 #define WORTHY_INTERNAL_GC_WORKER_H_
 
 
-#include "internal/gc_visitor.h"
 #include "internal/globals.h"
+#include "internal/object_visitor.h"
 
 
 namespace worthy {
@@ -15,7 +15,7 @@ class GCWorkspace;
 class GarbageCollector;
 
 
-class GCWorker final : public GCVisitor {
+class GCWorker final : public ObjectVisitor {
 public:
     GCWorker(const GCWorker&) = delete;
     GCWorker& operator=(const GCWorker&) = delete;
