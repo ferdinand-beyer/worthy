@@ -2,6 +2,7 @@
 
 #include "internal/block.h"
 #include "internal/garbage_collector.h"
+#include "internal/gc_workspace.h"
 #include "internal/generation.h"
 #include "internal/object.h"
 #include "internal/space.h"

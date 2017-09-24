@@ -3,6 +3,7 @@
 #include "internal/block.h"
 #include "internal/check.h"
 #include "internal/frame.h"
+#include "internal/gc_workspace.h"
 #include "internal/generation.h"
 #include "internal/handle_pool.h"
 #include "internal/heap.h"
@@ -27,7 +28,7 @@ GarbageCollector::GarbageCollector(Heap* heap) :
     for (uint i = 0; i < worker_count_; i++) {
         workspace_->construct<GCWorker>(this);
         for (uint k = 0; k < heap->generation_count_; k++) {
-            workspace_->construct<GCWorkspace>();
+            workspace_->construct<GCWorkspace>(&heap->generations_[k]);
         }
     }
 }
