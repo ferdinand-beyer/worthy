@@ -205,11 +205,11 @@ HashMap* HashMap::remove(const Variant& key) const {
 }
 
 
-bool HashMap::accept(MapVisitor& visitor) const {
+bool HashMap::traverseMap(MapVisitor& visitor) const {
     if (has_null_key_ && !visitor.visit(Variant(), null_value_)) {
         return false;
     }
-    return root_ ? root_->accept(visitor) : true;
+    return root_ ? root_->traverseMap(visitor) : true;
 }
 
 
@@ -225,7 +225,7 @@ bool HashMap::equals_(const Object* other) const {
         return false;
     }
     EqualsVisitor visitor(m);
-    return accept(visitor);
+    return traverseMap(visitor);
 }
 
 
@@ -233,7 +233,7 @@ HashCode HashMap::hashCode_() const {
     HashCode hash = hash_code_;
     if (hash == 0) {
         HashSumVisitor visitor;
-        accept(visitor);
+        traverseMap(visitor);
         hash = visitor.hashSum();
         hashCombine(hash, count());
         hash_code_ = hash;
@@ -281,8 +281,8 @@ HashMapNode* HashMapNode::remove(uint shift, HashCode hash,
 }
 
 
-bool HashMapNode::accept(MapVisitor& visitor) const {
-    NODE_DISPATCH(accept_, (visitor));
+bool HashMapNode::traverseMap(MapVisitor& visitor) const {
+    NODE_DISPATCH(traverseMap_, (visitor));
 }
 
 
@@ -522,7 +522,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 }
 
 
-bool HashMapBitmapNode::accept_(MapVisitor& visitor) const {
+bool HashMapBitmapNode::traverseMap_(MapVisitor& visitor) const {
     const auto arr = array();
     for (uint i = 0; i < arr.length(); i += 2) {
         const auto key = arr.get(i);
@@ -530,7 +530,7 @@ bool HashMapBitmapNode::accept_(MapVisitor& visitor) const {
 
         if (key.isNull()) {
             auto node = static_cast<HashMapNode*>(value.toObject());
-            if (!node->accept(visitor)) {
+            if (!node->traverseMap(visitor)) {
                 return false;
             }
         } else if (!visitor.visit(key, value)) {
@@ -661,9 +661,9 @@ HashMapBitmapNode* HashMapArrayNode::toBitmapNode(uint remove_index) const {
 }
 
 
-bool HashMapArrayNode::accept_(MapVisitor& visitor) const {
+bool HashMapArrayNode::traverseMap_(MapVisitor& visitor) const {
     for (auto node : nodes_) {
-        if (node && !node->accept(visitor)) {
+        if (node && !node->traverseMap(visitor)) {
             return false;
         }
     }
@@ -702,7 +702,7 @@ HashMapNode* HashMapCollisionNode::remove_(uint shift, HashCode hash,
 }
 
 
-bool HashMapCollisionNode::accept_(MapVisitor& visitor) const {
+bool HashMapCollisionNode::traverseMap_(MapVisitor& visitor) const {
     WORTHY_UNIMPLEMENTED(); // TODO
 }
 

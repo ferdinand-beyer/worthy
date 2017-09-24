@@ -28,7 +28,7 @@ public:
 
     HashMapNode* remove(uint shift, HashCode hash, const Variant& key) const;
 
-    bool accept(MapVisitor& visitor) const;
+    bool traverseMap(MapVisitor& visitor) const;
 
 protected:
     HashMapNode() = default;
@@ -51,7 +51,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool accept_(MapVisitor& visitor) const;
+    bool traverseMap_(MapVisitor& visitor) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -96,7 +96,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool accept_(MapVisitor& visitor) const;
+    bool traverseMap_(MapVisitor& visitor) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -124,7 +124,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool accept_(MapVisitor& visitor) const;
+    bool traverseMap_(MapVisitor& visitor) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -154,7 +154,7 @@ public:
 
     HashMap* remove(const Variant& key) const;
 
-    bool accept(MapVisitor& visitor) const;
+    bool traverseMap(MapVisitor& visitor) const;
 
     bool equals_(const Object* other) const;
 
