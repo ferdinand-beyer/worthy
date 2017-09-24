@@ -117,7 +117,7 @@ void GarbageCollector::finalizeCollectedGeneration(Generation& gen) {
 
 void GarbageCollector::resetNurseries() {
     for (uint i = 0; i < heap_->frame_count_; i++) {
-        heap_->frames_[i].nursery().reset();
+        heap_->frames_[i].nursery().clear();
         // TODO: Reserve new nursery space?
     }
 }

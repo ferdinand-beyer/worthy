@@ -46,6 +46,12 @@ public:
     BlockOwner* owner() const;
     void setOwner(BlockOwner* owner);
 
+    uint16_t generationNumber() const;
+    void setGenerationNumber(uint16_t generation_no);
+
+    uint16_t nextGenerationNumber() const;
+    void setNextGenerationNumber(uint16_t generation_no);
+
     uint16_t flags() const;
     uint16_t& flags();
 
@@ -82,6 +88,8 @@ public:
 private:
     explicit Block(byte* start);
 
+    void clearMetaData();
+
     // TODO: The start address can be computed from this!
     byte* const start_;
     byte* free_;
@@ -90,6 +98,8 @@ private:
 
     uint32_t span_;
     uint16_t flags_;
+    uint16_t generation_no_;
+    uint16_t next_generation_no_;
 
     friend class RootBlockAllocator;
     friend class BlockTestAccess;

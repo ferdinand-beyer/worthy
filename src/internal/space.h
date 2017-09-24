@@ -30,6 +30,7 @@ public:
 
     size_t objectCount() const;
 
+    Generation* nextGeneration() const;
     void setNextGeneration(Generation* generation);
 
 protected:
@@ -38,8 +39,7 @@ protected:
 
     static_assert((ObjectAlignment % WordSize) == 0, "invalid alignment");
 
-    Space(Heap* heap, BlockAllocator* allocator, uint16_t generation_number,
-            uint16_t block_flags = 0);
+    Space(Heap* heap, BlockAllocator* allocator);
 
     BlockAllocator& allocator();
 
@@ -55,9 +55,13 @@ protected:
                 std::forward<Args>(args)...);
     }
 
-    void reset();
+    void clear();
+
+    void registerBlock(Block& block);
 
 private:
+    virtual void initBlock(Block& block) const;
+
     template<typename T, typename... Args>
     inline T* constructInternal(size_t size, Args&&... args) {
         void* ptr = allocate(size);
@@ -70,9 +74,6 @@ private:
 
     Heap* const heap_;
     BlockAllocator* const allocator_;
-
-    const uint16_t block_flags_;
-    const uint16_t generation_number_;
 
     Generation* next_generation_;
 

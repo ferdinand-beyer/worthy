@@ -2,6 +2,7 @@
 
 #include "internal/block_allocator.h"
 #include "internal/check.h"
+#include "internal/generation.h"
 #include "internal/object.h"
 
 #include <boost/align/align_up.hpp>
@@ -21,12 +22,9 @@ Space* Space::of(const Object* object) {
 }
 
 
-Space::Space(Heap* heap, BlockAllocator* allocator, uint16_t generation_number,
-        uint16_t block_flags)
+Space::Space(Heap* heap, BlockAllocator* allocator)
     : heap_{heap},
       allocator_{allocator},
-      block_flags_{block_flags},
-      generation_number_{generation_number},
       next_generation_{nullptr},
       object_count_{0} {
     WORTHY_DCHECK(heap);
@@ -49,14 +47,29 @@ size_t Space::objectCount() const {
 }
 
 
+Generation* Space::nextGeneration() const {
+    return next_generation_;
+}
+
+
 void Space::setNextGeneration(Generation* generation) {
+    WORTHY_CHECK(!next_generation_ && blocks_.empty());
     next_generation_ = generation;
 }
 
 
-void Space::reset() {
+void Space::clear() {
     allocator_->deallocateList(blocks_);
     object_count_ = 0;
+}
+
+
+void Space::registerBlock(Block& block) {
+    block.setOwner(this);
+    if (next_generation_) {
+        block.setNextGenerationNumber(next_generation_->generationNumber());
+    }
+    initBlock(block);
 }
 
 
@@ -83,9 +96,12 @@ Block* Space::blockForAllocation(size_t size) {
     const size_t count = align_up(size, BlockSize) / BlockSize;
     Block* block = allocator_->allocate(count);
     blocks_.push_front(*block);
-    block->setOwner(this);
-    block->flags() = block_flags_;
+    registerBlock(*block);
     return block;
+}
+
+
+void Space::initBlock(Block& block) const {
 }
 
 

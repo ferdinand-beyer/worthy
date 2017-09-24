@@ -31,8 +31,11 @@ private:
     /// Block where we copy objects to.
     Block* allocation_block_;
 
+    /// Blocks pending to be scanned.
+    BlockList pending_blocks_;
+
     /// List of completed blocks.
-    BlockList done_blocks_;
+    BlockList scanned_blocks_;
 
     /// Number of copied objects.
     size_t object_count_;

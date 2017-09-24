@@ -23,9 +23,7 @@ void* GCWorkspace::allocate(size_t size) {
         // TODO: Sync!
         allocation_block_ = allocator_->allocate();
 
-        // TODO: Common initialization, use a method from Space.
-        allocation_block_->setOwner(generation_);
-        allocation_block_->flags() |= Block::EvacuatedFlag;
+        generation_->registerBlock(*allocation_block_);
     }
     if (allocation_block_->bytesAvailable() >= size) {
         ++object_count_;

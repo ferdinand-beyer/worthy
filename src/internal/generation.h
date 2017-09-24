@@ -13,9 +13,15 @@ namespace internal {
 
 class Generation final : public Space {
 public:
-    Generation(uint16_t number, Heap* heap, BlockAllocator* allocator);
+    Generation(uint16_t generation_no, Heap* heap, BlockAllocator* allocator);
+
+    uint16_t generationNumber() const;
 
 private:
+    void initBlock(Block& block) const override;
+
+    const uint16_t generation_no_;
+
     std::mutex mutex_;
     BlockList old_blocks_;
 

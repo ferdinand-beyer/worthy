@@ -57,15 +57,16 @@ void GCWorker::evacuate(Object*& addr) {
     }
 
     Space* space = static_cast<Space*>(block->owner());
-    WORTHY_DCHECK(space->next_generation_);
+    WORTHY_DCHECK(space->nextGeneration()
+            && space->nextGeneration()->generationNumber() ==
+                block->nextGenerationNumber());
 
     if (auto new_addr = addr->moved_.load(std::memory_order_relaxed)) {
         alreadyMoved(addr, new_addr);
         return;
     }
 
-    // TODO: Cache generation number in block
-    copy(addr, space->next_generation_->generation_number_);
+    copy(addr, block->nextGenerationNumber());
 }
 
 

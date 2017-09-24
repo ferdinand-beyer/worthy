@@ -43,9 +43,19 @@ Block::Block(byte* start) :
     free_{nullptr},
     owner_{nullptr},
     span_{0},
-    flags_{0}
+    flags_{0},
+    generation_no_{0},
+    next_generation_no_{0}
 {
     WORTHY_DCHECK(start);
+}
+
+
+void Block::clearMetaData() {
+    owner_ = nullptr;
+    flags_ = 0;
+    generation_no_ = 0;
+    next_generation_no_ = 0;
 }
 
 
@@ -56,6 +66,26 @@ BlockOwner* Block::owner() const {
 
 void Block::setOwner(BlockOwner* owner) {
     owner_ = owner;
+}
+
+
+uint16_t Block::generationNumber() const {
+    return generation_no_;
+}
+
+
+void Block::setGenerationNumber(uint16_t generation_no) {
+    generation_no_ = generation_no;
+}
+
+
+uint16_t Block::nextGenerationNumber() const {
+    return next_generation_no_;
+}
+
+
+void Block::setNextGenerationNumber(uint16_t generation_no) {
+    next_generation_no_ = generation_no;
 }
 
 

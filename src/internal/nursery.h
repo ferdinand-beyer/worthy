@@ -15,6 +15,9 @@ public:
 
     using Space::construct;
     using Space::constructEx;
+
+private:
+    void initBlock(Block& block) const override;
 };
 
 
