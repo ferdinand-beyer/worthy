@@ -10,6 +10,7 @@ namespace worthy {
 namespace internal {
 
 
+class Block;
 class GCWorkspace;
 class GarbageCollector;
 
@@ -19,22 +20,36 @@ public:
     GCWorker(const GCWorker&) = delete;
     GCWorker& operator=(const GCWorker&) = delete;
 
-    explicit GCWorker(GarbageCollector* gc);
+    GCWorker(GarbageCollector* gc, uint16_t generation_count);
 
     void visit(Object*& addr) override;
 
-    void scavenge();
+    void prepareCycle();
+    void executeCycle();
 
 private:
-    GCWorkspace& workspace(uint16_t generation_index);
+    GCWorkspace& workspace(uint16_t generation_no);
 
     void evacuate(Object*& addr);
-    void copy(Object*& addr, uint16_t generation_number);
-    void* allocate(size_t size, uint16_t generation_number);
+    void copy(Object*& addr, uint16_t generation_no);
+    void* allocate(size_t size, uint16_t generation_no);
 
     static void alreadyMoved(Object*& addr, Object* new_addr);
 
+    void collectCompletedBlocks();
+
     GarbageCollector* const gc_;
+    const uint16_t generation_count_;
+
+    /// Block we are currently scanning.
+    Block* scan_block_;
+
+    /// Youngest generation for evacuate().
+    uint16_t min_evac_generation_no_;
+
+    /// Whether we may promote an object to the minimum evacuation
+    /// generation instead of the intended generation.
+    bool eager_promotion_;
 };
 
 

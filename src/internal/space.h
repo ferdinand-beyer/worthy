@@ -81,6 +81,7 @@ private:
 
     friend class GarbageCollector;
     friend class GCWorker;
+    friend class GCWorkspace;
     friend class ObjectSpaceAccess;
 };
 

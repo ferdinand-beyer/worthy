@@ -17,7 +17,8 @@ namespace internal {
 GarbageCollector::GarbageCollector(Heap* heap) :
     heap_{heap},
     worker_count_{heap->cpu_count_},
-    worker_size_{sizeof(GCWorker) +
+    worker_size_{
+        sizeof(GCWorker) +
         heap->generation_count_ * sizeof(GCWorkspace)},
     max_generation_index_{0},
     worker_{nullptr}
@@ -26,9 +27,10 @@ GarbageCollector::GarbageCollector(Heap* heap) :
             blocksForBytes(worker_count_ * worker_size_));
 
     for (uint i = 0; i < worker_count_; i++) {
-        workspace_->construct<GCWorker>(this);
+        workspace_->construct<GCWorker>(this, heap->generation_count_);
         for (uint k = 0; k < heap->generation_count_; k++) {
-            workspace_->construct<GCWorkspace>(&heap->generations_[k]);
+            workspace_->construct<GCWorkspace>(
+                    &heap->generations_[k], &heap->allocator_);
         }
     }
 }
@@ -53,13 +55,13 @@ void GarbageCollector::collect(size_t generation_index) {
 
     prepareGenerations();
 
-    //worker_->prepareCycle();
+    worker_->prepareCycle();
 
     // TODO: Scavenge old remembered sets
 
     evacuateRoots();
 
-    worker_->scavenge();
+    worker_->executeCycle();
 
     finalizeGenerations();
     resetNurseries();
@@ -118,12 +120,6 @@ void GarbageCollector::resetNurseries() {
         heap_->frames_[i].nursery().reset();
         // TODO: Reserve new nursery space?
     }
-}
-
-
-// TODO: Remove
-Generation& GarbageCollector::gen(uint16_t no) {
-    return heap_->generations_[no];
 }
 
 

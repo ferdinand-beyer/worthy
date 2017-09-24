@@ -14,8 +14,12 @@ namespace worthy {
 namespace internal {
 
 
-GCWorker::GCWorker(GarbageCollector* gc)
-    : gc_{gc} {
+GCWorker::GCWorker(GarbageCollector* gc, uint16_t generation_count)
+    : gc_{gc},
+      generation_count_{generation_count},
+      scan_block_{nullptr},
+      min_evac_generation_no_{0},
+      eager_promotion_{true} {
 }
 
 
@@ -24,13 +28,20 @@ void GCWorker::visit(Object*& addr) {
 }
 
 
-void GCWorker::scavenge() {
+void GCWorker::prepareCycle() {
 }
 
 
-GCWorkspace& GCWorker::workspace(uint16_t index) {
+void GCWorker::executeCycle() {
+    // TODO: Scavenge all
+
+    collectCompletedBlocks();
+}
+
+
+GCWorkspace& GCWorker::workspace(uint16_t generation_no) {
     GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
-    return workspaces[index];
+    return workspaces[generation_no];
 }
 
 
@@ -53,14 +64,15 @@ void GCWorker::evacuate(Object*& addr) {
         return;
     }
 
+    // TODO: Cache generation number in block
     copy(addr, space->next_generation_->generation_number_);
 }
 
 
-void GCWorker::copy(Object*& addr, uint16_t generation_number) {
+void GCWorker::copy(Object*& addr, uint16_t generation_no) {
     const size_t size = addr->size_in_words_ * WordSize;
 
-    void* ptr = allocate(size, generation_number);
+    void* ptr = allocate(size, generation_no);
     std::memcpy(ptr, addr, size);
 
     Object* prev_addr = nullptr;
@@ -70,24 +82,37 @@ void GCWorker::copy(Object*& addr, uint16_t generation_number) {
                 prev_addr, new_addr, std::memory_order_relaxed)) {
         addr = new_addr;
     } else {
-        // Another thread has already evacuated this one.  The copy we just
-        // made is garbage and will be collected in the next cycle.
+        // Another worker has already evacuated this one.  The copy we just
+        // made is now garbage and will be collected in the next cycle.
         alreadyMoved(addr, prev_addr);
     }
 }
 
 
-void* GCWorker::allocate(size_t size, uint16_t generation_number) {
-    // TODO: Assert for size < LargeObjectThreshold
-    // TODO: Use workspace for allocations.
-    auto& gen = gc_->gen(generation_number);
-    return gen.allocate(size);
+void* GCWorker::allocate(size_t size, uint16_t generation_no) {
+#if 0
+    if (generation_no < min_evac_generation_no_) {
+        if (eager_promotion_) {
+            generation_no = min_evac_generation_no_;
+        } else {
+            // TODO: Failed to evac/promote
+        }
+    } 
+#endif
+    return workspace(generation_no).allocate(size);
 }
 
 
 void GCWorker::alreadyMoved(Object*& addr, Object* new_addr) {
     // TODO: Check generation numbers for remembered sets!
     addr = new_addr;
+}
+
+
+void GCWorker::collectCompletedBlocks() {
+    for (uint16_t i = 0; i < generation_count_; i++) {
+        workspace(i).collectCompletedBlocks();
+    }
 }
 
 

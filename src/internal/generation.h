@@ -4,6 +4,8 @@
 
 #include "internal/space.h"
 
+#include <mutex>
+
 
 namespace worthy {
 namespace internal {
@@ -14,9 +16,11 @@ public:
     Generation(uint16_t number, Heap* heap, BlockAllocator* allocator);
 
 private:
+    std::mutex mutex_;
     BlockList old_blocks_;
 
     friend class GarbageCollector;
+    friend class GCWorkspace;
 };
 
 

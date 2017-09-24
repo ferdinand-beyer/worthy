@@ -25,9 +25,6 @@ public:
 
     void collect(size_t generation_index);
 
-    // TODO: Temporary, required until we use workspaces.
-    Generation& gen(uint16_t no);
-
 private:
     GCWorker* worker(size_t index) const;
 
