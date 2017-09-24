@@ -54,3 +54,23 @@ TEST_CASE("Root objects survive garbage collection", "[gc]") {
     // updated to the new address.
     REQUIRE(handle->get() != old_address);
 }
+
+
+TEST_CASE("Reachable objects survive garbage collection", "[gc]") {
+    Heap heap;
+    const auto initial_count = heap.objectCount();
+
+    heap.lock();
+    auto map0 = construct<HashMap>();
+    const auto count0 = heap.objectCount();
+    auto map1 = map0->add(13, 37);
+    const auto count1 = heap.objectCount();
+    auto handle = heap.makeHandle(map1);
+    heap.unlock();
+
+    REQUIRE(heap.objectCount() == count1);
+
+    heap.gc();
+
+    REQUIRE(heap.objectCount() == (initial_count + count1 - count0));
+}

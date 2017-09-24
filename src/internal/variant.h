@@ -14,6 +14,7 @@ namespace worthy {
 namespace internal {
 
 
+class GCVisitor;
 class Object;
 
 
@@ -47,7 +48,7 @@ union VariantData {
 /**
  * Tagged union for primitives and Objects.
  */
-class Variant {
+class Variant final {
 public:
     Variant();
 
@@ -72,6 +73,8 @@ public:
     bool operator!=(const Variant& other) const;
 
     Object* toObject() const;
+
+    void scan(GCVisitor& visitor);
 
 private:
     VariantData data_;
@@ -145,7 +148,7 @@ inline Object* Variant::toObject() const {
  * arrays: a VariantData array and a VariantType array, improving memory
  * usage.
  */
-class VariantArray {
+class VariantArray final {
 public:
     static size_t sizeFor(size_t length);
 
@@ -165,6 +168,8 @@ public:
               const VariantArray& src,
               size_t src_index,
               size_t length);
+
+    void scan(GCVisitor& visitor);
 
 private:
     const size_t length_;

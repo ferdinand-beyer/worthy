@@ -22,13 +22,13 @@ public:
 
     GCWorker(GarbageCollector* gc, uint16_t generation_count);
 
-    void visit(Object*& addr) override;
-
     void prepareCycle();
     void executeCycle();
 
 private:
     GCWorkspace& workspace(uint16_t generation_no);
+
+    void doVisit(Object*& addr) override;
 
     void evacuate(Object*& addr);
     void copy(Object*& addr, uint16_t generation_no);

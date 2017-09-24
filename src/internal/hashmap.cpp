@@ -2,6 +2,7 @@
 
 #include "internal/eternity.h"
 #include "internal/frame.h"
+#include "internal/gc_visitor.h"
 #include "internal/hash.h"
 #include "internal/heap.h"
 #include "internal/map_visitor.h"
@@ -238,6 +239,16 @@ HashCode HashMap::hashCode_() const {
         hash_code_ = hash;
     }
     return hash;
+}
+
+
+void HashMap::scan_(GCVisitor& visitor) {
+    if (has_null_key_) {
+        const_cast<Variant&>(null_value_).scan(visitor);
+    }
+    if (root_) {
+        visitor.visit(const_cast<HashMapNode*&>(root_));
+    }
 }
 
 
@@ -530,6 +541,10 @@ bool HashMapBitmapNode::accept_(MapVisitor& visitor) const {
 }
 
 
+void HashMapBitmapNode::scan_(GCVisitor& visitor) {
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapArrayNode
 
@@ -656,6 +671,10 @@ bool HashMapArrayNode::accept_(MapVisitor& visitor) const {
 }
 
 
+void HashMapArrayNode::scan_(GCVisitor& visitor) {
+}
+
+
 // ---------------------------------------------------------------------
 // HashMapCollisionNode
 
@@ -684,6 +703,11 @@ HashMapNode* HashMapCollisionNode::remove_(uint shift, HashCode hash,
 
 
 bool HashMapCollisionNode::accept_(MapVisitor& visitor) const {
+    WORTHY_UNIMPLEMENTED(); // TODO
+}
+
+
+void HashMapCollisionNode::scan_(GCVisitor& visitor) {
     WORTHY_UNIMPLEMENTED(); // TODO
 }
 

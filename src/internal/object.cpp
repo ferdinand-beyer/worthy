@@ -49,6 +49,11 @@ bool Object::equals(const Object* other) const {
 }
 
 
+void Object::scan(GCVisitor& visitor) {
+    DISPATCH(WORTHY_OBJECT_TYPES, scan_, (visitor));
+}
+
+
 HashCode Object::hashCode_() const {
     return hash(reinterpret_cast<uintptr_t>(this));
 }
@@ -56,6 +61,10 @@ HashCode Object::hashCode_() const {
 
 bool Object::equals_(const Object* other) const {
     return this == other;
+}
+
+
+void Object::scan_(GCVisitor& visitor) {
 }
 
 

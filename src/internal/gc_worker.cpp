@@ -23,11 +23,6 @@ GCWorker::GCWorker(GarbageCollector* gc, uint16_t generation_count)
 }
 
 
-void GCWorker::visit(Object*& addr) {
-    evacuate(addr);
-}
-
-
 void GCWorker::prepareCycle() {
 }
 
@@ -42,6 +37,11 @@ void GCWorker::executeCycle() {
 GCWorkspace& GCWorker::workspace(uint16_t generation_no) {
     GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
     return workspaces[generation_no];
+}
+
+
+void GCWorker::doVisit(Object*& addr) {
+    evacuate(addr);
 }
 
 
@@ -150,14 +150,13 @@ void GCWorker::scavengeBlock(Block& block) {
     min_evac_generation_no_ = block.generation_no_;
     //failed_to_evac = false
 
-    bool saved_eager_promotion = eager_promotion_;
     auto& ws = workspace(block.generation_no_);
 
     while ((&block == &ws.allocationBlock()) &&
             (block.scan_ptr_ < block.free_)) {
         Object* object = reinterpret_cast<Object*>(block.scan_ptr_);
 
-        // TODO: Scan object, record mutability (eager_promotion)
+        object->scan(*this);
 
         // TODO: Remembered set if failed to evac
 

@@ -1,6 +1,7 @@
 #include "internal/variant.h"
 
 #include "internal/check.h"
+#include "internal/gc_visitor.h"
 #include "internal/hash.h"
 #include "internal/object.h"
 
@@ -42,6 +43,13 @@ bool Variant::operator==(const Variant& other) const {
 }
 
 
+void Variant::scan(GCVisitor& visitor) {
+    if (isObject()) {
+        visitor.visit(data_.obj);
+    }
+}
+
+
 void VariantArray::clear() {
     std::memset(data_array_, 0, sizeFor(length_));
 }
@@ -72,6 +80,15 @@ void VariantArray::copy(size_t dst_index, const VariantArray& src,
     std::memcpy(type_array_ + dst_index,
                 src.type_array_ + src_index,
                 length * sizeof(VariantType));
+}
+
+
+void VariantArray::scan(GCVisitor& visitor) {
+    for (size_t i = 0; i < length_; i++) {
+        if (type_array_[i] == VariantType::Object) {
+            visitor.visit(data_array_[i].obj);
+        }
+    }
 }
 
 
