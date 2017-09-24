@@ -88,11 +88,12 @@ public:
 private:
     explicit Block(byte* start);
 
-    void clearMetaData();
+    void clearState();
 
     // TODO: The start address can be computed from this!
     byte* const start_;
     byte* free_;
+    byte* scan_ptr_;
 
     BlockOwner* owner_;
 
@@ -101,8 +102,10 @@ private:
     uint16_t generation_no_;
     uint16_t next_generation_no_;
 
-    friend class RootBlockAllocator;
     friend class BlockTestAccess;
+    friend class GCWorker;
+    friend class GCWorkspace;
+    friend class RootBlockAllocator;
 };
 
 
@@ -119,7 +122,6 @@ public:
 
     static Block* construct(byte* buffer);
 };
-
 
 
 } } // namespace worthy::internal

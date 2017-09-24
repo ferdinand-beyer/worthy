@@ -33,7 +33,7 @@ void GCWorker::prepareCycle() {
 
 
 void GCWorker::executeCycle() {
-    // TODO: Scavenge all
+    scavengeAll();
 
     collectCompletedBlocks();
 }
@@ -98,7 +98,7 @@ void* GCWorker::allocate(size_t size, uint16_t generation_no) {
         } else {
             // TODO: Failed to evac/promote
         }
-    } 
+    }
 #endif
     return workspace(generation_no).allocate(size);
 }
@@ -107,6 +107,68 @@ void* GCWorker::allocate(size_t size, uint16_t generation_no) {
 void GCWorker::alreadyMoved(Object*& addr, Object* new_addr) {
     // TODO: Check generation numbers for remembered sets!
     addr = new_addr;
+}
+
+
+void GCWorker::scavengeAll() {
+    // For oldest to youngest generation:
+    // - scavenge current alloc block if (scan_ptr < alloc_ptr)
+    // - scavenge large objects
+    // - scavenge a pending block
+
+    bool did_something = true;
+
+    do {
+        did_something = false;
+
+        for (int i = generation_count_ - 1; i >= 0; i--) {
+            auto& ws = workspace(i);
+
+            if (tryScavengeAllocationBlock(ws)) {
+                did_something = true;
+                break;
+            }
+        }
+    } while (did_something);
+}
+
+
+bool GCWorker::tryScavengeAllocationBlock(GCWorkspace& workspace) {
+    auto& block = workspace.allocationBlock();
+    if (block.scan_ptr_ < block.free_) {
+        scavengeBlock(block);
+        return true;
+    }
+    return false;
+}
+
+
+void GCWorker::scavengeBlock(Block& block) {
+    WORTHY_DCHECK(block.scan_ptr_ >= block.start_);
+
+    scan_block_ = &block;
+    min_evac_generation_no_ = block.generation_no_;
+    //failed_to_evac = false
+
+    bool saved_eager_promotion = eager_promotion_;
+    auto& ws = workspace(block.generation_no_);
+
+    while ((&block == &ws.allocationBlock()) &&
+            (block.scan_ptr_ < block.free_)) {
+        Object* object = reinterpret_cast<Object*>(block.scan_ptr_);
+
+        // TODO: Scan object, record mutability (eager_promotion)
+
+        // TODO: Remembered set if failed to evac
+
+        block.scan_ptr_ += object->size_in_words_ * WordSize;
+    }
+
+    WORTHY_DCHECK(block.scan_ptr_ == block.free_);
+
+    // TODO: What can pull our block away here?
+
+    scan_block_ = nullptr;
 }
 
 

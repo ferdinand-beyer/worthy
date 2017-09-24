@@ -9,22 +9,24 @@ namespace worthy {
 namespace internal {
 
 
-GCWorkspace::GCWorkspace(Generation* generation, BlockAllocator* allocator)
-    : generation_{generation},
-      allocator_{allocator},
-      allocation_block_{nullptr},
-      object_count_{0} {
+GCWorkspace::GCWorkspace(Generation* generation, BlockAllocator* allocator) :
+    generation_{generation},
+    allocator_{allocator},
+    allocation_block_{nullptr},
+    object_count_{0}
+{
+    allocateBlock();
+}
+
+
+Block& GCWorkspace::allocationBlock() const {
+    WORTHY_DCHECK(allocation_block_);
+    return *allocation_block_;
 }
 
 
 void* GCWorkspace::allocate(size_t size) {
     // TODO: Check for large object!
-    if (!allocation_block_) {
-        // TODO: Sync!
-        allocation_block_ = allocator_->allocate();
-
-        generation_->registerBlock(*allocation_block_);
-    }
     if (allocation_block_->bytesAvailable() >= size) {
         ++object_count_;
         return allocation_block_->allocate(size);
@@ -39,6 +41,14 @@ void GCWorkspace::collectCompletedBlocks() {
     generation_->object_count_ += object_count_;
 
     object_count_ = 0;
+}
+
+
+void GCWorkspace::allocateBlock() {
+    // TODO: Sync!
+    allocation_block_ = allocator_->allocate();
+    allocation_block_->scan_ptr_ = allocation_block_->free_;
+    generation_->registerBlock(*allocation_block_);
 }
 
 

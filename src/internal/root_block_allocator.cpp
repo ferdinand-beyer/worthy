@@ -164,7 +164,7 @@ bool RootBlockAllocator::isFree(Block* block) {
 
 void RootBlockAllocator::reclaim(Block* block) {
     blocks_allocated_ -= block->span_;
-    block->clearMetaData();
+    block->clearState();
     block->free_ = nullptr;
 }
 

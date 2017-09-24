@@ -36,6 +36,11 @@ private:
 
     static void alreadyMoved(Object*& addr, Object* new_addr);
 
+    void scavengeAll();
+    bool tryScavengeAllocationBlock(GCWorkspace& workspace);
+
+    void scavengeBlock(Block& block);
+
     void collectCompletedBlocks();
 
     GarbageCollector* const gc_;

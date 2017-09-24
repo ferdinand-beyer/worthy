@@ -9,6 +9,8 @@
 - Support multi-threaded GC workers
 - Use more Block API in BlockedVector
 - Use a linked list in chunks to track allocations (instead of set)
+- Gather GC statistics and determine when to run GC
+- Use pointers and references consistently
 
 ## Misc
 - Transient tag: per-runtime atomic counter?

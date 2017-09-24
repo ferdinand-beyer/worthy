@@ -41,6 +41,7 @@ Block* Block::of(void* ptr) {
 Block::Block(byte* start) :
     start_{start},
     free_{nullptr},
+    scan_ptr_{nullptr},
     owner_{nullptr},
     span_{0},
     flags_{0},
@@ -51,7 +52,8 @@ Block::Block(byte* start) :
 }
 
 
-void Block::clearMetaData() {
+void Block::clearState() {
+    scan_ptr_ = nullptr;
     owner_ = nullptr;
     flags_ = 0;
     generation_no_ = 0;

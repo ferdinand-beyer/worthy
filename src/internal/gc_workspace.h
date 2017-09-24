@@ -18,6 +18,8 @@ class GCWorkspace {
 public:
     GCWorkspace(Generation* generation, BlockAllocator* allocator);
 
+    Block& allocationBlock() const;
+
     /// Allocate memory to copy an object into this generation.
     void* allocate(size_t size);
 
@@ -25,6 +27,8 @@ public:
     void collectCompletedBlocks();
 
 private:
+    void allocateBlock();
+
     Generation* const generation_;
     BlockAllocator* const allocator_;
 
