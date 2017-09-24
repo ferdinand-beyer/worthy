@@ -7,8 +7,6 @@
 #include "internal/map_visitor.h"
 #include "internal/object_dispatch.h"
 
-#include <boost/core/ignore_unused.hpp>
-
 #include <bitset>
 
 
@@ -283,7 +281,6 @@ bool HashMapNode::accept(MapVisitor& visitor) const {
 
 HashMapBitmapNode::HashMapBitmapNode()
     : bitmap_{0} {
-    boost::ignore_unused(padding_);
 }
 
 

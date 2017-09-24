@@ -53,11 +53,12 @@ private:
     void acquireFrameSync();
     bool tryAcquireFrame();
 
-    const uint thread_count_;
+    const uint generation_count_;
+    const uint cpu_count_;
     const uint max_frame_count_;
 
     RootBlockAllocator allocator_;
-    Block* block_;
+    Block* workspace_;
 
     HandlePool* handle_pool_;
     Eternity* eternity_;

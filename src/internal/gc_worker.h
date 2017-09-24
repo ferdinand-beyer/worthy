@@ -16,7 +16,7 @@ class GarbageCollector;
 struct GCWorkspace;
 
 
-class GCWorker final : public GCVisitor {
+class alignas(64) GCWorker final : public GCVisitor {
 public:
     GCWorker(const GCWorker&) = delete;
     GCWorker& operator=(const GCWorker&) = delete;
@@ -28,7 +28,7 @@ public:
     void scavenge();
 
 private:
-    GCWorkspace& workspace(uint16_t generation_number);
+    GCWorkspace& workspace(uint16_t generation_index);
 
     void evacuate(Object*& addr);
     void copy(Object*& addr, uint16_t generation_number);
@@ -40,7 +40,7 @@ private:
 };
 
 
-struct GCWorkspace {
+struct alignas(64) GCWorkspace {
     BlockList done_blocks_;
 };
 

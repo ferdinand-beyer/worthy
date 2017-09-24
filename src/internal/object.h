@@ -20,13 +20,13 @@ namespace internal {
 class Heap;
 
 
-class Object {
+class alignas(WordSize) Object {
 public:
     static bool equals(const Object* a, const Object* b);
 
     template<typename T, typename... Args>
     static T* emplace(void* ptr, size_t size, Args&&... args) {
-        WORTHY_DCHECK(size >= sizeof(T) && size >= 2 * WordSize);
+        WORTHY_DCHECK(size >= sizeof(T));
         WORTHY_DCHECK(reinterpret_cast<uintptr_t>(ptr) % alignof(T) == 0);
 
         preInit(ptr, size, ObjectTypeOf<T>());

@@ -17,7 +17,7 @@ class BlockAllocator;
 class Heap;
 
 
-class Frame final {
+class alignas(CacheLineSize) Frame final {
 public:
     static Frame& current();
 

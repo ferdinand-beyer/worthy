@@ -28,13 +28,17 @@ using std::uint64_t;
 
 
 typedef uint8_t byte;
-typedef std::uint_fast32_t uint;
+typedef unsigned int uint;
 
 typedef uint32_t HashCode;
 
 
 constexpr size_t PointerSize = sizeof(void*);
 constexpr size_t WordSize = PointerSize;
+
+/// Size of the L1 cache line.
+/// \sa std::hardware_destructive_interference_size (C++17)
+constexpr size_t CacheLineSize = 64;
 
 
 } } // namespace worthy::internal

@@ -10,19 +10,18 @@ namespace worthy {
 namespace internal {
 
 
+class Block;
 class Generation;
 class Heap;
 
 
 class GarbageCollector final {
 public:
-    static size_t workspaceSize(size_t worker_count, size_t generation_count);
-
     GarbageCollector(const GarbageCollector&) = delete;
     GarbageCollector& operator=(const GarbageCollector&) = delete;
 
-    GarbageCollector(Heap* heap, size_t worker_count, size_t generation_count,
-            void* workspace);
+    explicit GarbageCollector(Heap* heap);
+    ~GarbageCollector();
 
     void collect(size_t generation_index);
 
@@ -30,6 +29,8 @@ public:
     Generation& gen(uint16_t no);
 
 private:
+    GCWorker* worker(size_t index) const;
+
     void prepareGenerations();
     static void prepareCollectedGeneration(Generation& gen);
     static void swapSpaces(Generation& gen);
@@ -42,10 +43,13 @@ private:
     void resetNurseries();
 
     Heap* const heap_;
+    const size_t worker_count_;
+    const size_t worker_size_;
 
-    GCWorker worker_;
+    Block* workspace_;
 
     size_t max_generation_index_;
+    GCWorker* worker_;
 };
 
 

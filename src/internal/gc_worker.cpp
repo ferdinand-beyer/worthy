@@ -15,8 +15,6 @@ namespace internal {
 
 GCWorker::GCWorker(GarbageCollector* gc)
     : gc_{gc} {
-    // TODO: Take a pointer to an array of workspaces, that must be
-    // pre-allocated by the caller (= GarbageCollector).
 }
 
 
@@ -29,9 +27,9 @@ void GCWorker::scavenge() {
 }
 
 
-GCWorkspace& GCWorker::workspace(uint16_t generation_number) {
+GCWorkspace& GCWorker::workspace(uint16_t index) {
     GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
-    return workspaces[generation_number];
+    return workspaces[index];
 }
 
 

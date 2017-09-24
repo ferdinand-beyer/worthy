@@ -6,44 +6,64 @@
 #include "internal/generation.h"
 #include "internal/handle_pool.h"
 #include "internal/heap.h"
+#include "internal/memory_utils.h"
 
 
 namespace worthy {
 namespace internal {
 
 
-size_t GarbageCollector::workspaceSize(
-        size_t worker_count, size_t generation_count) {
-    return worker_count * (
-            sizeof(GCWorker) + generation_count * sizeof(GCWorkspace));
+GarbageCollector::GarbageCollector(Heap* heap) :
+    heap_{heap},
+    worker_count_{heap->cpu_count_},
+    worker_size_{sizeof(GCWorker) +
+        heap->generation_count_ * sizeof(GCWorkspace)},
+    max_generation_index_{0},
+    worker_{nullptr}
+{
+    workspace_ = heap->allocator_.allocate(
+            blocksForBytes(worker_count_ * worker_size_));
+
+    for (uint i = 0; i < worker_count_; i++) {
+        workspace_->construct<GCWorker>(this);
+        for (uint k = 0; k < heap->generation_count_; k++) {
+            workspace_->construct<GCWorkspace>();
+        }
+    }
 }
 
 
-GarbageCollector::GarbageCollector(Heap* heap, size_t worker_count,
-        size_t generation_count, void* workspace)
-    : heap_{heap},
-      worker_{this},
-      max_generation_index_{0} {
-    // TODO: Initialize workspace per Generation
-    // TODO: Support multiple workers
+GarbageCollector::~GarbageCollector() {
+    heap_->allocator_.deallocate(workspace_);
+}
+
+
+GCWorker* GarbageCollector::worker(size_t index) const {
+    return reinterpret_cast<GCWorker*>(
+            workspace_->begin() + index * worker_size_);
 }
 
 
 void GarbageCollector::collect(size_t generation_index) {
+    WORTHY_DCHECK(!worker_);
+
     max_generation_index_ = generation_index;
+    worker_ = worker(0);
 
     prepareGenerations();
 
-    //worker_.prepareCycle();
+    //worker_->prepareCycle();
 
     // TODO: Scavenge old remembered sets
 
     evacuateRoots();
 
-    worker_.scavenge();
+    worker_->scavenge();
 
     finalizeGenerations();
     resetNurseries();
+
+    worker_ = nullptr;
 }
 
 
@@ -74,7 +94,7 @@ void GarbageCollector::swapSpaces(Generation& gen) {
 
 
 void GarbageCollector::evacuateRoots() {
-    heap_->handle_pool_->accept(worker_);
+    heap_->handle_pool_->accept(*worker_);
 }
 
 

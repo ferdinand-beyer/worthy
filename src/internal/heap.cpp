@@ -1,21 +1,17 @@
 #include "internal/heap.h"
 
-#include "internal/block_layout.h"
+#include "internal/block.h"
 #include "internal/check.h"
 #include "internal/eternity.h"
 #include "internal/frame.h"
 #include "internal/garbage_collector.h"
 #include "internal/generation.h"
 #include "internal/handle_pool.h"
+#include "internal/memory_utils.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <thread>
-
-#include <boost/align/align_up.hpp>
-
-
-using boost::alignment::align_up;
 
 
 namespace worthy {
@@ -25,24 +21,13 @@ namespace internal {
 namespace {
 
 
-constexpr uint MaxFramesPerThread = 8;
+// TODO: Make these configurable
+constexpr uint MaxFramesPerCPU = 4;
 constexpr uint GenerationCount = 2;
 
 
-template<typename T>
-inline constexpr size_t alignedSizeOf() {
-    return align_up(sizeof(T), alignof(std::max_align_t));
-}
-
-
-inline uint threadCount() {
+inline uint cpuCount() {
     return std::max(1u, std::thread::hardware_concurrency());
-}
-
-
-template<typename T>
-inline void destroy(T* ptr) {
-    ptr->~T();
 }
 
 
@@ -50,37 +35,28 @@ inline void destroy(T* ptr) {
 
 
 Heap::Heap() :
-    thread_count_{threadCount()},
-    max_frame_count_{thread_count_ * MaxFramesPerThread},
+    generation_count_{GenerationCount},
+    cpu_count_{cpuCount()},
+    max_frame_count_{cpu_count_ * MaxFramesPerCPU},
     allocator_{},
     frame_count_{0}
 {
-    const size_t gc_worker_count = thread_count_;
-    const size_t gc_workspace_size =
-        GarbageCollector::workspaceSize(gc_worker_count, GenerationCount);
+    SizeCalculator calc;
+    calc.add<HandlePool>()
+        .add<Eternity>()
+        .add<Generation>(GenerationCount)
+        .add<GarbageCollector>()
+        .add<Frame>(max_frame_count_);
 
-    // Calculate (maximum) required size for all member objects.
-    const size_t reserve_size =
-        alignedSizeOf<HandlePool>() +
-        alignedSizeOf<Eternity>() +
-        GenerationCount * alignedSizeOf<Generation>() +
-        max_frame_count_ * alignedSizeOf<Frame>() +
-        alignedSizeOf<GarbageCollector>() +
-        gc_workspace_size;
+    workspace_ = allocator_.allocate(blocksForBytes(calc.size()));
+    WORTHY_DCHECK(workspace_->bytesAvailable() >= calc.size());
 
-    block_ = allocator_.allocate(blocksForBytes(reserve_size));
-
-    WORTHY_DCHECK(block_->bytesAvailable() >= reserve_size);
-
-    handle_pool_ = block_->construct<HandlePool>(&allocator_);
-    eternity_ = block_->construct<Eternity>(this, &allocator_);
+    handle_pool_ = workspace_->construct<HandlePool>(&allocator_);
+    eternity_ = workspace_->construct<Eternity>(this, &allocator_);
 
     initGenerations();
 
-    void* gc_workspace = block_->allocate(gc_workspace_size);
-
-    gc_ = block_->construct<GarbageCollector>(this, gc_worker_count,
-            GenerationCount, gc_workspace);
+    gc_ = workspace_->construct<GarbageCollector>(this);
 
     // After this point, the memory in the allocated block is exclusively
     // reserved for frames.
@@ -152,9 +128,9 @@ void Heap::gc() {
 
 
 void Heap::initGenerations() {
-    generations_ = block_->construct<Generation>(0, this, &allocator_);
+    generations_ = workspace_->construct<Generation>(0, this, &allocator_);
     for (uint i = 1; i < GenerationCount; i++) {
-        block_->construct<Generation>(i, this, &allocator_);
+        workspace_->construct<Generation>(i, this, &allocator_);
         generations_[i - 1].setNextGeneration(&generations_[i]);
     }
     const uint last = GenerationCount - 1;
@@ -163,10 +139,10 @@ void Heap::initGenerations() {
 
 
 void Heap::initFrames() {
-    frame_count_ = thread_count_;
-    frames_ = block_->construct<Frame>(0, this, &allocator_);
+    frame_count_ = cpu_count_;
+    frames_ = workspace_->construct<Frame>(0, this, &allocator_);
     for (uint i = 1; i < frame_count_; i++) {
-        block_->construct<Frame>(i, this, &allocator_);
+        workspace_->construct<Frame>(i, this, &allocator_);
     }
     for (uint i = 0; i < frame_count_; i++) {
         frames_[i].nursery().setNextGeneration(&generations_[0]);
@@ -190,7 +166,7 @@ Frame* Heap::currentFrame() const {
 
 Frame& Heap::newFrame() {
     WORTHY_DCHECK(frame_count_ < max_frame_count_);
-    auto frame = block_->construct<Frame>(frame_count_, this, &allocator_);
+    auto frame = workspace_->construct<Frame>(frame_count_, this, &allocator_);
     WORTHY_DCHECK(frame == &frames_[frame_count_]);
     ++frame_count_;
     frame->nursery().setNextGeneration(&generations_[0]);
