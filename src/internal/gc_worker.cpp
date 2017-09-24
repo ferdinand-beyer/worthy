@@ -19,7 +19,7 @@ GCWorker::GCWorker(GarbageCollector* gc, uint16_t generation_count)
       generation_count_{generation_count},
       scan_block_{nullptr},
       min_evac_generation_no_{0},
-      eager_promotion_{true} {
+      eager_promotion_{false} {
 }
 
 

@@ -48,7 +48,9 @@ private:
     uint16_t min_evac_generation_no_;
 
     /// Whether we may promote an object to the minimum evacuation
-    /// generation instead of the intended generation.
+    /// generation instead of the intended generation.  This should
+    /// be set for "lazy immutable" objects only, when we can assume
+    /// that the young object will live as long as the old one.
     bool eager_promotion_;
 };
 
