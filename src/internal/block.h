@@ -25,6 +25,8 @@ static constexpr size_t BlockSize = 1 << BlockBits;
 static constexpr size_t BlockDescriptorSize = 1 << BlockDescriptorBits;
 
 
+/// Returns the number of blocks required to hold at least \a size bytes.
+///
 size_t blocksForBytes(size_t size);
 
 
@@ -34,7 +36,7 @@ class alignas(BlockDescriptorSize) Block final
     : public boost::intrusive::list_base_hook<> {
 public:
     static constexpr uint16_t EvacuatedFlag = 0x01;
-    static constexpr uint16_t ImmortalFlag = 0x02;
+    static constexpr uint16_t EternalFlag = 0x02;
 
     Block(const Block&) = delete;
     Block& operator=(const Block&) = delete;
@@ -63,7 +65,7 @@ public:
     size_t bytesAllocated() const;
 
     /// Returns the number of free bytes in this block.
-    /// 
+    ///
     size_t bytesAvailable() const;
 
     /// Allocate memory (without alignment requirements).

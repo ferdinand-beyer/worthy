@@ -49,7 +49,7 @@ void GCWorker::evacuate(Object*& addr) {
     Block* block = Block::of(addr);
     WORTHY_DCHECK(dynamic_cast<Space*>(block->owner()));
 
-    if (block->flags() & Block::ImmortalFlag) {
+    if (block->flags() & Block::EternalFlag) {
         return;
     }
     if (block->flags() & Block::EvacuatedFlag) {

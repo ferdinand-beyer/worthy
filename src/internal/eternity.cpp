@@ -15,7 +15,7 @@ Eternity::Eternity(Heap* heap, BlockAllocator* allocator)
 
 
 void Eternity::initBlock(Block& block) const {
-    block.flags() |= Block::ImmortalFlag;
+    block.flags() |= Block::EternalFlag;
 }
 
 
