@@ -41,6 +41,7 @@ add_library(worthy SHARED
     src/internal/block.cpp
     src/internal/block_allocator.cpp
     src/internal/block_owner.cpp
+    src/internal/byte_array.cpp
     src/internal/check.cpp
     src/internal/eternity.cpp
     src/internal/frame.cpp
@@ -80,6 +81,7 @@ target_link_libraries(worthy boost murmur3)
 add_executable(worthy-test
     test/block_test.cpp
     test/blocked_vector_test.cpp
+    test/byte_array_test.cpp
     test/garbage_collector_test.cpp
     test/handle_pool_test.cpp
     test/hash_test.cpp

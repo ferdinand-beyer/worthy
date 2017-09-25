@@ -1,6 +1,6 @@
 #include "internal/object.h"
 
-#include "internal/frame.h"
+#include "internal/byte_array.h"
 #include "internal/hash.h"
 #include "internal/hashmap.h"
 #include "internal/nursery.h"

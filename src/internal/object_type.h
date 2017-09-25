@@ -31,6 +31,7 @@ namespace internal {
 #define WORTHY_OBJECT_TYPES         \
     WORTHY_ITERATOR_TYPES           \
     WORTHY_HASHMAPNODE_TYPES        \
+    (ByteArray)                     \
     (HashMap)                       \
     (TransientHashMap)
 
