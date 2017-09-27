@@ -9,7 +9,7 @@
 using namespace worthy::internal;
 
 
-TEST_CASE("hash code for primitive types", "[hash]") {
+TEST_CASE("Hash code for fundamental types", "[hash]") {
     SECTION("booleans") {
         REQUIRE(hash(true) == hash(true));
         REQUIRE(hash(false) == hash(false));
@@ -64,16 +64,19 @@ TEST_CASE("hash code for primitive types", "[hash]") {
 }
 
 
-TEST_CASE("hash code of known string", "[hash]") {
+TEST_CASE("The hash code of a string", "[hash]") {
     std::string str;
 
-    HashCode h = hash(str.data(), str.length());
+    SECTION("is zero for an empty string") {
+        auto h = hash(str.data(), str.length());
+        REQUIRE(h == 0);
+    }
 
-    REQUIRE(h == 0);
+    SECTION("is the same as a well-known example") {
+        str = "MurmurHash3";
+        auto h = hash(str.data(), str.length());
 
-    str = "MurmurHash3";
-    h = hash(str.data(), str.length());
-
-    // Gold value taken from http://murmurhash.shorelabs.com/
-    REQUIRE(h == 1473193682u);
+        // Gold value taken from http://murmurhash.shorelabs.com/
+        REQUIRE(h == 1473193682u);
+    }
 }

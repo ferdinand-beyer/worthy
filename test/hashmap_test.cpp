@@ -41,7 +41,7 @@ struct TestContext {
 
 
 #if 0
-TEST_CASE("find colliding keys") {
+TEST_CASE("Find colliding keys") {
     for (std::uint32_t i = 0; i < 256; i++) {
         if ((hash(i) & 0x1f) == 1) {
             CHECK(i != i);
@@ -51,7 +51,7 @@ TEST_CASE("find colliding keys") {
 #endif
 
 
-TEST_CASE("peconditions") {
+TEST_CASE("Test preconditions are met") {
     SECTION("shift0 colliding keys") {
         const auto hash1 = hash(shift0_colliding_key_1);
         const auto hash2 = hash(shift0_colliding_key_2);
@@ -63,7 +63,7 @@ TEST_CASE("peconditions") {
 }
 
 
-TEST_CASE("construct empty hashmap", "[hashmap]") {
+TEST_CASE("An empty hash map has zero size", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
@@ -71,45 +71,50 @@ TEST_CASE("construct empty hashmap", "[hashmap]") {
 }
 
 
-TEST_CASE("get non-existing key", "[hashmap]") {
+TEST_CASE("Getting a non-existing key from a hash map", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
-    REQUIRE(map->get(42).isNull());
-    REQUIRE(map->get(42, true) == true);
+    SECTION("returns a null value") {
+        REQUIRE(map->get(42).isNull());
+    }
+
+    SECTION("returns the default value if provided") {
+        REQUIRE(map->get(42, true) == true);
+    }
 }
 
 
-TEST_CASE("add values", "[hashmap]") {
+TEST_CASE("When adding to a hash map", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
     HashMap* map2 = map->add(42, 1337);
 
-    SECTION("value is added") {
+    SECTION("the resulting map contains the added entry") {
         REQUIRE(map2->count() == 1);
         REQUIRE(map2->containsKey(42));
         REQUIRE(map2->get(42) == 1337);
     }
 
-    SECTION("original map is not modified") {
+    SECTION("the original map is not modified") {
         REQUIRE(map->count() == 0);
         REQUIRE(!map->containsKey(42));
     }
 
-    SECTION("other key does not exist") {
+    SECTION("another key does not exist") {
         REQUIRE(!map2->containsKey(43));
         REQUIRE(map2->get(43).isNull());
     }
 
-    SECTION("add same entry again") {
+    SECTION("adding same entry again has no effect") {
         HashMap* map3 = map2->add(42, 1337);
 
         REQUIRE(map3->count() == 1);
         REQUIRE(map3->get(42) == 1337);
     }
 
-    SECTION("overwrite key") {
+    SECTION("an existing entry can be overwritten") {
         HashMap* map3 = map2->add(42, false);
 
         REQUIRE(map3->count() == 1);
@@ -118,31 +123,31 @@ TEST_CASE("add values", "[hashmap]") {
 }
 
 
-TEST_CASE("value with null key", "[hashmap]") {
+TEST_CASE("When associating a value to a null key in a hash map", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
-    SECTION("add value") {
+    SECTION("the map contains the entry") {
         map = map->add(nullptr, 42);
 
         REQUIRE(map->count() == 1);
         REQUIRE(map->containsKey(nullptr));
     }
 
-    SECTION("get value") {
+    SECTION("the value can be retrieved using a null key") {
         map = map->add(nullptr, 42);
 
         REQUIRE(map->get(nullptr) == 42);
     }
 
-    SECTION("overwrite value") {
+    SECTION("the entry can be overwritten") {
         map = map->add(nullptr, 1);
         map = map->add(nullptr, 2);
 
         REQUIRE(map->get(nullptr) == 2);
     }
 
-    SECTION("add value multiple times") {
+    SECTION("the entry can be overwritten multiple times") {
         for (int i = 0; i < 10; ++i) {
             map = map->add(nullptr, 42);
         }
@@ -161,7 +166,7 @@ TEST_CASE("value with null key", "[hashmap]") {
 }
 
 
-TEST_CASE("hash collision", "[hashmap]") {
+TEST_CASE("A hash map hold keys with colliding hash codes", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
@@ -178,7 +183,7 @@ TEST_CASE("hash collision", "[hashmap]") {
 }
 
 
-TEST_CASE("add many values", "[hashmap]") {
+TEST_CASE("A hash map can hold many entries", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
@@ -212,17 +217,17 @@ TEST_CASE("add many values", "[hashmap]") {
 }
 
 
-TEST_CASE("remove values", "[hashmap]") {
+TEST_CASE("When removing keys from a hash map", "[hashmap]") {
     TestContext context;
     HashMap* map = context.emptyHashMap();
 
-    SECTION("remove non-existing null key") {
+    SECTION("the map is not modified for a non-existing null key") {
         HashMap* result = map->remove(nullptr);
 
         REQUIRE(result == map);
     }
 
-    SECTION("remove existing null key") {
+    SECTION("an entry with a null key is removed") {
         map = map->add(nullptr, 42);
 
         HashMap* result = map->remove(nullptr);
@@ -230,7 +235,7 @@ TEST_CASE("remove values", "[hashmap]") {
         REQUIRE(result->count() == 0);
     }
 
-    SECTION("remove non-null key from empty map") {
+    SECTION("the map is not modified for a non-existing key") {
         HashMap* result = map->remove(17);
 
         REQUIRE(result == map);
@@ -328,7 +333,7 @@ TEST_CASE("remove values", "[hashmap]") {
 }
 
 
-TEST_CASE("Two HashMaps are equal", "[hashmap]") {
+TEST_CASE("Two hash maps are equal", "[hashmap]") {
     TestContext context;
     HashMap* map1 = context.emptyHashMap();
     HashMap* map2 = context.emptyHashMap();
@@ -345,7 +350,7 @@ TEST_CASE("Two HashMaps are equal", "[hashmap]") {
         REQUIRE_FALSE(map2->equals(map1));
     }
 
-    SECTION("when they contain same values for null key") {
+    SECTION("when they contain same values for a null key") {
         map1 = map1->add(nullptr, 1);
         map2 = map2->add(nullptr, 1);
 
@@ -407,7 +412,7 @@ TEST_CASE("Two HashMaps are equal", "[hashmap]") {
 }
 
 
-TEST_CASE("The HashCodes of two HashMaps", "[hashmap]") {
+TEST_CASE("The hash codes of two hash maps", "[hashmap]") {
     TestContext context;
     HashMap* map1 = context.emptyHashMap();
     HashMap* map2 = context.emptyHashMap();
