@@ -8,9 +8,6 @@
 #include <boost/align/align_up.hpp>
 
 
-using boost::alignment::align_up;
-
-
 namespace worthy {
 namespace internal {
 
@@ -78,7 +75,7 @@ void* Space::allocate(size_t& size) {
         WORTHY_UNIMPLEMENTED(); // TODO
     }
     // Allocate more to leave an aligned pointer.
-    size = align_up(size, ObjectAlignment);
+    size = boost::alignment::align_up(size, ObjectAlignment);
     Block* block = blockForAllocation(size);
     void* ptr = block->allocate(size);
     ++object_count_;
@@ -93,8 +90,7 @@ Block* Space::blockForAllocation(size_t size) {
             return block;
         }
     }
-    const size_t count = align_up(size, BlockSize) / BlockSize;
-    Block* block = allocator_->allocate(count);
+    Block* block = allocator_->allocate(blocksForBytes(size));
     blocks_.push_front(*block);
     registerBlock(*block);
     return block;

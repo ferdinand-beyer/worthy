@@ -3,6 +3,8 @@
 #include "internal/block_layout.h"
 #include "internal/check.h"
 
+#include <boost/align/align_up.hpp>
+
 #include <memory>
 
 
@@ -24,11 +26,7 @@ inline constexpr uintptr_t descriptorOffset(uintptr_t offset) {
 
 
 size_t blocksForBytes(size_t size) {
-    size_t count = size / BlockSize;
-    if (size > (count * BlockSize)) {
-        ++count;
-    }
-    return count;
+    return boost::alignment::align_up(size, BlockSize) / BlockSize;
 }
 
 

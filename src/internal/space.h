@@ -83,17 +83,6 @@ private:
     friend class GarbageCollector;
     friend class GCWorker;
     friend class GCWorkspace;
-    friend class ObjectSpaceAccess;
-};
-
-
-class ObjectSpaceAccess {
-private:
-    static inline void* allocate(Space& space, size_t& size) {
-        return space.allocate(size);
-    }
-
-    friend class Object;
 };
 
 
