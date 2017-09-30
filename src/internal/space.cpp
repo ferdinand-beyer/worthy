@@ -39,6 +39,11 @@ Heap* Space::heap() const {
 }
 
 
+BlockAllocator& Space::allocator() {
+    return *allocator_;
+}
+
+
 size_t Space::objectCount() const {
     return object_count_;
 }

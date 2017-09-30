@@ -12,7 +12,7 @@ namespace internal {
 
 /// \brief An immutable array of bytes.
 ///
-class ByteArray : public Object {
+class ByteArray final : public Object {
 public:
     DECL_CAST(ByteArray)
 

@@ -1,5 +1,7 @@
 #include "internal/generation.h"
 
+#include "internal/block_allocator.h"
+
 
 namespace worthy {
 namespace internal {
@@ -19,6 +21,11 @@ uint16_t Generation::generationNumber() const {
 
 void Generation::initBlock(Block& block) const {
     block.setGenerationNumber(generation_no_);
+}
+
+
+void Generation::deallocateOldBlocks() {
+    allocator().deallocateList(old_blocks_);
 }
 
 

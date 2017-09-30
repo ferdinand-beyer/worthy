@@ -6,6 +6,7 @@
 - Refactor BlockAllocators: One class BlockPool should suffice
 - Support locking of BlockPool
 - Move many friends to "Access" classes (Client-Attorney pattern)
+- Make HandlePool thread safe, or use one HandlePool per Frame/Context
 - Support multi-threaded GC workers
 - Use more Block API in BlockedVector
 - Use a linked list in chunks to track allocations (instead of set)

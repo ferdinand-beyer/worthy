@@ -39,7 +39,7 @@ private:
     BlockList pending_blocks_;
 
     /// List of completed blocks.
-    BlockList scanned_blocks_;
+    BlockList completed_blocks_;
 
     /// Number of copied objects.
     size_t object_count_;

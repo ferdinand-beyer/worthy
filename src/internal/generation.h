@@ -20,6 +20,8 @@ public:
 private:
     void initBlock(Block& block) const override;
 
+    void deallocateOldBlocks();
+
     const uint16_t generation_no_;
 
     std::mutex mutex_;

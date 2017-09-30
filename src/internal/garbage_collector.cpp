@@ -110,8 +110,8 @@ void GarbageCollector::finalizeGenerations() {
 }
 
 
-void GarbageCollector::finalizeCollectedGeneration(Generation& gen) {
-    gen.allocator_->deallocateList(gen.old_blocks_);
+void GarbageCollector::finalizeCollectedGeneration(Generation& generation) {
+    generation.deallocateOldBlocks();
 }
 
 

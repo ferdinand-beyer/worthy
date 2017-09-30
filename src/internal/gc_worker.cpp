@@ -23,20 +23,25 @@ GCWorker::GCWorker(GarbageCollector* gc, uint16_t generation_count)
 }
 
 
+GCWorkspace& GCWorker::workspace(uint16_t generation_no) {
+    GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
+    return workspaces[generation_no];
+}
+
+
 void GCWorker::prepareCycle() {
 }
 
 
 void GCWorker::executeCycle() {
+    // Roots have already been evacuated, now scavenge and evacuate
+    // reachable objects until we find no more.
     scavengeAll();
 
     collectCompletedBlocks();
-}
 
-
-GCWorkspace& GCWorker::workspace(uint16_t generation_no) {
-    GCWorkspace* workspaces = reinterpret_cast<GCWorkspace*>(this + 1);
-    return workspaces[generation_no];
+    // TODO: Keep track of running workers; if other workers are still
+    // collecting, we should wait for more work here.
 }
 
 
@@ -53,6 +58,9 @@ void GCWorker::evacuate(Object*& addr) {
         return;
     }
     if (block->flags() & Block::EvacuatedFlag) {
+        // Either an object of an older generation we are not collecting,
+        // or an object in "to space".
+        // TODO: Set failed_to_evac if < min_evac_generation_no_
         WORTHY_UNIMPLEMENTED(); // TODO
     }
 
@@ -111,12 +119,7 @@ void GCWorker::alreadyMoved(Object*& addr, Object* new_addr) {
 
 
 void GCWorker::scavengeAll() {
-    // For oldest to youngest generation:
-    // - scavenge current alloc block if (scan_ptr < alloc_ptr)
-    // - scavenge large objects
-    // - scavenge a pending block
-
-    bool did_something = true;
+    bool did_something;
 
     do {
         did_something = false;
@@ -124,10 +127,14 @@ void GCWorker::scavengeAll() {
         for (int i = generation_count_ - 1; i >= 0; i--) {
             auto& ws = workspace(i);
 
+            // Recently evacuated objects in this generation.
             if (tryScavengeAllocationBlock(ws)) {
                 did_something = true;
                 break;
             }
+
+            // TODO: scavenge large objects
+            // TODO: scavenge a pending block
         }
     } while (did_something);
 }
@@ -152,20 +159,24 @@ void GCWorker::scavengeBlock(Block& block) {
 
     auto& ws = workspace(block.generation_no_);
 
-    while ((&block == &ws.allocationBlock()) &&
-            (block.scan_ptr_ < block.free_)) {
+    while (block.scan_ptr_ < block.free_) {
+        // TODO: Use object flags for optimization here:
+        // - Can (does?) the object contain pointers (= need to traverse)?
+        // - Set eager_promotion_ according to the object's mutability
         Object* object = reinterpret_cast<Object*>(block.scan_ptr_);
         object->traverse(*this);
 
-        // TODO: Remembered set if failed to evac
+        // TODO: If failed_to_evac, add this object to the remembered set.
 
         block.scan_ptr_ += object->size_in_words_ * WordSize;
     }
 
     WORTHY_DCHECK(block.scan_ptr_ == block.free_);
 
-    // TODO: What can pull our block away here?
-
+    // TODO: This is only needed in the interplay with GCWorkspace: when the
+    // current allocation block is full, we need to put it into the completed
+    // or pending list, but must not give it to another worker for scanning if
+    // it is currently being scanned.
     scan_block_ = nullptr;
 }
 

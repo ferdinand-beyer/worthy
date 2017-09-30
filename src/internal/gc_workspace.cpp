@@ -26,18 +26,21 @@ Block& GCWorkspace::allocationBlock() const {
 
 
 void* GCWorkspace::allocate(size_t size) {
-    // TODO: Check for large object!
+    // TODO: Make sure that size is < LargeObjectThreshold.
     if (allocation_block_->bytesAvailable() >= size) {
         ++object_count_;
         return allocation_block_->allocate(size);
     }
-    WORTHY_UNIMPLEMENTED(); // TODO
+    // TODO: Push the block to the pending or completed list, depending
+    // on the scan_ptr_.
+    WORTHY_UNIMPLEMENTED();
 }
 
 
 void GCWorkspace::collectCompletedBlocks() {
     std::lock_guard<std::mutex> lock(generation_->mutex_);
-    // TODO: Move done blocks.
+    // TODO: Move completed blocks to the generation.
+    //generation_->blocks_.splice(end(), completed_blocks_);
     generation_->object_count_ += object_count_;
 
     object_count_ = 0;
@@ -45,7 +48,7 @@ void GCWorkspace::collectCompletedBlocks() {
 
 
 void GCWorkspace::allocateBlock() {
-    // TODO: Sync!
+    // TODO: Use allocateSync()!
     allocation_block_ = allocator_->allocate();
     allocation_block_->scan_ptr_ = allocation_block_->free_;
     generation_->registerBlock(*allocation_block_);
