@@ -2,15 +2,21 @@
 
 ## TODO Log
 - Implement scavanging
+- Support pending and completed blocks in GC Workspace
 - Support large objects
 - Refactor BlockAllocators: One class BlockPool should suffice
-- Support locking of BlockPool
+- Support locking of BlockPool (sync methods)
 - Move many friends to "Access" classes (Client-Attorney pattern)
 - Make HandlePool thread safe, or use one HandlePool per Frame/Context
-- Support multi-threaded GC workers
-- Use more Block API in BlockedVector
-- Use a linked list in chunks to track allocations (instead of set)
+- Support multiple concurrent GC workers (shared pending block queues)
 - Gather GC statistics and determine when to run GC
+- Implement sequences/iterators
+- Implement transient data structures
+- Implement persistent vector
+- Implement string
+- Implement symbol w/ interning
+- Implement persistent linked list
+- Use a linked list in chunks to track allocations (instead of set)
 - Use pointers and references consistently
 
 ## Misc
