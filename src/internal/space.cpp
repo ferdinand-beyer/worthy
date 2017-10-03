@@ -19,11 +19,15 @@ Space* Space::of(const Object* object) {
 }
 
 
-Space::Space(Heap* heap, BlockAllocator* allocator)
-    : heap_{heap},
-      allocator_{allocator},
-      next_generation_{nullptr},
-      object_count_{0} {
+Space::Space(Heap* heap, BlockAllocator* allocator,
+        uint16_t generation_no, uint16_t block_flags) :
+    heap_{heap},
+    allocator_{allocator},
+    generation_no_{generation_no},
+    block_flags_{block_flags},
+    next_generation_{nullptr},
+    object_count_{0}
+{
     WORTHY_DCHECK(heap);
     WORTHY_DCHECK(allocator);
 }
@@ -49,6 +53,11 @@ size_t Space::objectCount() const {
 }
 
 
+uint16_t Space::generationNumber() const {
+    return generation_no_;
+}
+
+
 Generation* Space::nextGeneration() const {
     return next_generation_;
 }
@@ -66,12 +75,13 @@ void Space::clear() {
 }
 
 
-void Space::registerBlock(Block& block) {
+void Space::initBlock(Block& block) {
     block.setOwner(this);
-    if (next_generation_) {
-        block.setNextGenerationNumber(next_generation_->generationNumber());
-    }
-    initBlock(block);
+    block.setGenerationNumber(generation_no_);
+    block.setNextGenerationNumber(
+            next_generation_ ? next_generation_->generationNumber()
+                             : generation_no_);
+    block.addFlags(block_flags_);
 }
 
 
@@ -79,9 +89,11 @@ void* Space::allocate(size_t& size) {
     if (size >= LargeObjectThreshold) {
         WORTHY_UNIMPLEMENTED(); // TODO
     }
+
     // Allocate more to leave an aligned pointer.
     size = boost::alignment::align_up(size, ObjectAlignment);
     Block* block = blockForAllocation(size);
+
     void* ptr = block->allocate(size);
     ++object_count_;
     return ptr;
@@ -97,12 +109,8 @@ Block* Space::blockForAllocation(size_t size) {
     }
     Block* block = allocator_->allocate(blocksForBytes(size));
     blocks_.push_front(*block);
-    registerBlock(*block);
+    initBlock(*block);
     return block;
-}
-
-
-void Space::initBlock(Block& block) const {
 }
 
 

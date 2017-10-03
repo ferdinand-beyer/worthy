@@ -24,8 +24,6 @@ public:
     HashMapBitmapNode* emptyHashMapBitmapNode() const;
 
 private:
-    void initBlock(Block& block) const override;
-
     HashMap* empty_hashmap_;
     HashMapBitmapNode* empty_hashmap_bitmap_node_;
 };

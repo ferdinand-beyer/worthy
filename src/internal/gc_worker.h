@@ -46,9 +46,6 @@ private:
     GarbageCollector* const gc_;
     const uint16_t generation_count_;
 
-    /// Block we are currently scanning.
-    Block* scan_block_;
-
     /// Youngest generation for evacuate().
     uint16_t min_evac_generation_no_;
 

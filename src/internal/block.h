@@ -35,8 +35,20 @@ size_t blocksForBytes(size_t size);
 class alignas(BlockDescriptorSize) Block final
     : public boost::intrusive::list_base_hook<> {
 public:
-    static constexpr uint16_t EvacuatedFlag = 0x01;
-    static constexpr uint16_t EternalFlag = 0x02;
+    enum Flag {
+        /// Objects in this block have been evacuated (only for blocks in a
+        /// Generation).
+        Evacuated = 0x01,
+
+        /// Objects in this block are always reachable.
+        Eternal = 0x02,
+
+        /// This block span holds a single large object.
+        Large = 0x04,
+
+        /// This block is currently being scanned by GC.
+        Scanning = 0x08
+    };
 
     Block(const Block&) = delete;
     Block& operator=(const Block&) = delete;
@@ -55,7 +67,10 @@ public:
     void setNextGenerationNumber(uint16_t generation_no);
 
     uint16_t flags() const;
-    uint16_t& flags();
+    bool hasFlags(uint16_t flags) const;
+    void setFlags(uint16_t flags);
+    void addFlags(uint16_t flags);
+    void removeFlags(uint16_t flags);
 
     byte* begin() const;
     byte* current() const;

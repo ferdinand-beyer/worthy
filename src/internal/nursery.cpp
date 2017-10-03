@@ -7,13 +7,9 @@ namespace worthy {
 namespace internal {
 
 
-Nursery::Nursery(Heap* heap, BlockAllocator* allocator)
-    : Space(heap, allocator) {
-}
-
-
-void Nursery::initBlock(Block& block) const {
-    block.setGenerationNumber(0);
+Nursery::Nursery(Heap* heap, BlockAllocator* allocator) :
+    Space(heap, allocator, 0, 0)
+{
 }
 
 

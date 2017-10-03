@@ -1,9 +1,13 @@
+#include "internal/byte_array.h"
 #include "internal/frame.h"
 #include "internal/garbage_collector.h"
 #include "internal/hashmap.h"
 #include "internal/heap.h"
 
 #include <catch.hpp>
+
+#include <array>
+#include <vector>
 
 
 using namespace worthy::internal;
@@ -40,7 +44,7 @@ TEST_CASE("Heap object count", "[gc]") {
 }
 
 
-TEST_CASE("Root objects survive garbage collection", "[gc]") {
+TEST_CASE("Root objects survive one-block garbage collection", "[gc]") {
     Heap heap;
 
     heap.lock();
@@ -56,7 +60,7 @@ TEST_CASE("Root objects survive garbage collection", "[gc]") {
 }
 
 
-TEST_CASE("Reachable objects survive garbage collection", "[gc]") {
+TEST_CASE("Reachable objects survive one-block garbage collection", "[gc]") {
     Heap heap;
     const auto initial_count = heap.objectCount();
 
@@ -73,4 +77,46 @@ TEST_CASE("Reachable objects survive garbage collection", "[gc]") {
     heap.gc();
 
     REQUIRE(heap.objectCount() == (initial_count + count1 - count0));
+}
+
+
+TEST_CASE("Garbage collection of multiple blocks keeps roots", "[gc]") {
+    std::array<byte, 300> buffer;
+    buffer.fill('\0');
+
+    Heap heap;
+
+    std::vector<Object*> pointers;
+    std::vector<HandlePtr> handles;
+
+    const int num_objects = 100;
+
+    heap.lock();
+
+    for (int i = 0; i < num_objects; i++) {
+        buffer[0] = i;
+        auto ba = ByteArray::valueOf(buffer.data(), buffer.size());
+        pointers.push_back(ba);
+        handles.push_back(heap.makeHandle(ba));
+    }
+
+    heap.unlock();
+
+    heap.gc();
+
+    for (int i = 0; i < num_objects; i++) {
+        auto obj = handles[i]->get();
+
+        // Object has been moved.
+        REQUIRE(obj);
+        REQUIRE(obj != pointers[i]);
+
+        REQUIRE(obj->isByteArray());
+
+        auto ba = ByteArray::cast(obj);
+
+        // Object is still valid.
+        REQUIRE(ba->size() == buffer.size());
+        REQUIRE(ba->data()[0] == i);
+    }
 }

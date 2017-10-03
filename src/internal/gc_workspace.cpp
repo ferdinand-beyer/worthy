@@ -31,9 +31,20 @@ void* GCWorkspace::allocate(size_t size) {
         ++object_count_;
         return allocation_block_->allocate(size);
     }
-    // TODO: Push the block to the pending or completed list, depending
-    // on the scan_ptr_.
-    WORTHY_UNIMPLEMENTED();
+
+    if (!allocation_block_->hasFlags(Block::Scanning)) {
+        if (allocation_block_->scan_ptr_ == allocation_block_->free_) {
+            WORTHY_CHECK(allocation_block_->free_ != allocation_block_->start_);
+            completed_blocks_.push_back(*allocation_block_);
+        } else {
+            pending_blocks_.push_back(*allocation_block_);
+        }
+    }
+
+    allocateBlock();
+
+    ++object_count_;
+    return allocation_block_->allocate(size);
 }
 
 
@@ -49,9 +60,10 @@ void GCWorkspace::collectCompletedBlocks() {
 
 void GCWorkspace::allocateBlock() {
     // TODO: Use allocateSync()!
+    // TODO: Set EvacuatedFlag?
     allocation_block_ = allocator_->allocate();
     allocation_block_->scan_ptr_ = allocation_block_->free_;
-    generation_->registerBlock(*allocation_block_);
+    generation_->initBlock(*allocation_block_);
 }
 
 

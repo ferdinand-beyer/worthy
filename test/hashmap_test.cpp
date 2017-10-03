@@ -449,3 +449,20 @@ TEST_CASE("The hash codes of two hash maps", "[hashmap]") {
         REQUIRE(map1->hashCode() == map2->hashCode());
     }
 }
+
+
+TEST_CASE("Hash maps can be nested", "[hashmap]") {
+    TestContext context;
+
+    HashMap* inner = context.emptyHashMap();
+    inner = inner->add(1, 3);
+    inner = inner->add(2, 2);
+    inner = inner->add(3, 1);
+
+    HashMap* outer = context.emptyHashMap();
+    outer = outer->add(0, inner);
+
+    REQUIRE(outer->get(0).isObject());
+    REQUIRE(outer->get(0).toObject()->isHashMap());
+    REQUIRE(HashMap::cast(outer->get(0).toObject())->get(1) == 3);
+}

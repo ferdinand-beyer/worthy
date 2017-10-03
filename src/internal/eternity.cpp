@@ -7,15 +7,11 @@ namespace worthy {
 namespace internal {
 
 
-Eternity::Eternity(Heap* heap, BlockAllocator* allocator)
-        : Space(heap, allocator) {
+Eternity::Eternity(Heap* heap, BlockAllocator* allocator) :
+    Space(heap, allocator, -1, Block::Eternal)
+{
     empty_hashmap_ = construct<HashMap>();
     empty_hashmap_bitmap_node_ = construct<HashMapBitmapNode>();
-}
-
-
-void Eternity::initBlock(Block& block) const {
-    block.flags() |= Block::EternalFlag;
 }
 
 

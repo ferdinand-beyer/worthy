@@ -89,7 +89,7 @@ void GarbageCollector::swapSpaces(Generation& gen) {
     gen.blocks_.swap(gen.old_blocks_);
 
     for (auto& block : gen.old_blocks_) {
-        block.flags() &= ~Block::EvacuatedFlag;
+        block.removeFlags(Block::Evacuated);
     }
 
     gen.object_count_ = 0;

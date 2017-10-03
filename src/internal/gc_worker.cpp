@@ -17,7 +17,6 @@ namespace internal {
 GCWorker::GCWorker(GarbageCollector* gc, uint16_t generation_count)
     : gc_{gc},
       generation_count_{generation_count},
-      scan_block_{nullptr},
       min_evac_generation_no_{0},
       eager_promotion_{false} {
 }
@@ -54,10 +53,10 @@ void GCWorker::evacuate(Object*& addr) {
     Block* block = Block::of(addr);
     WORTHY_DCHECK(dynamic_cast<Space*>(block->owner()));
 
-    if (block->flags() & Block::EternalFlag) {
+    if (block->hasFlags(Block::Eternal)) {
         return;
     }
-    if (block->flags() & Block::EvacuatedFlag) {
+    if (block->hasFlags(Block::Evacuated)) {
         // Either an object of an older generation we are not collecting,
         // or an object in "to space".
         // TODO: Set failed_to_evac if < min_evac_generation_no_
@@ -152,8 +151,10 @@ bool GCWorker::tryScavengeAllocationBlock(GCWorkspace& workspace) {
 
 void GCWorker::scavengeBlock(Block& block) {
     WORTHY_DCHECK(block.scan_ptr_ >= block.start_);
+    WORTHY_DCHECK(!block.hasFlags(Block::Scanning));
 
-    scan_block_ = &block;
+    block.addFlags(Block::Scanning);
+
     min_evac_generation_no_ = block.generation_no_;
     //failed_to_evac = false
 
@@ -173,11 +174,7 @@ void GCWorker::scavengeBlock(Block& block) {
 
     WORTHY_DCHECK(block.scan_ptr_ == block.free_);
 
-    // TODO: This is only needed in the interplay with GCWorkspace: when the
-    // current allocation block is full, we need to put it into the completed
-    // or pending list, but must not give it to another worker for scanning if
-    // it is currently being scanned.
-    scan_block_ = nullptr;
+    block.removeFlags(Block::Scanning);
 }
 
 

@@ -44,8 +44,8 @@ TEST_CASE("Block flags", "[block]") {
     }
 
     SECTION("can be set") {
-        block->flags() |= Block::EvacuatedFlag;
-        REQUIRE((block->flags() & Block::EvacuatedFlag));
+        block->setFlags(Block::Eternal);
+        REQUIRE(block->hasFlags(Block::Eternal));
     }
 }
 

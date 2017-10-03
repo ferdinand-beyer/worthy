@@ -94,8 +94,23 @@ uint16_t Block::flags() const {
 }
 
 
-uint16_t& Block::flags() {
-    return flags_;
+bool Block::hasFlags(uint16_t flags) const {
+    return (flags_ & flags) != 0;
+}
+
+
+void Block::setFlags(uint16_t flags) {
+    flags_ = flags;
+}
+
+
+void Block::addFlags(uint16_t flags) {
+    flags_ |= flags;
+}
+
+
+void Block::removeFlags(uint16_t flags) {
+    flags_ &= ~flags;
 }
 
 
