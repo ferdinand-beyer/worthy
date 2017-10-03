@@ -6,6 +6,7 @@
 #include <boost/align/align_up.hpp>
 #include <boost/align/aligned_alloc.hpp>
 
+#include <cstring>
 #include <new>
 
 
@@ -166,12 +167,21 @@ void RootBlockAllocator::reclaim(Block* block) {
     blocks_allocated_ -= block->span_;
     block->clearState();
     block->free_ = nullptr;
+
+#ifdef WORTHY_DEBUG
+    std::memset(block->start_, 0xdd, block->span_ * BlockSize);
+#endif
 }
 
 
 Block* RootBlockAllocator::release(Block* block) {
     block->free_ = block->start_;
     blocks_allocated_ += block->span_;
+
+#ifdef WORTHY_DEBUG
+    std::memset(block->start_, 0xaa, block->span_ * BlockSize);
+#endif
+
     return block;
 }
 
