@@ -20,6 +20,9 @@ public:
 
     Block& allocationBlock() const;
 
+    /// Remove and return a block from the pending list.
+    Block* popPendingBlock();
+
     /// Allocate memory to copy an object into this generation.
     void* allocate(size_t size);
 

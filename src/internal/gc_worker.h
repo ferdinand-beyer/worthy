@@ -38,6 +38,7 @@ private:
 
     void scavengeAll();
     bool tryScavengeAllocationBlock(GCWorkspace& workspace);
+    bool tryScavengePendingBlock(GCWorkspace& workspace);
 
     void scavengeBlock(Block& block);
 

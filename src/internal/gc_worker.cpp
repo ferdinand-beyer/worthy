@@ -133,7 +133,12 @@ void GCWorker::scavengeAll() {
             }
 
             // TODO: scavenge large objects
-            // TODO: scavenge a pending block
+
+            // Scavenge a pending block
+            if (tryScavengePendingBlock(ws)) {
+                did_something = true;
+                break;
+            }
         }
     } while (did_something);
 }
@@ -143,6 +148,17 @@ bool GCWorker::tryScavengeAllocationBlock(GCWorkspace& workspace) {
     auto& block = workspace.allocationBlock();
     if (block.scan_ptr_ < block.free_) {
         scavengeBlock(block);
+        return true;
+    }
+    return false;
+}
+
+
+bool GCWorker::tryScavengePendingBlock(GCWorkspace& workspace) {
+    auto block = workspace.popPendingBlock();
+    if (block) {
+        WORTHY_DCHECK(block->scan_ptr_ < block->free_);
+        scavengeBlock(*block);
         return true;
     }
     return false;
@@ -173,6 +189,9 @@ void GCWorker::scavengeBlock(Block& block) {
     }
 
     WORTHY_DCHECK(block.scan_ptr_ == block.free_);
+
+    // TODO: Put to workspace's completed list, unless it is the allocation
+    // block.
 
     block.removeFlags(Block::Scanning);
 }

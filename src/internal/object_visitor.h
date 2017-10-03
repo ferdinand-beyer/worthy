@@ -2,6 +2,8 @@
 #define WORTHY_INTERNAL_OBJECT_VISITOR_H_
 
 
+#include "internal/check.h"
+
 #include <type_traits>
 
 
@@ -21,6 +23,7 @@ public:
     template<typename T>
     inline void visit(T*& addr) {
         static_assert(std::is_base_of<Object, T>::value, "invalid type");
+        WORTHY_DCHECK(addr);
         doVisit(reinterpret_cast<Object*&>(addr));
     }
 

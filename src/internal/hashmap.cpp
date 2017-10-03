@@ -542,6 +542,7 @@ bool HashMapBitmapNode::traverseMap_(MapVisitor& visitor) const {
 
 
 void HashMapBitmapNode::traverse_(ObjectVisitor& visitor) {
+    array().traverse(visitor);
 }
 
 
@@ -672,6 +673,11 @@ bool HashMapArrayNode::traverseMap_(MapVisitor& visitor) const {
 
 
 void HashMapArrayNode::traverse_(ObjectVisitor& visitor) {
+    for (uint i = 0; i < 32; i++) {
+        if (nodes_[i]) {
+            visitor.visit(nodes_[i]);
+        }
+    }
 }
 
 

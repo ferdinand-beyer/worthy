@@ -25,6 +25,16 @@ Block& GCWorkspace::allocationBlock() const {
 }
 
 
+Block* GCWorkspace::popPendingBlock() {
+    if (pending_blocks_.empty()) {
+        return nullptr;
+    }
+    auto block = &pending_blocks_.front();
+    pending_blocks_.pop_front();
+    return block;
+}
+
+
 void* GCWorkspace::allocate(size_t size) {
     // TODO: Make sure that size is < LargeObjectThreshold.
     if (allocation_block_->bytesAvailable() >= size) {
@@ -60,10 +70,10 @@ void GCWorkspace::collectCompletedBlocks() {
 
 void GCWorkspace::allocateBlock() {
     // TODO: Use allocateSync()!
-    // TODO: Set EvacuatedFlag?
     allocation_block_ = allocator_->allocate();
-    allocation_block_->scan_ptr_ = allocation_block_->free_;
     generation_->initBlock(*allocation_block_);
+    // TODO: Set Evacuated flag
+    allocation_block_->scan_ptr_ = allocation_block_->free_;
 }
 
 

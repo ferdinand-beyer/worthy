@@ -1,4 +1,5 @@
 #include "internal/byte_array.h"
+#include "internal/eternity.h"
 #include "internal/frame.h"
 #include "internal/garbage_collector.h"
 #include "internal/hashmap.h"
@@ -56,7 +57,10 @@ TEST_CASE("Root objects survive one-block garbage collection", "[gc]") {
 
     // Our object should have been evacuated to a new block, and the Handle
     // updated to the new address.
-    REQUIRE(handle->get() != old_address);
+    Object* new_address = handle->get();
+    REQUIRE(new_address);
+    REQUIRE(new_address != old_address);
+    REQUIRE(new_address->isHashMap());
 }
 
 
@@ -80,7 +84,7 @@ TEST_CASE("Reachable objects survive one-block garbage collection", "[gc]") {
 }
 
 
-TEST_CASE("Garbage collection of multiple blocks keeps roots", "[gc]") {
+TEST_CASE("Root objects survive multi-block garbage collection", "[gc]") {
     std::array<byte, 300> buffer;
     buffer.fill('\0');
 
@@ -101,7 +105,6 @@ TEST_CASE("Garbage collection of multiple blocks keeps roots", "[gc]") {
     }
 
     heap.unlock();
-
     heap.gc();
 
     for (int i = 0; i < num_objects; i++) {
@@ -120,3 +123,54 @@ TEST_CASE("Garbage collection of multiple blocks keeps roots", "[gc]") {
         REQUIRE(ba->data()[0] == i);
     }
 }
+
+
+TEST_CASE("Reachable objects survive multi-block garbage collection", "[gc]") {
+    const int num_byte_arrays = 100;
+
+    std::array<byte, 300> buffer;
+    buffer.fill('\0');
+
+    std::vector<Object*> pointers;
+
+    Heap heap;
+    heap.lock();
+
+    HashMap* map = heap.eternity().emptyHashMap();
+
+    for (int i = 0; i < num_byte_arrays; i++) {
+        buffer[0] = i;
+        auto ba = ByteArray::valueOf(buffer.data(), buffer.size());
+        pointers.push_back(ba);
+        map = map->add(i, ba);
+    }
+
+    HandlePtr handle = heap.makeHandle(map);
+
+    heap.unlock();
+    heap.gc();
+    heap.lock();
+
+    map = HashMap::cast(handle->get());
+
+    for (int i = 0; i < num_byte_arrays; i++) {
+        auto val = map->get(i);
+
+        REQUIRE(val.isObject());
+
+        auto obj = val.toObject();
+
+        REQUIRE(obj);
+        REQUIRE(obj != pointers[i]);
+
+        REQUIRE(obj->isByteArray());
+
+        auto ba = ByteArray::cast(obj);
+
+        REQUIRE(ba->size() == buffer.size());
+        REQUIRE(ba->data()[0] == i);
+    }
+
+    heap.unlock();
+}
+

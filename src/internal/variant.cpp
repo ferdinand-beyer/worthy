@@ -44,7 +44,7 @@ bool Variant::operator==(const Variant& other) const {
 
 
 void Variant::traverse(ObjectVisitor& visitor) {
-    if (isObject()) {
+    if (isObject() && data_.obj) {
         visitor.visit(data_.obj);
     }
 }
@@ -85,7 +85,7 @@ void VariantArray::copy(size_t dst_index, const VariantArray& src,
 
 void VariantArray::traverse(ObjectVisitor& visitor) {
     for (size_t i = 0; i < length_; i++) {
-        if (type_array_[i] == VariantType::Object) {
+        if ((type_array_[i] == VariantType::Object) && data_array_[i].obj) {
             visitor.visit(data_array_[i].obj);
         }
     }
