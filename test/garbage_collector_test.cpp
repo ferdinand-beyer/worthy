@@ -174,3 +174,31 @@ TEST_CASE("Reachable objects survive multi-block garbage collection", "[gc]") {
     heap.unlock();
 }
 
+
+TEST_CASE("Repeated garbage collection retains memory usage", "[gc]") {
+    constexpr int num_collections = 10;
+
+    std::array<byte, 1000> buffer;
+    buffer.fill('\0');
+
+    Heap heap;
+
+    heap.lock();
+    auto ba = ByteArray::valueOf(buffer.data(), buffer.size());
+    auto handle = heap.makeHandle(ba);
+    heap.unlock();
+
+    const auto memory_threshold = heap.bytesAllocated();
+
+    for (int i = 0; i < num_collections; i++) {
+        heap.lock();
+        ba = ByteArray::valueOf(buffer.data(), buffer.size());
+        handle = heap.makeHandle(ba);
+        heap.unlock();
+
+        heap.gc();
+    }
+
+    REQUIRE(heap.bytesAllocated() <= memory_threshold);
+}
+

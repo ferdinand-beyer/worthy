@@ -30,6 +30,7 @@ public:
     void collectCompletedBlocks();
 
 private:
+    void ensureAvailable(size_t size);
     void allocateBlock();
 
     Generation* const generation_;

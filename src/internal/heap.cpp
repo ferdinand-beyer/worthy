@@ -108,6 +108,11 @@ void Heap::unlock() {
 }
 
 
+size_t Heap::bytesAllocated() const {
+    return allocator_.blocksAllocated() * BlockSize;
+}
+
+
 size_t Heap::objectCount() const {
     size_t count = eternity_->objectCount();
     for (uint i = 0; i < GenerationCount; i++) {

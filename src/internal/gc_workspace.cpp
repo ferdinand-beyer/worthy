@@ -9,6 +9,17 @@ namespace worthy {
 namespace internal {
 
 
+namespace {
+
+
+inline void transferBlocks(BlockList& from, BlockList& to) {
+    to.splice(to.end(), from);
+}
+
+
+} // namespace
+
+
 GCWorkspace::GCWorkspace(Generation* generation, BlockAllocator* allocator) :
     generation_{generation},
     allocator_{allocator},
@@ -37,9 +48,23 @@ Block* GCWorkspace::popPendingBlock() {
 
 void* GCWorkspace::allocate(size_t size) {
     // TODO: Make sure that size is < LargeObjectThreshold.
+    ensureAvailable(size);
+    ++object_count_;
+    return allocation_block_->allocate(size);
+}
+
+
+void GCWorkspace::collectCompletedBlocks() {
+    std::lock_guard<std::mutex> lock(generation_->mutex_);
+    transferBlocks(completed_blocks_, generation_->blocks_);
+    generation_->object_count_ += object_count_;
+    object_count_ = 0;
+}
+
+
+void GCWorkspace::ensureAvailable(size_t size) {
     if (allocation_block_->bytesAvailable() >= size) {
-        ++object_count_;
-        return allocation_block_->allocate(size);
+        return;
     }
 
     if (!allocation_block_->hasFlags(Block::Scanning)) {
@@ -52,19 +77,6 @@ void* GCWorkspace::allocate(size_t size) {
     }
 
     allocateBlock();
-
-    ++object_count_;
-    return allocation_block_->allocate(size);
-}
-
-
-void GCWorkspace::collectCompletedBlocks() {
-    std::lock_guard<std::mutex> lock(generation_->mutex_);
-    // TODO: Move completed blocks to the generation.
-    //generation_->blocks_.splice(end(), completed_blocks_);
-    generation_->object_count_ += object_count_;
-
-    object_count_ = 0;
 }
 
 
