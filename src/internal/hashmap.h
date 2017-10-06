@@ -8,13 +8,15 @@
 #include "internal/variant.h"
 
 #include <array>
+#include <functional>
 
 
 namespace worthy {
 namespace internal {
 
 
-class MapVisitor;
+typedef std::function<
+    bool(const Variant& key, const Variant& value)> KeyValuePredicate;
 
 
 class HashMapNode : public Object {
@@ -28,7 +30,7 @@ public:
 
     HashMapNode* remove(uint shift, HashCode hash, const Variant& key) const;
 
-    bool traverseMap(MapVisitor& visitor) const;
+    bool iterate_map(KeyValuePredicate pred) const;
 
 protected:
     HashMapNode() = default;
@@ -51,7 +53,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool traverseMap_(MapVisitor& visitor) const;
+    bool do_iterate_map(KeyValuePredicate pred) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -96,7 +98,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool traverseMap_(MapVisitor& visitor) const;
+    bool do_iterate_map(KeyValuePredicate pred) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -124,7 +126,7 @@ public:
 
     HashMapNode* remove_(uint shift, HashCode hash, const Variant& key) const;
 
-    bool traverseMap_(MapVisitor& visitor) const;
+    bool do_iterate_map(KeyValuePredicate pred) const;
 
     void traverse_(ObjectVisitor& visitor);
 
@@ -154,7 +156,7 @@ public:
 
     HashMap* remove(const Variant& key) const;
 
-    bool traverseMap(MapVisitor& visitor) const;
+    bool iterate_map(KeyValuePredicate pred) const;
 
     bool equals_(const Object* other) const;
 

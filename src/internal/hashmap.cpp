@@ -4,7 +4,6 @@
 #include "internal/frame.h"
 #include "internal/hash.h"
 #include "internal/heap.h"
-#include "internal/map_visitor.h"
 #include "internal/object_dispatch.h"
 #include "internal/object_visitor.h"
 
@@ -69,41 +68,6 @@ void copyWithoutPair(VariantArray& dest, const VariantArray& src, uint index) {
     dest.copy(0, src, 0, 2*index);
     dest.copy(2*index, src, 2*(index+1), dest.length() - 2*index);
 }
-
-
-class EqualsVisitor final : public MapVisitor {
-public:
-    EqualsVisitor(const HashMap* map) : map_{map} {}
-
-    bool visit(const Variant& key, const Variant& value) override {
-        const Variant not_found = map_;
-        return (value == map_->get(key, not_found));
-    }
-
-private:
-    const HashMap* const map_;
-};
-
-
-class HashSumVisitor final : public MapVisitor {
-public:
-    HashSumVisitor() : hash_sum_{0} {}
-
-    HashCode hashSum() const {
-        return hash_sum_;
-    }
-
-    bool visit(const Variant& key, const Variant& value) override {
-        HashCode entry_hash = 0;
-        hashCombine(entry_hash, key);
-        hashCombine(entry_hash, value);
-        hash_sum_ += entry_hash;
-        return true;
-    }
-
-private:
-    HashCode hash_sum_;
-};
 
 
 } // namespace
@@ -205,11 +169,11 @@ HashMap* HashMap::remove(const Variant& key) const {
 }
 
 
-bool HashMap::traverseMap(MapVisitor& visitor) const {
-    if (has_null_key_ && !visitor.visit(Variant(), null_value_)) {
+bool HashMap::iterate_map(KeyValuePredicate pred) const {
+    if (has_null_key_ && !pred(Variant(), null_value_)) {
         return false;
     }
-    return root_ ? root_->traverseMap(visitor) : true;
+    return root_ ? root_->iterate_map(pred) : true;
 }
 
 
@@ -224,17 +188,23 @@ bool HashMap::equals_(const Object* other) const {
     if (count_ != m->count_) {
         return false;
     }
-    EqualsVisitor visitor(m);
-    return traverseMap(visitor);
+    const Variant not_found = m;
+    return iterate_map([&](const Variant& key, const Variant& value) {
+        return (value == m->get(key, not_found));
+    });
 }
 
 
 HashCode HashMap::hashCode_() const {
     HashCode hash = hash_code_;
     if (hash == 0) {
-        HashSumVisitor visitor;
-        traverseMap(visitor);
-        hash = visitor.hashSum();
+        iterate_map([&](const Variant& key, const Variant& value) {
+            HashCode entry_hash = 0;
+            hashCombine(entry_hash, key);
+            hashCombine(entry_hash, value);
+            hash += entry_hash;
+            return true;
+        });
         hashCombine(hash, count());
         hash_code_ = hash;
     }
@@ -281,8 +251,8 @@ HashMapNode* HashMapNode::remove(uint shift, HashCode hash,
 }
 
 
-bool HashMapNode::traverseMap(MapVisitor& visitor) const {
-    NODE_DISPATCH(traverseMap_, (visitor));
+bool HashMapNode::iterate_map(KeyValuePredicate pred) const {
+    NODE_DISPATCH(do_iterate_map, (pred));
 }
 
 
@@ -522,7 +492,7 @@ HashMapArrayNode* HashMapBitmapNode::toArrayNode(uint shift,
 }
 
 
-bool HashMapBitmapNode::traverseMap_(MapVisitor& visitor) const {
+bool HashMapBitmapNode::do_iterate_map(KeyValuePredicate pred) const {
     const auto arr = array();
     for (uint i = 0; i < arr.length(); i += 2) {
         const auto key = arr.get(i);
@@ -530,10 +500,10 @@ bool HashMapBitmapNode::traverseMap_(MapVisitor& visitor) const {
 
         if (key.isNull()) {
             auto node = static_cast<HashMapNode*>(value.toObject());
-            if (!node->traverseMap(visitor)) {
+            if (!node->iterate_map(pred)) {
                 return false;
             }
-        } else if (!visitor.visit(key, value)) {
+        } else if (!pred(key, value)) {
             return false;
         }
     }
@@ -662,9 +632,9 @@ HashMapBitmapNode* HashMapArrayNode::toBitmapNode(uint remove_index) const {
 }
 
 
-bool HashMapArrayNode::traverseMap_(MapVisitor& visitor) const {
+bool HashMapArrayNode::do_iterate_map(KeyValuePredicate pred) const {
     for (auto node : nodes_) {
-        if (node && !node->traverseMap(visitor)) {
+        if (node && !node->iterate_map(pred)) {
             return false;
         }
     }
@@ -708,7 +678,7 @@ HashMapNode* HashMapCollisionNode::remove_(uint shift, HashCode hash,
 }
 
 
-bool HashMapCollisionNode::traverseMap_(MapVisitor& visitor) const {
+bool HashMapCollisionNode::do_iterate_map(KeyValuePredicate pred) const {
     WORTHY_UNIMPLEMENTED(); // TODO
 }
 
